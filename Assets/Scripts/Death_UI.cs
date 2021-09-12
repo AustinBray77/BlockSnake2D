@@ -8,9 +8,9 @@ public class Death_UI : MonoBehaviour
 {
     [SerializeField] private TMP_Text scoreText;
 
-    public void OnLoad(int score)
+    public void OnLoad()
     {
-        scoreText.text = $"Final Score: {score}";
+        scoreText.text = $"FINAL SCORE: {Player.score}";
     }
 
     public void ClickRespawn()

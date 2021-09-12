@@ -31,7 +31,7 @@ public class Destroyer : MonoBehaviour
 
     private void OnTriggerEnter2D(Collider2D collision)
     {
-        if (collision.tag == "Object")
+        if (collision.tag == "Object" || collision.tag == "Parallax")
         {
             if(collision.name.Contains("Finish")) 
                 Refrence.gen.OnFinishDestroyed();

@@ -6,6 +6,7 @@ TagManager:
   tags:
   - Segment
   - Object
+  - Parallax
   layers:
   - Default
   - TransparentFX

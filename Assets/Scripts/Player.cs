@@ -127,6 +127,7 @@ public class Player : MonoBehaviour
         Refrence.gen.OnPlayerDeath();
         Refrence.gameUI.SetActive(false);
         Refrence.deathUI.SetActive(true);
+        Refrence.deathUI.GetComponent<Death_UI>().OnLoad();
     }
 
     public void Respawn()

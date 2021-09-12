@@ -8,6 +8,7 @@ public class Generator : MonoBehaviour
     [SerializeField] private ScoreObject[] scorePrefabs;
     [SerializeField] private DamageObject[] damagePrefabs;
     [SerializeField] private GameObject finishPrefab;
+    [SerializeField] private GameObject frontStarPrefab, middleStarPrefab, backStarPrefab;
 
     private int[] scoreCounts, damageCounts;
     private int[] scoreCountsAtLastFinish, damageCountsAtLastFinish;
@@ -38,11 +39,14 @@ public class Generator : MonoBehaviour
         counterAtLastFinishSpawn = 0;
 
         StartCoroutine(Generate(false));
+        StartParallax();
     }
 
     public void Respawn()
     {
-        if(lastFinish == null)
+        DestroyAllObjects();
+
+        if (lastFinish == null)
         {
             Start();
             return;
@@ -54,6 +58,14 @@ public class Generator : MonoBehaviour
         GameObject nextFinish = Instantiate(finishPrefab, new Vector3(transform.position.x, 0), transform.rotation);
         nextFinish.GetComponent<FinishObject>().SetData(lastFinish);
         StartCoroutine(Generate(true));
+        StartParallax();
+    }
+
+    private void StartParallax()
+    {
+        StartCoroutine(GenerateParallaxFront());
+        StartCoroutine(GenerateParallaxMiddle());
+        StartCoroutine(GenerateParallaxBack());
     }
 
     public void OnSegmentChange(int amount)
@@ -104,7 +116,6 @@ public class Generator : MonoBehaviour
     public void OnPlayerDeath()
     {
         StopAllCoroutines();
-        DestroyAllObjects();
 
         finishesOnScreen = new List<FinishObject>();
     }
@@ -184,6 +195,63 @@ public class Generator : MonoBehaviour
 
                 yield return new WaitUntil(() => { return !Player.isAtFinish; });
             }
+        }
+    }
+
+    private IEnumerator GenerateParallaxFront()
+    {
+        while (true)
+        {
+            float time = 0, wait = Random.Range(3f, 4f);
+
+            while (time < wait)
+            {
+                time += Time.fixedDeltaTime;
+
+                yield return new WaitForSeconds(Time.fixedDeltaTime);
+
+                yield return new WaitUntil(() => { return !Player.isAtFinish; });
+            }
+
+            Instantiate(frontStarPrefab, GenPosition(new List<Vector3Int>()), frontStarPrefab.transform.rotation);
+        }
+    }
+
+    private IEnumerator GenerateParallaxMiddle()
+    {
+        while (true)
+        {
+            float time = 0, wait = Random.Range(4f, 6f);
+
+            while (time < wait)
+            {
+                time += Time.fixedDeltaTime;
+
+                yield return new WaitForSeconds(Time.fixedDeltaTime);
+
+                yield return new WaitUntil(() => { return !Player.isAtFinish; });
+            }
+
+            Instantiate(middleStarPrefab, GenPosition(new List<Vector3Int>()), frontStarPrefab.transform.rotation);
+        }
+    }
+
+    private IEnumerator GenerateParallaxBack()
+    {
+        while (true)
+        {
+            float time = 0, wait = Random.Range(6f, 10f);
+
+            while (time < wait)
+            {
+                time += Time.fixedDeltaTime;
+
+                yield return new WaitForSeconds(Time.fixedDeltaTime);
+
+                yield return new WaitUntil(() => { return !Player.isAtFinish; });
+            }
+
+            Instantiate(backStarPrefab, GenPosition(new List<Vector3Int>()), frontStarPrefab.transform.rotation);
         }
     }
 
