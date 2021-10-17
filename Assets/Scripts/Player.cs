@@ -1,15 +1,18 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 using TMPro;
 
 [RequireComponent(typeof(Rigidbody2D))]
 public class Player : MonoBehaviour
 {
     [SerializeField] private TMP_Text scoreText; 
+    [SerializeField] private TMP_Text gearText; 
     [SerializeField] private Segment segmentAfter;
     [SerializeField] private Segment segmentLast;
     [SerializeField] private GameObject segmentPrefab;
+    [SerializeField] private Image fadePanel;
 
     private Rigidbody2D rb;
 
@@ -26,11 +29,18 @@ public class Player : MonoBehaviour
     public static float xBoundAtLastFinish, yBoundAtLastFinish;
 
     public static int xStartBounds = 30, yStartBounds = 12;
+    
+    public static Skin activeSkin => Shop_UI.skins[Serializer.activeData.activeSkin];
+
+    public static Level level;
+    public int gearCount;
 
     private int camBackup;
 
     private void Start()
     {
+        StartCoroutine(AnimationPlus.FadeToColor(fadePanel, new Color(0, 0, 0, 0), 1f, false));
+
         rb = GetComponent<Rigidbody2D>();
         isDead = false;
         isAtFinish = false;
@@ -40,6 +50,12 @@ public class Player : MonoBehaviour
         turnDelay = 0.2f;
         speed = 100000;
         rotSpeed = 10;
+        gearCount = Serializer.activeData.gearCount;
+        level = Serializer.activeData.level;
+        gearText.text = gearCount.ToString();
+
+        GetComponent<SpriteRenderer>().sprite = activeSkin.frontSprite;
+        segmentPrefab.GetComponent<SpriteRenderer>().sprite = activeSkin.segmentSprite;
     }
 
     private void Update()
@@ -123,6 +139,16 @@ public class Player : MonoBehaviour
     {
         StopAllSegmentCoroutines();
 
+        if(Serializer.activeData.highScore < score)
+        {
+            Serializer.activeData.SetHighScore(score);
+        }
+
+        Serializer.activeData.SetGearCount(gearCount);
+
+        //Temp set
+        Serializer.activeData.SetLevel(level);
+
         isDead = true;
         Refrence.gen.OnPlayerDeath();
         Refrence.gameUI.SetActive(false);
@@ -164,11 +190,24 @@ public class Player : MonoBehaviour
         backupAtLastFinish = camBackup;
     }
 
+    public void AddGears(int amount)
+    {
+        gearCount += amount;
+
+        if (gearCount > 9999)
+            gearCount = 9999;
+
+        level.AddXP(amount);
+
+        gearText.text = gearCount.ToString();
+    }
+
     public void AddScore(int add)
     {
         score += add;
         scoreText.text = score.ToString();
-        
+        level.AddXP(add);
+
         AddSegments(add);
     }
 

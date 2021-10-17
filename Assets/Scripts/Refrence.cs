@@ -12,7 +12,7 @@ public class Refrence : MonoBehaviour
     [SerializeField] private GameObject _deathUI, _gameUI, _finishUI;
     [SerializeField] private AdManager _adManager;
     [SerializeField] private Card[] _cardTypes;
-
+    [SerializeField] private Skin _baseSkin;
 
     public static Player player;
     public static Generator gen;

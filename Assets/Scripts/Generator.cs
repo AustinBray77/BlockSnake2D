@@ -7,6 +7,7 @@ public class Generator : MonoBehaviour
     [SerializeField] private GameObject topWall, bottomWall;
     [SerializeField] private ScoreObject[] scorePrefabs;
     [SerializeField] private DamageObject[] damagePrefabs;
+    [SerializeField] private GearObject gearPrefab;
     [SerializeField] private GameObject finishPrefab;
     [SerializeField] private GameObject frontStarPrefab, middleStarPrefab, backStarPrefab;
 
@@ -164,6 +165,13 @@ public class Generator : MonoBehaviour
             }
             else
             {
+                if(i > 10 && i % 2 == 0)
+                {
+                    Vector3Int pos = GenPosition(positions);
+                    positions.Add(pos);
+                    SpawnObject(gearPrefab, pos);
+                }
+
                 for(int j = 0; j < scoreCounts.Length; j++)
                 {
                     for(int k = 0; k < Mathf.Min(scoreCounts[j], 5); k++)

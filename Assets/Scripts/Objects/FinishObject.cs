@@ -5,11 +5,12 @@ using UnityEngine;
 
 public class FinishObject : Object
 {
-    [SerializeField] private GameObject tilePrefab;
     private BoxCollider2D _collider;
-    [HideInInspector] public Card[] selectedCards;
     private bool fromData = false;
+    private Card[] selectedCards;
 
+    [SerializeField] private GameObject tilePrefab;
+    
     [HideInInspector] public int spawnIndex;
 
     internal override void ObjAwake()
@@ -30,9 +31,8 @@ public class FinishObject : Object
         for (int i = 0; i < Refrence.cardTypes.Length; i++)
         {
             int index = Random.Range(0, vals.Length);
-            int holder = vals[i];
-            vals[i] = vals[index];
-            vals[index] = holder;
+            //Evil bit hack to swap variables
+            vals[i] = vals[i] ^ vals[index] ^ (vals[index] = vals[i]);
         }
 
         return vals;

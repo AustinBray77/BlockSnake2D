@@ -8,11 +8,6 @@ public class Parallax_Object : MonoBehaviour
 
     private static float speed = 2;
 
-    //private void Awake()
-    //{
-    //    tag = "Parallax";
-    //}
-
     private void Update()
     {
         if(!Player.isAtFinish && !Player.isDead)

@@ -17,5 +17,10 @@ public class DebugExtras : MonoBehaviour
         {
             Refrence.player.RemoveSegments(5);
         }
+        if(Input.GetKeyDown(KeyCode.R))
+        {
+            Serializer.activeData = new Save_Data(0, new bool[] { true, false }, new Level(0), 0, 0);
+            Debug.Log("Save Reset");
+        }
     }
 }
