@@ -21,6 +21,8 @@ public class Main_UI : UI
 
         if (Serializer.activeData == null)
             Serializer.LoadData();
+
+        shopUI.Start();
     }
 
     public void Click_Start()
