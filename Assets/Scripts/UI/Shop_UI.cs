@@ -115,6 +115,6 @@ public class Shop_UI : UI
             () => {
                 Refrence.startUI.Show();
                 Hide();
-            }, 1f));
+            }, fadeTime));
     }
 }

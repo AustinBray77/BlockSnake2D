@@ -3407,6 +3407,14 @@ PrefabInstance:
       propertyPath: m_Name
       value: Gamecontroller
       objectReference: {fileID: 0}
+    - target: {fileID: 8515263733779877619, guid: 0bd8c415032e1bd479fcebd76f8235af, type: 3}
+      propertyPath: _platform
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8515263733779877619, guid: 0bd8c415032e1bd479fcebd76f8235af, type: 3}
+      propertyPath: m_Enabled
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 8515263733779877629, guid: 0bd8c415032e1bd479fcebd76f8235af, type: 3}
       propertyPath: m_RootOrder
       value: 11

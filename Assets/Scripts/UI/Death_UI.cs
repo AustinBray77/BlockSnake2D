@@ -90,7 +90,7 @@ public class Death_UI : UI
         StartCoroutine(ClickWithFade(() =>
         {
             SceneManager.LoadScene(SceneManager.GetActiveScene().name, LoadSceneMode.Single);
-        }, 1f, true));
+        }, fadeTime, true));
     }
 
     //Called when the user clicks to go to the main menu
@@ -104,7 +104,7 @@ public class Death_UI : UI
         StartCoroutine(ClickWithFade(() =>
         {
             SceneManager.LoadScene("Start", LoadSceneMode.Single);
-        }, 1f, true));
+        }, fadeTime, true));
     }
 
     //Method called when the player is to respawn

@@ -6,6 +6,9 @@ using TMPro;
 //Class inherited by UI objects
 public abstract class UI : MonoBehaviour
 {
+    //Stores the normal fade time between screens
+    internal static float fadeTime = 2f;
+
     //Internal refrence to the screens fade panel
     [SerializeField] internal Image fadePanel;
 

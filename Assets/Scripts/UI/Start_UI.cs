@@ -11,7 +11,7 @@ public class Start_UI : UI
     public void Start()
     {
         //Fades in
-        StartCoroutine(AnimationPlus.FadeToColor(fadePanel, new Color(0, 0, 0, 0), 1f, false));
+        StartCoroutine(AnimationPlus.FadeToColor(fadePanel, new Color(0, 0, 0, 0), fadeTime, false));
 
         //Loads the data if no save data is currently present
         if (Serializer.activeData == null)
@@ -30,7 +30,7 @@ public class Start_UI : UI
         StartCoroutine(ClickWithFade(
             () => {
                 SceneManager.LoadScene("Main", LoadSceneMode.Single);
-            }, 1f, true));
+            }, fadeTime, true));
     }
 
     //Called when the user clicks to the shop
@@ -41,7 +41,7 @@ public class Start_UI : UI
             () => {
                 Refrence.shopUI.Show();
                 Hide();
-            }, 1f));
+            }, fadeTime));
     }
 
     //Called when the user clicks to enter the tutorial
@@ -51,7 +51,7 @@ public class Start_UI : UI
         StartCoroutine(ClickWithFade(
              () => {
                  SceneManager.LoadScene("Tutorial", LoadSceneMode.Single);
-             }, 1f, true));
+             }, fadeTime, true));
     }
 
     //Called when the user clicks to quit

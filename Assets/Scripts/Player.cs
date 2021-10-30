@@ -61,7 +61,7 @@ public class Player : MonoBehaviour
     private void Start()
     {
         //Fades in the scene
-        StartCoroutine(AnimationPlus.FadeToColor(fadePanel, new Color(0, 0, 0, 0), 1f, false));
+        StartCoroutine(AnimationPlus.FadeToColor(fadePanel, new Color(0, 0, 0, 0), UI.fadeTime, false));
 
         //Assigns the default vaules for the variables
         rb = GetComponent<Rigidbody2D>();
