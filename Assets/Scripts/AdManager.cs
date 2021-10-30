@@ -5,14 +5,25 @@ using UnityEngine.Advertisements;
 
 public class AdManager : MonoBehaviour, IUnityAdsLoadListener, IUnityAdsShowListener
 {
-    [SerializeField] private Death_UI ui;
-
+    //Instance variables
     private string gameID = "4271826", adID = "";
-    [SerializeField] private bool testMode = true; 
+    private bool testMode;
     private bool isValid = true;
 
+    //Method called on scene load
     private void Start()
     {
+        //Deactivates the object if the platform is windows
+        if(Gamemode.platform == Gamemode.Platform.Windows)
+        {
+            gameObject.SetActive(false);
+            return;
+        }
+
+        //Determines if the ad manager should be in test mode
+        testMode = Gamemode.platform == Gamemode.Platform.Debug;
+
+        //Determinds the ad ID and game ID
         if (Application.platform == RuntimePlatform.Android)
         {
             gameID = "4271826";
@@ -29,6 +40,7 @@ public class AdManager : MonoBehaviour, IUnityAdsLoadListener, IUnityAdsShowList
             return;
         }
 
+        //Initializes the advertisment
         Advertisement.Initialize(gameID, testMode);
     }
 
@@ -59,7 +71,7 @@ public class AdManager : MonoBehaviour, IUnityAdsLoadListener, IUnityAdsShowList
         if (adUnitId.Equals(adID) && showCompletionState.Equals(UnityAdsShowCompletionState.COMPLETED))
         {
             Debug.Log("Unity Ads Rewarded Ad Completed");
-            ui.OnRespawn();
+            Refrence.deathUI.OnRespawn();
         }
     }
 
