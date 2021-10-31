@@ -52,7 +52,7 @@ public class Tutorial : MonoBehaviour
     }
 
     //Method called once per frame
-    private void Update()
+    private void FixedUpdate()
     {
         //Triggers if there are user inputs to check for
         if (nextKey.Count >= 1)

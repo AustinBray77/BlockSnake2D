@@ -57,6 +57,14 @@ public class Player : MonoBehaviour
     //Variable which stores the offset of how many iterations the camera should wait before moving again, { backup <= 0 }
     private int camBackup;
 
+    //Variable to store the transforms for the segments to move into
+    private Queue<Vector3> positions;
+    private Queue<Vector3> rotations;
+
+    //Variables to store when the player should begin dequeuing the transforms
+    private float timeCounter;
+    private bool beginDequeing;
+
     //Method called on scene load
     private void Start()
     {
@@ -83,11 +91,24 @@ public class Player : MonoBehaviour
 
         GetComponent<SpriteRenderer>().sprite = activeSkin.frontSprite;
         segmentPrefab.GetComponent<SpriteRenderer>().sprite = activeSkin.segmentSprite;
+
+        positions = new Queue<Vector3>();
+        rotations = new Queue<Vector3>();
+
+        timeCounter = 0;
+        beginDequeing = false;
     }
 
     //Method called on each frame
-    private void Update()
+    private void FixedUpdate()
     {
+        //Waits the turn delay before dequeing the tranforms
+        if (!beginDequeing)
+            timeCounter += Time.fixedDeltaTime;
+
+        if (timeCounter >= turnDelay)
+            beginDequeing = true;
+
         //Sets the velocity to 0 if the player is dead or at a finish
         if (isAtFinish || isDead)
         {
@@ -130,11 +151,27 @@ public class Player : MonoBehaviour
             }
         }
 
-        //Triggers if there is a sement after the player
-        if (segmentAfter != null && !isDead && !isAtFinish)
+        //Triggers if the player is not dead or at finish
+        if (!isAtFinish && !isDead)
         {
-            //Moves the following segments
-            StartCoroutine(MoveNext(transform.position - (transform.right * 1.5f), transform.rotation.eulerAngles));
+            //Saves the transforms
+            positions.Enqueue(transform.position);
+            rotations.Enqueue(transform.rotation.eulerAngles);
+
+            //Triggers if the current transform should be popped
+            if (beginDequeing)
+            {
+                //Gets the rotation and position from a certain time peroid ago
+                Vector3 curPos = positions.Dequeue();
+                Vector3 curRot = rotations.Dequeue();
+
+                //Triggers if there is a segment after
+                if (segmentAfter != null)
+                {
+                    //Sets the segments movement
+                    segmentAfter.SetMovement(curPos + -1.5f * Vector3.right, curRot);
+                }
+            }
         }
     }
     
@@ -162,39 +199,6 @@ public class Player : MonoBehaviour
                 direction == -1 ? 
                     270 : 90 
                         : nextZ);
-    }
-
-    //Enumerator called to move the segments the other than the front
-    public IEnumerator MoveNext(Vector3 position, Vector3 rotation)
-    {
-        //Variable to count the time
-        float time = 0;
-
-        //Waits until the time delay 
-        while(time < turnDelay)
-        {
-            //Adds a set amount of time to time and waits the time
-            time += Time.fixedDeltaTime;
-            yield return new WaitForSeconds(Time.fixedDeltaTime);
-
-            //If the player is at a finish, wait until they arent
-            if (isAtFinish)
-            {
-                yield return new WaitUntil(() => { return !isAtFinish; });
-            }
-
-            //If the player removes all of the segments while at the finish, break out of the loop
-            if (segmentAfter == null)
-            {
-                break;
-            }
-        }
-
-        //Triggers if the next segment is not null
-        if (segmentAfter != null)
-        {
-            segmentAfter.SetMovement(position, rotation, turnDelay);
-        }
     }
 
     //Method called when the player is to be killed

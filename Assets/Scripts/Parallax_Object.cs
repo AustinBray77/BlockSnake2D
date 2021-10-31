@@ -10,7 +10,7 @@ public class Parallax_Object : MonoBehaviour
     private static float speed = 2;
 
     //Method called on each frame
-    private void Update()
+    private void FixedUpdate()
     {
         //If the player is not at finish or dead and moves the object by the calculated speed
         if(!Player.isAtFinish && !Player.isDead)

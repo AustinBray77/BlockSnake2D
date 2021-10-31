@@ -7,13 +7,13 @@ using TMPro;
 public abstract class UI : MonoBehaviour
 {
     //Stores the normal fade time between screens
-    internal static float fadeTime = 2f;
+    public static float fadeTime = 1f;
 
     //Internal refrence to the screens fade panel
-    [SerializeField] internal Image fadePanel;
+    [SerializeField] protected Image fadePanel;
 
     //Refrence to the container storing all the UI of this screen
-    [SerializeField] internal GameObject UIContainer;
+    [SerializeField] protected GameObject UIContainer;
 
     //Serializable class to store a refrence to a level bar
     [System.Serializable]
@@ -40,14 +40,13 @@ public abstract class UI : MonoBehaviour
     {
         //Fades the screen and waits until the screen has finished fading 
         fadePanel.gameObject.SetActive(true);
-        StartCoroutine(AnimationPlus.FadeToColor(fadePanel, new Color(0, 0, 0, 1), seconds));
-        yield return new WaitForSeconds(seconds);
+        yield return StartCoroutine(AnimationPlus.FadeToColor(fadePanel, new Color(0, 0, 0, 1), seconds));
 
         //Invokes the action
         action.Invoke();
 
         //Triggers another screen fade if the action does not switch scenes
         if(!changesScenes)
-            StartCoroutine(AnimationPlus.FadeToColor(fadePanel, new Color(0, 0, 0, 0), seconds, false));
+            yield return StartCoroutine(AnimationPlus.FadeToColor(fadePanel, new Color(0, 0, 0, 0), seconds, false));
     }
 }

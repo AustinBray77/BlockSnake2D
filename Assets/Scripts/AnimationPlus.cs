@@ -7,29 +7,28 @@ using TMPro;
 //Class used to store more animations
 public static class AnimationPlus
 {
-    //Stores fps and wait time
-    public static int fps = 120;
-    public static float waitTime => 1 / fps;
+    //Calculates the number of frames for a given time
+    public static float GetFrames(float time) =>
+        Mathf.Round(time / Time.fixedDeltaTime);
 
     //Method to fade an image to a color
     public static IEnumerator FadeToColor(Image img, Color endColor, float time, bool stateAfterCall = true)
     {
-        //Stores the total frams which need to be counted and the frames which have been counted
-        float totalFrames = fps * time;
-        float framesCounted = 0;
-
         //Stores the amount of color which the image should be changed by each frame
-        Color differencePerFrame = (endColor - img.color) / totalFrames;
+        Color differencePerFrame = (endColor - img.color) / GetFrames(time);
+
+        //Stores the amount of time that has passed
+        float timeCount = 0f;
 
         //Loops while frames still need to be counted
-        while(framesCounted < totalFrames)
+        while(timeCount < time)
         {
             //Changes the images color
             img.color += differencePerFrame;
 
             //Increments the frame counter and waits the required amount of time
-            framesCounted++;
-            yield return new WaitForSeconds(waitTime);
+            timeCount += Time.fixedDeltaTime;
+            yield return new WaitForSeconds(Time.fixedDeltaTime);
         }
 
         //Sets the image color to the final color, in case it is off by a bit
@@ -42,15 +41,14 @@ public static class AnimationPlus
     //Method to animate a level bar object
     public static IEnumerator AnimateLevelBar(UI.LevelBar levelBar, int lowerLevel, float endVal, float time)
     {
-        //Stores the total frams which need to be counted and the frames which have been counted
-        float totalFrames = fps * time;
-        float framesCounted = 0;
-
         //Stores the amount which the levelBar should be changed by each frame
-        float differencePerFrame = (endVal - levelBar.levelBar.value) / totalFrames;
+        float differencePerFrame = (endVal - levelBar.levelBar.value) / GetFrames(time);
+
+        //Stores the amount of time that has passed
+        float timeCount = 0f;
 
         //Loops while frames still need to be counted
-        while (framesCounted < totalFrames)
+        while (timeCount < time)
         {
             //Changes the level bar value
             levelBar.levelBar.value += differencePerFrame;
@@ -68,8 +66,8 @@ public static class AnimationPlus
             }
 
             //Increments the frame counter and waits the required amount of time
-            framesCounted++;
-            yield return new WaitForSeconds(waitTime);
+            timeCount += Time.fixedDeltaTime;
+            yield return new WaitForSeconds(Time.fixedDeltaTime);
         }
 
         //Sets the image color to the final value, in case it is off by a bit
@@ -79,24 +77,23 @@ public static class AnimationPlus
     //Method called to fade text in or out (used in tutorial)
     public static IEnumerator FadeText(TextMeshProUGUI text, float time, bool fadeOut = true)
     {
-        //Stores the total frams which need to be counted and the frames which have been counted
-        float totalFrames = fps * time;
-        float framesCounted = 0;
-
         //Stores the original text color
         Color startColor = text.color;
 
         //Stores the amount which the levelBar should be changed by each frame
-        float differencePerFrame = 1 / totalFrames * (fadeOut ? -1 : 1);
+        float differencePerFrame = (fadeOut ? -1 : 1) / GetFrames(time);
 
-        while(framesCounted < totalFrames)
+        //Stores the amount of time that has passed
+        float timeCount = 0f;
+
+        while (timeCount < time)
         {
             //Changes the opacity of the text
             text.color = text.color + new Color(0, 0, 0, differencePerFrame);
 
             //Increments the frame counter and waits the required amount of time
-            framesCounted++;
-            yield return new WaitForSeconds(waitTime);
+            timeCount += Time.fixedDeltaTime;
+            yield return new WaitForSeconds(Time.fixedDeltaTime);
         }
 
         //Sets the text color to the final value, in case it is off by a bit

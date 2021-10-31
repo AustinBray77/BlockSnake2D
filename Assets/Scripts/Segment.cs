@@ -13,6 +13,14 @@ public class Segment : MonoBehaviour
     private BoxCollider2D _collider;
     private bool canCollide;
 
+    //Stores the previous transforms of the segment
+    private Queue<Vector3> positions;
+    private Queue<Vector3> rotations;
+
+    //Variables to store when the player should begin dequeuing the transforms
+    private float timeCounter;
+    private bool beginDequeing;
+
     //Called on the objects instantiation
     private void Awake()
     {
@@ -20,60 +28,55 @@ public class Segment : MonoBehaviour
         _collider = GetComponent<BoxCollider2D>();
         canCollide = false;
         _collider.size = new Vector2(0, 0);
+
+        positions = new Queue<Vector3>();
+        rotations = new Queue<Vector3>();
+
+        timeCounter = 0;
+        beginDequeing = false;
     }
 
     //Method called to set the movement of the segment
-    public void SetMovement(Vector3 previousPosition, Vector3 previousRotation, float turnDelay)
+    public void SetMovement(Vector3 previousPosition, Vector3 previousRotation)
     {
-        //Triggers if the segment has a segment after it
-        if (segmentAfter != null)
-        {
-            //Moves the segment after it
-            StartCoroutine(MoveNext(transform.position - (transform.right * 1.5f), transform.rotation.eulerAngles, turnDelay));
-        }
+
+        //Waits the turn delay before dequeing the tranforms
+        if (!beginDequeing)
+            timeCounter += Time.deltaTime;
+
+        if (timeCounter >= Refrence.player.turnDelay)
+            beginDequeing = true;
 
         //Sets the rotation and position
         transform.rotation = Quaternion.Euler(previousRotation);
         transform.position = previousPosition;
 
+        //Saves the transforms
+        positions.Enqueue(previousPosition);
+        rotations.Enqueue(previousRotation);
+
+        //Triggers if the current transform should be popped
+        if (beginDequeing)
+        {
+            //Gets the rotation and position from a certain time peroid ago
+            Vector3 curPos = positions.Dequeue();
+            Vector3 curRot = rotations.Dequeue();
+
+            //Triggers if there is a segment after
+            if (segmentAfter != null)
+            {
+                //Sets the segments movement
+                segmentAfter.SetMovement(curPos + -1.5f * Vector3.right, curRot);
+            }
+        }
+
         //Triggers if the segment was not yet set to collide
-        if(!canCollide)
+        if (!canCollide)
         {
             //Allows the segment to collide, and sizes the collider
             canCollide = true;
             _collider.size = new Vector2(1, 1);
             _collider.offset = new Vector2(0, 0);
-        }
-    }
-
-    //Enumerator to move the segment after this segment
-    private IEnumerator MoveNext(Vector3 position, Vector3 rotation, float turnDelay)
-    {
-        //Variable to count the time
-        float time = 0;
-
-        //Waits for turn delay seconds
-        while (time < turnDelay)
-        {
-            //Adds a set amount of time to time and waits the time
-            time += Time.fixedDeltaTime;
-            yield return new WaitForSeconds(Time.fixedDeltaTime);
-
-            //If the player is at finish, wait until they aren't
-            yield return new WaitUntil(() => { return !Player.isAtFinish; });
-
-            //If the player removes the segment after this one while at the finish, break out of the loop
-            if (segmentAfter == null)
-            {
-                break;
-            }
-        }
-
-        //Triggers if there is still a segment after this one
-        if (segmentAfter != null)
-        {
-            //Sets the movement of the segment after this one
-            segmentAfter.SetMovement(position, rotation, turnDelay);
         }
     }
 

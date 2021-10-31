@@ -6,7 +6,7 @@ using UnityEngine;
 public class DebugExtras : MonoBehaviour
 {
     //Method called on each frame
-    void Update()
+    void FixedUpdate()
     {
         //Returns if the platform is not set to debug
         if (Gamemode.platform != Gamemode.Platform.Debug)
