@@ -16,6 +16,7 @@ public class Refrence : MonoBehaviour
     [SerializeField] private Finish_UI _finishUI;
     [SerializeField] private Shop_UI _shopUI;
     [SerializeField] private Start_UI _startUI;
+    [SerializeField] private Settings_UI _settingsUI;
     [SerializeField] private AdManager _adManager;
     [SerializeField] private Card[] _cardTypes;
     [SerializeField] private Skin _baseSkin;
@@ -25,12 +26,14 @@ public class Refrence : MonoBehaviour
     public static Generator gen;
     public static Destroyer des;
     public static Camera cam;
+    public static CameraController camController;
     public static BorderWall wallTop, wallBottom;
     public static Death_UI deathUI;
     public static Game_UI gameUI;
     public static Finish_UI finishUI;
     public static Shop_UI shopUI;
     public static Start_UI startUI;
+    public static Settings_UI settingsUI;
     public static AdManager adManager;
     public static Card[] cardTypes;
 
@@ -42,6 +45,7 @@ public class Refrence : MonoBehaviour
         gen = _gen;
         des = _des;
         cam = _cam;
+        camController = _cam.GetComponent<CameraController>();
         wallTop = _wallTop;
         wallBottom = _wallBottom;
         deathUI = _deathUI;
@@ -49,6 +53,7 @@ public class Refrence : MonoBehaviour
         finishUI = _finishUI;
         shopUI = _shopUI;
         startUI = _startUI;
+        settingsUI = _settingsUI;
         adManager = _adManager;
         cardTypes = _cardTypes;
     }

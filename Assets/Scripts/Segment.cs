@@ -24,6 +24,10 @@ public class Segment : MonoBehaviour
     //Called on the objects instantiation
     private void Awake()
     {
+        //Animates the segment instantiation
+        gameObject.transform.localScale = new Vector2(0, 0);
+        gameObject.LeanScale(new Vector2(1, 1), 1f);
+
         //Sets the default values for the collider
         _collider = GetComponent<BoxCollider2D>();
         canCollide = false;
@@ -39,7 +43,6 @@ public class Segment : MonoBehaviour
     //Method called to set the movement of the segment
     public void SetMovement(Vector3 previousPosition, Vector3 previousRotation)
     {
-
         //Waits the turn delay before dequeing the tranforms
         if (!beginDequeing)
             timeCounter += Time.deltaTime;
@@ -80,10 +83,24 @@ public class Segment : MonoBehaviour
         }
     }
 
-    //Method called on the gameobjects destruction
-    public void OnDestroy()
+    //Stops all the movement in the segment
+    public void StopMovement()
     {
-        //Stops all the coroutines
-        StopAllCoroutines();
+        //Sets movement values to default
+        positions = new Queue<Vector3>();
+        rotations = new Queue<Vector3>();
+        beginDequeing = false;
+        timeCounter = 0;
+    }
+
+    //Method called to destroy the segment
+    public IEnumerator DestroySegment()
+    {
+        //Animates the shrinkage of the segment
+        gameObject.LeanScale(new Vector2(0, 0), 1f);
+        yield return new WaitForSeconds(1);
+
+        //Destroys the segment
+        Destroy(gameObject);
     }
 }

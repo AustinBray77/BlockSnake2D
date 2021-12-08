@@ -21,11 +21,18 @@ public class Shop_UI : UI
     public static int activeSkinCard = 0;
 
     //Method called after the scene loads
-    public void DelayedStart()
+    public void Start()
     {
         //Assigns the static refrence for skins and sets the gear text to the current gear count
         skins = _skins;
-        gearText.text = Serializer.activeData.gearCount.ToString();
+        StartCoroutine(SetGearText());
+    }
+
+    //Sets the text after the serializer is assigned
+    private IEnumerator SetGearText()
+    {
+        yield return new WaitUntil(() => { return Serializer.activeData != null; });
+        gearText.text = Serializer.activeData.gearCount.ToString(); 
     }
 
     //Method called when the UI is to show

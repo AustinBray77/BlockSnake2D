@@ -24,8 +24,8 @@ public class BorderWall : MonoBehaviour
             if (backup + amount > 0)
             {
                 //Changes the position and size so the wall is just on the border of the screen
-                transform.position += new Vector3(0, (backup + amount) * Player.increaseFactor * (transform.position.y < 0 ? -1 : 1));
-                transform.localScale += new Vector3(4 * Player.increaseFactor * (16 / 9) * (backup + amount), 0);
+                gameObject.LeanMove(transform.position + new Vector3(0, (backup + amount) * Player.increaseFactor * (transform.position.y < 0 ? -1 : 1)), amount);
+                transform.localScale += new Vector3(4 * Player.increaseFactor * (Screen.width / Screen.height) * (backup + amount), 0);
 
                 //Resets backup
                 backup = 0;
@@ -39,8 +39,8 @@ public class BorderWall : MonoBehaviour
         //Else just adds the amount and changes the position and size by the desired amount
         else
         {
-            transform.position += new Vector3(0, amount * Player.increaseFactor * (transform.position.y < 0 ? -1 : 1));
-            transform.localScale += new Vector3(4 * Player.increaseFactor * (16 / 9) * amount, 0);
+            gameObject.LeanMove(transform.position + new Vector3(0, (backup + amount) * Player.increaseFactor * (transform.position.y < 0 ? -1 : 1)), amount);
+            transform.localScale += new Vector3(4 * Player.increaseFactor * (Screen.width / Screen.height) * (backup + amount), 0);
         }
     }
 

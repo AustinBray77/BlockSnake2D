@@ -48,8 +48,12 @@ public class Death_UI : UI
     {
         levelBarAnimationFinished = false;
 
+        //Calculates the length of the animation
+        float time = Level.XPToLevel(Player.level.xp) - Serializer.activeData.level.level > 0 ?
+            Level.XPToLevel(Player.level.xp) - Serializer.activeData.level.level : Serializer.activeData.level.xp / Player.level.xp;
+
         //Animates the level bar
-        yield return StartCoroutine(AnimationPlus.AnimateLevelBar(levelBar, Serializer.activeData.level.level, Player.level.xp, 5f));
+        yield return StartCoroutine(AnimationPlus.AnimateLevelBar(levelBar, Serializer.activeData.level.level, Player.level.xp, time));
 
         //Saves the players level
         Serializer.activeData.SetLevel(Player.level);

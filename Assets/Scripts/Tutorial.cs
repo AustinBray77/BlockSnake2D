@@ -24,6 +24,9 @@ public class Tutorial : MonoBehaviour
     //Stores the total keycount at the start
     private int startKeyCount;
 
+    //Stores the current fade in and out coroutines.
+    private Coroutine curFadeIn, curFadeOut;
+
     //Method called on scene load
     private void Start()
     {
@@ -62,13 +65,19 @@ public class Tutorial : MonoBehaviour
             {
                 //Removes it and iterates and animates to the next text
                 nextKey.RemoveAt(0);
-                StartCoroutine(AnimationPlus.FadeText(nextText[0], 2f));
+                
+                if(curFadeIn != null)
+                {
+                    StopCoroutine(curFadeIn);
+                }
+
+                curFadeOut = StartCoroutine(AnimationPlus.FadeText(nextText[0], 2f));
                 nextText.RemoveAt(0);
 
                 //Checks that there is a next text, fades in the next text if there is
                 if (nextText.Count >= 1)
                 {
-                    StartCoroutine(AnimationPlus.FadeText(nextText[0], 2f, false));
+                    curFadeIn = StartCoroutine(AnimationPlus.FadeText(nextText[0], 2f, false));
                 }
 
                 //Triggers after the W and S key have been hit

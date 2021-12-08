@@ -166,4 +166,15 @@ public class FinishObject : Object
         Refrence.finishUI.GetComponent<Finish_UI>().Hide();
         Refrence.player.lastUpgraded = Refrence.cardTypes[cardIndex];
     }
+
+    //Adds a shield to the player
+    public void Card_AddShield(int cardIndex)
+    {
+        //Adds the shields to the player
+        Refrence.player.AddShields((int)Refrence.cardTypes[cardIndex].value);
+
+        //Hides the Finish UI and sets the last upgraded card to the selected card
+        Refrence.finishUI.GetComponent<Finish_UI>().Hide();
+        Refrence.player.lastUpgraded = Refrence.cardTypes[cardIndex];
+    }
 }

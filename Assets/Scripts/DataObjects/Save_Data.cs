@@ -2,21 +2,23 @@
 [System.Serializable]
 class Save_Data
 {
-    //Properties to store the active skin, purchased skins, level, gearcount, and highscore
+    //Properties to store the active skin, purchased skins, level, gearcount, highscore, and settings
     public int activeSkin { get; private set; }
     public bool[] purchasedSkins { get; private set; }
     public Level level { get; private set; }
     public int gearCount { get; private set; }
     public int highScore { get; private set; }
+    public Settings_Data settings { get; private set; }
 
     //Default constructor
-    public Save_Data(int _activeSkin, bool[] _purchasedSkins, Level _level, int _gearCount, int _highScore)
+    public Save_Data(int _activeSkin, bool[] _purchasedSkins, Level _level, int _gearCount, int _highScore, Settings_Data _settings)
     {
         activeSkin = _activeSkin;
         purchasedSkins = _purchasedSkins;
         level = _level;
         gearCount = _gearCount;
         highScore = _highScore;
+        settings = _settings;
     }
 
     //Public setters for instance variables
@@ -43,4 +45,8 @@ class Save_Data
         gearCount -= gearPrice;
         purchasedSkins[index] = true;
     }
+
+    //Method to set the settings
+    public void SetSettings(Settings_Data _settings) =>
+        settings = _settings;
 }

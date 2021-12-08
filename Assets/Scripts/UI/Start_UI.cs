@@ -7,18 +7,24 @@ using UnityEngine.SceneManagement;
 //Class to contorl the start UI
 public class Start_UI : UI
 {
-    //Called when the scene is loaded
-    public void Start()
-    {
-        //Fades in
-        StartCoroutine(AnimationPlus.FadeToColor(fadePanel, new Color(0, 0, 0, 0), fadeTime, false));
+    [SerializeField] private GameObject loadingText;
 
+    //Called on object instation, before start
+    public void Awake()
+    {
         //Loads the data if no save data is currently present
         if (Serializer.activeData == null)
+        {
+            //Shows then hides the loading text
+            loadingText.SetActive(true);
             Serializer.LoadData();
+            loadingText.SetActive(false);
+        }
 
-        //Starts the shop UI
-        Refrence.shopUI.DelayedStart();
+        //Fades in
+        fadePanel.gameObject.SetActive(true);
+        fadePanel.color = new Color(0, 0, 0, 1);
+        StartCoroutine(AnimationPlus.FadeToColor(fadePanel, new Color(0, 0, 0, 0), fadeTime, false));
     }
 
     //Functions which are called on botton clicks
@@ -52,6 +58,17 @@ public class Start_UI : UI
              () => {
                  SceneManager.LoadScene("Tutorial", LoadSceneMode.Single);
              }, fadeTime, true));
+    }
+
+    //Called when the user clicks to enter the settings
+    public void Click_Settings()
+    {
+        //Loads the settings scree with fade
+        StartCoroutine(ClickWithFade(
+            () => {
+                Refrence.settingsUI.Show();
+                Hide();
+            }, fadeTime));
     }
 
     //Called when the user clicks to quit

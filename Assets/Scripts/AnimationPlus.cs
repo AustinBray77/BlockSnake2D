@@ -7,15 +7,12 @@ using TMPro;
 //Class used to store more animations
 public static class AnimationPlus
 {
-    //Calculates the number of frames for a given time
-    public static float GetFrames(float time) =>
-        Mathf.Round(time / Time.fixedDeltaTime);
 
     //Method to fade an image to a color
     public static IEnumerator FadeToColor(Image img, Color endColor, float time, bool stateAfterCall = true)
     {
         //Stores the amount of color which the image should be changed by each frame
-        Color differencePerFrame = (endColor - img.color) / GetFrames(time);
+        Color differencePerSecond = (endColor - img.color) / time;
 
         //Stores the amount of time that has passed
         float timeCount = 0f;
@@ -23,12 +20,15 @@ public static class AnimationPlus
         //Loops while frames still need to be counted
         while(timeCount < time)
         {
+            //Gets the time the passed
+            float timePassed = Time.deltaTime;
+
             //Changes the images color
-            img.color += differencePerFrame;
+            img.color += differencePerSecond * timePassed;
 
             //Increments the frame counter and waits the required amount of time
-            timeCount += Time.fixedDeltaTime;
-            yield return new WaitForSeconds(Time.fixedDeltaTime);
+            timeCount += timePassed;
+            yield return new WaitForEndOfFrame();
         }
 
         //Sets the image color to the final color, in case it is off by a bit
@@ -42,7 +42,7 @@ public static class AnimationPlus
     public static IEnumerator AnimateLevelBar(UI.LevelBar levelBar, int lowerLevel, float endVal, float time)
     {
         //Stores the amount which the levelBar should be changed by each frame
-        float differencePerFrame = (endVal - levelBar.levelBar.value) / GetFrames(time);
+        float differencePerSecond = (endVal - levelBar.levelBar.value) / time;
 
         //Stores the amount of time that has passed
         float timeCount = 0f;
@@ -50,8 +50,11 @@ public static class AnimationPlus
         //Loops while frames still need to be counted
         while (timeCount < time)
         {
+            //Gets the time the passed
+            float timePassed = Time.deltaTime;
+
             //Changes the level bar value
-            levelBar.levelBar.value += differencePerFrame;
+            levelBar.levelBar.value += differencePerSecond * timePassed;
             
             //Triggers if the player should level up and the level has to change on the level bar
             if(levelBar.levelBar.value >= levelBar.levelBar.maxValue)
@@ -66,8 +69,8 @@ public static class AnimationPlus
             }
 
             //Increments the frame counter and waits the required amount of time
-            timeCount += Time.fixedDeltaTime;
-            yield return new WaitForSeconds(Time.fixedDeltaTime);
+            timeCount += timePassed;
+            yield return new WaitForEndOfFrame();
         }
 
         //Sets the image color to the final value, in case it is off by a bit
@@ -81,22 +84,54 @@ public static class AnimationPlus
         Color startColor = text.color;
 
         //Stores the amount which the levelBar should be changed by each frame
-        float differencePerFrame = (fadeOut ? -1 : 1) / GetFrames(time);
+        float differencePerSecond = (fadeOut ? -1 : 1) / time;
 
         //Stores the amount of time that has passed
         float timeCount = 0f;
 
         while (timeCount < time)
         {
+            //Gets the time the passed
+            float timePassed = Time.deltaTime;
+
             //Changes the opacity of the text
-            text.color = text.color + new Color(0, 0, 0, differencePerFrame);
+            text.color = text.color + new Color(0, 0, 0, differencePerSecond * timePassed);
 
             //Increments the frame counter and waits the required amount of time
-            timeCount += Time.fixedDeltaTime;
-            yield return new WaitForSeconds(Time.fixedDeltaTime);
+            timeCount += timePassed;
+            yield return new WaitForEndOfFrame();
         }
 
         //Sets the text color to the final value, in case it is off by a bit
         text.color = startColor + new Color(0, 0, 0, (fadeOut ? -1 : 1));
+    }
+
+    //Method called to zoom the camera in or out
+    public static IEnumerator ZoomOutOrthagraphic(Camera cam, float time, float endSize)
+    {
+        //Stores the original orthagraphic size
+        float startSize = cam.orthographicSize;
+
+        //Stores the amount which the camera should zoom out perframe
+        float differencePerSecond = (endSize - startSize) / time;
+
+        //Stores the amount of time that has passed
+        float timeCount = 0f;
+
+        while (timeCount < time)
+        {
+            //Gets the time the passed
+            float timePassed = Time.deltaTime;
+
+            //Changes the opacity of the text
+            cam.orthographicSize += differencePerSecond * timePassed;
+
+            //Increments the frame counter and waits the required amount of time
+            timeCount += timePassed;
+            yield return new WaitForEndOfFrame();
+        }
+
+        //Sets the orthagraphic size to the final value, in case it is off by a bit
+        cam.orthographicSize = endSize;
     }
 }

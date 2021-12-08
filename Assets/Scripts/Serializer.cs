@@ -18,7 +18,7 @@ static class Serializer
     //Method called to save the data to the hardware
     public static void SaveData()
     {
-        Debug.Log(fileName);
+        //Debug.Log(fileName);
 
         //Creates a new object to format the data into binary
         BinaryFormatter bf = new BinaryFormatter();
@@ -39,7 +39,7 @@ static class Serializer
         //Triggers if the file exists at the persistent data path
         if (File.Exists(fileName))
         {
-            Debug.Log("Save loaded");
+            //Debug.Log("Save loaded");
 
             //Creates a new object to format the binary data into game data
             BinaryFormatter bf = new BinaryFormatter();
@@ -59,7 +59,7 @@ static class Serializer
         //Else no save file was found
         else
         {
-            Debug.LogWarning("File does not exist - Loading base save data");
+            //Debug.LogWarning("File does not exist - Loading base save data");
 
             //Sets the save data to the default value
             ResetData();
@@ -74,6 +74,6 @@ static class Serializer
         purchased[0] = true;
 
         //Creates new save data with default values and sets active data to it
-        activeData = new Save_Data(0, purchased, new Level(0), 0, 0);
+        activeData = new Save_Data(0, purchased, new Level(0), 0, 0, new Settings_Data(QualityController.QualityLevel.Fast, false, true));
     }
 }

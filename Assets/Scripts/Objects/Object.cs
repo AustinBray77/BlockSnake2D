@@ -25,7 +25,7 @@ public abstract class Object : MonoBehaviour
     }
 
     //Method called on each frame
-    private void FixedUpdate()
+    private void Update()
     {
         //If the player isn't dead or at finish the object moves to the left at the assigned speed variable
         if (!Player.isDead && !Player.isAtFinish)
@@ -34,10 +34,10 @@ public abstract class Object : MonoBehaviour
         }
 
         //Allows for inherited classes to still call on each frame
-        ObjFixedUpdate();
+        ObjUpdate();
     }
 
     //Inhertied functions
     internal virtual void ObjAwake() { }
-    internal virtual void ObjFixedUpdate() { }
+    internal virtual void ObjUpdate() { }
 }

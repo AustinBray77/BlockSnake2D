@@ -47,7 +47,7 @@ public class Generator : MonoBehaviour
     {
         //Assigns the base data for all of the properties
         Object.speed = 5;
-        spawnSpeed = 4;
+        spawnSpeed = 2;
         bounds = 10;
         backup = 0;
         finishesOnScreen = new List<FinishObject>();
@@ -270,8 +270,8 @@ public class Generator : MonoBehaviour
             while (time < spawnSpeed)
             {
                 //Adds a set amount of time to time and waits the time
-                time += Time.fixedDeltaTime;
-                yield return new WaitForSeconds(Time.fixedDeltaTime);
+                time += Time.deltaTime;
+                yield return new WaitForEndOfFrame();
 
                 //If the player is at a finish, wait until they arent
                 yield return new WaitUntil(() => { return !Player.isAtFinish; });
@@ -292,8 +292,8 @@ public class Generator : MonoBehaviour
             while (time < wait)
             {
                 //Adds a set amount of time to time and waits the time
-                time += Time.fixedDeltaTime;
-                yield return new WaitForSeconds(Time.fixedDeltaTime);
+                time += Time.deltaTime;
+                yield return new WaitForEndOfFrame();
 
                 //If the player is at a finish, wait until they arent
                 yield return new WaitUntil(() => { return !Player.isAtFinish; });
@@ -317,8 +317,8 @@ public class Generator : MonoBehaviour
             while (time < wait)
             {
                 //Adds a set amount of time to time and waits the time
-                time += Time.fixedDeltaTime;
-                yield return new WaitForSeconds(Time.fixedDeltaTime);
+                time += Time.deltaTime;
+                yield return new WaitForEndOfFrame();
 
                 //If the player is at a finish, wait until they arent
                 yield return new WaitUntil(() => { return !Player.isAtFinish; });
@@ -342,8 +342,8 @@ public class Generator : MonoBehaviour
             while (time < wait)
             {
                 //Adds a set amount of time to time and waits the time
-                time += Time.fixedDeltaTime;
-                yield return new WaitForSeconds(Time.fixedDeltaTime);
+                time += Time.deltaTime;
+                yield return new WaitForEndOfFrame();
 
                 //If the player is at a finish, wait until they arent
                 yield return new WaitUntil(() => { return !Player.isAtFinish; });
@@ -358,12 +358,12 @@ public class Generator : MonoBehaviour
     public Vector3Int GenPosition(List<Vector3Int> takenPositions)
     {
         //Randomly generates a postion
-        Vector3Int pos = new Vector3Int((int)transform.position.x, (int)Random.Range(-bounds, bounds), 0);
+        Vector3Int pos = new Vector3Int((int)transform.position.x - (int)Random.Range(0, 7.5f), (int)Random.Range(-bounds, bounds), 0);
 
         //Randomly generates a postion if the current one is taken (will be reworked as there is a possibility of stack overflow)
         while (takenPositions.Contains(pos))
         {
-            pos = new Vector3Int((int)transform.position.x, (int)Random.Range(-bounds, bounds), 0);
+            pos = new Vector3Int((int)transform.position.x - (int)Random.Range(0, 7.5f), (int)Random.Range(-bounds, bounds), 0);
         }
 
         //Returns the new position

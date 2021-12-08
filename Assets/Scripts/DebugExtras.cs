@@ -42,6 +42,20 @@ public class DebugExtras : MonoBehaviour
                 Player.gearCount += 10;
                 Debug.Log("10 Gears Added");
             }
+
+            //If the h key is hit, 1 shield is added to the player
+            if (Input.GetKeyDown(KeyCode.H))
+            {
+                Refrence.player.AddShields(1);
+                Debug.Log("1 Shield Added");
+            }
+
+            //If the v key is hit, 1 shield is used
+            if (Input.GetKeyDown(KeyCode.V))
+            {
+                Refrence.player.UseShield();
+                Debug.Log("1 Shield Used");
+            }
         }
 
         //If the R key is hit, the save game is reset

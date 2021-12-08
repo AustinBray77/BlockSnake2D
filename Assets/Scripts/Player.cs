@@ -8,10 +8,6 @@ using TMPro;
 [RequireComponent(typeof(Rigidbody2D))]
 public class Player : MonoBehaviour
 {
-    //Refrences to UI elements
-    [SerializeField] private TMP_Text scoreText; 
-    [SerializeField] private TMP_Text gearText; 
-
     //Refrences to the segments following the player
     [SerializeField] private Segment segmentAfter;
     [SerializeField] private Segment segmentLast;
@@ -65,6 +61,9 @@ public class Player : MonoBehaviour
     private float timeCounter;
     private bool beginDequeing;
 
+    //Variable to store the amount of shields the player has left
+    public int shieldCount;
+
     //Method called on scene load
     private void Start()
     {
@@ -81,12 +80,12 @@ public class Player : MonoBehaviour
         turnDelay = 0.2f;
         speed = 100000;
         rotSpeed = 10;
+        shieldCount = 0;
 
         if (!Gamemode.inLevel("Tutorial"))
         {
             gearCount = Serializer.activeData.gearCount;
             level = new Level(Serializer.activeData.level.xp);
-            gearText.text = gearCount.ToString();
         }
 
         GetComponent<SpriteRenderer>().sprite = activeSkin.frontSprite;
@@ -100,11 +99,11 @@ public class Player : MonoBehaviour
     }
 
     //Method called on each frame
-    private void FixedUpdate()
+    private void Update()
     {
         //Waits the turn delay before dequeing the tranforms
         if (!beginDequeing)
-            timeCounter += Time.fixedDeltaTime;
+            timeCounter += Time.deltaTime;
 
         if (timeCounter >= turnDelay)
             beginDequeing = true;
@@ -204,8 +203,15 @@ public class Player : MonoBehaviour
     //Method called when the player is to be killed
     public void KillPlayer()
     {
+        //Uses shield if the player has one
+        if(shieldCount >= 1)
+        {
+            UseShield();
+            return;
+        }
+
         //Stops all couroutines in the following segments
-        StopAllSegmentCoroutines();
+        StopAllMovement();
 
         //Triggers if not in the tutorial
         if (!Gamemode.inLevel("Tutorial"))
@@ -262,7 +268,7 @@ public class Player : MonoBehaviour
 
         //Shows the game UI, sets the score text, and sets is dead to false
         Refrence.gameUI.Show();
-        scoreText.text = score.ToString();
+        Refrence.gameUI.UpdateScore(score);
         isDead = false;
     }
 
@@ -293,7 +299,7 @@ public class Player : MonoBehaviour
         }
 
         //Sets the gear text to the current gear count
-        gearText.text = gearCount.ToString();
+        Refrence.gameUI.UpdateGearCount(gearCount);
 
         //Adds XP
         level.AddXP(amount);
@@ -306,7 +312,7 @@ public class Player : MonoBehaviour
         score += add;
 
         //Sets the score text to the current score
-        scoreText.text = score.ToString();
+        Refrence.gameUI.UpdateScore(score);
 
         //Triggers if not in the tutorial
         if (!Gamemode.inLevel("Tutorial"))
@@ -346,31 +352,8 @@ public class Player : MonoBehaviour
             Object.speed *= 1.01f;
         }
 
-        //Triggers if the camera should wait iterations
-        if (camBackup != 0)
-        {
-            //Triggers if that iteration amount is less than the amount of segments added
-            if (camBackup + add > 0)
-            {
-                //Changes the screen size of the camera
-                Refrence.cam.orthographicSize += increaseFactor *  (camBackup + add);
-
-                //Resets the backup
-                camBackup = 0;
-            }
-            //Else deiterates the backup by the amount of segments added
-            else
-            {
-                camBackup += add;
-            }
-        }
-        //Else changes the screen size of the camera by the desired amount
-        else
-        {
-            Refrence.cam.orthographicSize += increaseFactor * add;
-        }
-
         //Calls on segment change in the other objects
+        Refrence.camController.OnSegmentChange(add);
         Refrence.gen.OnSegmentChange(add);
         Refrence.des.OnSegmentChange(add);
         Refrence.wallTop.OnSegmentChange(add);
@@ -406,8 +389,7 @@ public class Player : MonoBehaviour
         //Loops to remove the amount of segments
         for(int i = Mathf.Max(0, segmentList.Count - remove); i < segmentList.Count; i++, amountRemoved++)
         {
-            //Destroys the segment
-            Destroy(segmentList[i].gameObject);
+            StartCoroutine(segmentList[i].DestroySegment());
         }
 
         //Triggers if there are still segments left
@@ -458,33 +440,36 @@ public class Player : MonoBehaviour
         }
     }
 
-    //Method called to stop all coroutines in the segments
-    private void StopAllSegmentCoroutines(Segment segment = null)
+    //Method called to stop the movement in all in the segments
+    private void StopAllMovement(Segment segment = null)
     {
         //Triggers if no segment is passed as a parameter
         if(segment == null)
         {
-            //Stops all the coroutines in the player
-            StopAllCoroutines();
+            //Stops the movement in the player
+            positions = new Queue<Vector3>();
+            rotations = new Queue<Vector3>();
+            beginDequeing = false;
+            timeCounter = 0;
 
             //Triggers if the player has a segment
             if (segmentAfter != null)
             {
                 //Recursises using that segment
-                StopAllSegmentCoroutines(segmentAfter);
+                StopAllMovement(segmentAfter);
             }
         } 
         //Else triggers if a segment was passed
         else
         {
-            //Stops all coroutines in the segment
-            segment.StopAllCoroutines();
+            //Stops the movement in the segment
+            segment.StopMovement();
 
             //Triggers if the segment has a segment after it
             if(segment.segmentAfter != null)
             {
                 //Recursises using that segment
-                StopAllSegmentCoroutines(segment.segmentAfter);
+                StopAllMovement(segment.segmentAfter);
             }
         }
     }
@@ -510,4 +495,20 @@ public class Player : MonoBehaviour
     //Method called to get which of the current control buttons are being pressed down
     public bool[] GetControls() =>
         moveArr;
+
+    //Method called to add shields to the player
+    public void AddShields(int count)
+    {
+        //Adds shields and updates the UI
+        shieldCount += count;
+        Refrence.gameUI.UpdateShieldCount(shieldCount);
+    }
+
+    //Method called when the player uses a shield instead of dying
+    public void UseShield()
+    {
+        //Removes a shield and updates the UI
+        shieldCount--;
+        Refrence.gameUI.UpdateShieldCount(shieldCount);
+    }
 }
