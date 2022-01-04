@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 //Class to control the generator obejct which generates objects
@@ -18,10 +19,7 @@ public class Generator : MonoBehaviour
     //Stores the amount of eacch object to be spawned, what they were at the last finish, and the counter at the last finish
     private int[] scoreCounts, damageCounts;
     private int[] scoreCountsAtLastFinish, damageCountsAtLastFinish;
-    private int counterAtLastFinishSpawn;
-
-    //Stores the offset of how many iterations it should wait before moving again, { backup <= 0 }
-    public int backup;
+    private int counterAtLastFinishEnter;
 
     //Stores the spawn speed and the data of the last finish the player hit (used for respawning)
     public float spawnSpeed;
@@ -31,9 +29,24 @@ public class Generator : MonoBehaviour
     private static float bounds;
     private List<FinishObject> finishesOnScreen;
 
+    //Stores the relative speed the gen should operate at
+    private static float relativeSpeed;
+
+    //Stores each object on screen
+    private List<Object> objects;
+    private List<Parallax_Object> parallax_Objects;
+
+    [SerializeField] private GameObject startingParallax;
+
+    Vector3 constantPosition;
+    float destroyerPosition;
+
     //Method called on scene load
     private void Start()
     {
+        objects = new List<Object>();
+        parallax_Objects = new List<Parallax_Object>();
+
         //Returns if currently in the tutorial
         if (Gamemode.inLevel("Tutorial"))
             return;
@@ -49,17 +62,54 @@ public class Generator : MonoBehaviour
         Object.speed = 5;
         spawnSpeed = 2;
         bounds = 10;
-        backup = 0;
         finishesOnScreen = new List<FinishObject>();
         lastFinish = null;
         scoreCounts = new int[scorePrefabs.Length];
         scoreCounts[0] = 1;
         damageCounts = new int[damagePrefabs.Length];
-        counterAtLastFinishSpawn = 0;
+        counterAtLastFinishEnter = 0;
+        relativeSpeed = 1;
+        destroyerPosition = -transform.position.x;
+
+        UpdateConstantPosition();
+
+        if (startingParallax != null)
+        {
+            parallax_Objects = startingParallax.GetComponentsInChildren<Parallax_Object>().ToList();
+        }
 
         //Starts the object generation and parallax generation
         StartCoroutine(Generate(false));
         StartParallax();
+    }
+
+    private void Update()
+    {
+        if (!Player.isDead && !Player.isAtFinish)
+        {
+            if (objects.Count >= 1)
+            {
+                while (objects[0].transform.position.x <= destroyerPosition)
+                {
+                    Destroy(objects[0].gameObject);
+
+                    if (objects[0].gameObject.name.Contains("Finish"))
+                    {
+                        OnFinishDestroyed();
+                    }
+
+                    objects.RemoveAt(0);
+
+                    if (objects.Count <= 0)
+                    {
+                        break;
+                    }
+                }
+            }
+
+            transform.position += new Vector3(Object.speed * Time.deltaTime * relativeSpeed, 0);
+            destroyerPosition += Object.speed * Time.deltaTime * relativeSpeed;
+        }
     }
 
     //Method called when the player respawns
@@ -68,20 +118,16 @@ public class Generator : MonoBehaviour
         //Destroys all objects on screen
         DestroyAllObjects();
 
-        //Calls the base start function if the player never reached a finish / check point.
-        if (lastFinish == null)
-        {
-            Start();
-            return;
-        }
-
         //Resets the damage and score counts
         scoreCounts = scoreCountsAtLastFinish;
         damageCounts = damageCountsAtLastFinish;
 
         //Creates the new finish for the player to spawn into
         GameObject nextFinish = Instantiate(finishPrefab, new Vector3(transform.position.x, 0), transform.rotation);
-        nextFinish.GetComponent<FinishObject>().SetData(lastFinish);
+        FinishObject finishObject = nextFinish.GetComponent<FinishObject>();
+        finishObject.SetData(lastFinish);
+        finishesOnScreen.Add(finishObject);
+        objects.Add(finishObject);
 
         //Starts the object generation and parallax generation
         StartCoroutine(Generate(true));
@@ -100,43 +146,16 @@ public class Generator : MonoBehaviour
     //Method called when segments are added or removed from the player, used for controling the scene scale
     public void OnSegmentChange(int amount)
     {
-        //Triggers if the destroyer should wait an amount of iterations
-        if (backup != 0)
+        //Changes the position and bounds so the generator is just of to the right
+        transform.position += new Vector3(Player.increaseFactor * Refrence.cam.aspect * amount, 0);
+        destroyerPosition -= Player.increaseFactor * Refrence.cam.aspect * amount;
+        UpdateConstantPosition();
+        bounds += Player.increaseFactor * amount;
+
+        //Decreases the delay between spawns
+        for (int i = 0; i < amount; i++)
         {
-            //Triggers if that iteration amount is less than the amount of segments added
-            if (backup + amount > 0)
-            {
-                //Changes the position and bounds so the generator is just of to the right
-                transform.position += new Vector3(Player.increaseFactor * 2 * (backup + amount), 0);
-                bounds += Player.increaseFactor * (backup + amount);
-
-                //Decreases the delay between spawns
-                for (int i = 0; i < (backup + amount); i++)
-                {
-                    spawnSpeed /= 1.01f;
-                }
-
-                //Resets backup
-                backup = 0;
-            }
-            //Else just uniterates backup by the amount
-            else
-            {
-                backup += amount;
-            }
-        }
-        //Else just changes the position and bounds so the generator is just of to the right
-        else
-        {
-            //Changes the position and bounds so the generator is just of to the right
-            transform.position += new Vector3(Player.increaseFactor * 2 * amount, 0);
-            bounds += Player.increaseFactor * amount;
-
-            //Decreases the delay between spawns
-            for (int i = 0; i < amount; i++)
-            {
-                spawnSpeed /= 1.01f;
-            }
+            spawnSpeed /= 1.01f;
         }
 
         //Triggers if there is a finish on screen
@@ -145,7 +164,7 @@ public class Generator : MonoBehaviour
             //Generates all of the finishes as the bounds have changed
             foreach (FinishObject finish in finishesOnScreen)
             {
-                finish.Generate();
+                finish.Generate(false, amount);
             }
         }
     }
@@ -153,11 +172,14 @@ public class Generator : MonoBehaviour
     //Method called when the player enters a finish
     public void OnPlayerEnterFinish(FinishObject obj)
     {
-        //Saves the score counts, damage counts, counter, and finish object data
-        scoreCountsAtLastFinish = scoreCounts;
-        damageCountsAtLastFinish = damageCounts;
-        counterAtLastFinishSpawn = obj.spawnIndex + 1;
-        lastFinish = obj.ToData(); 
+        //Deep Saves the score counts, damage counts, counter, and finish object data
+        scoreCountsAtLastFinish = (int[])scoreCounts.Clone();
+        damageCountsAtLastFinish = (int[])damageCounts.Clone();
+        counterAtLastFinishEnter = obj.spawnIndex + 1;
+        lastFinish = obj.ToData();
+
+        //Debugging
+        //Debug.Log(counterAtLastFinishEnter);
     }
 
     //Method called when the player dies
@@ -185,15 +207,15 @@ public class Generator : MonoBehaviour
         while (time < spawnSpeed && waitFirst)
         {
             //Adds a set amount of time to time and waits the time
-            time += Time.fixedDeltaTime;
-            yield return new WaitForSeconds(Time.fixedDeltaTime);
+            time += Time.deltaTime;
+            yield return new WaitForEndOfFrame();
 
             //If the player is at a finish, wait until they arent
-            yield return new WaitUntil(() => { return !Player.isAtFinish; });
+            yield return new WaitUntil(() => !Player.isAtFinish);
         }
 
         //Loops until the coroutine is cancelled (when the player dies)
-        for (int i = counterAtLastFinishSpawn; true; i++)
+        for (int i = counterAtLastFinishEnter; true; i++)
         {
             List<Vector3Int> positions = new List<Vector3Int>();
 
@@ -204,7 +226,9 @@ public class Generator : MonoBehaviour
                 Vector3Int pos = GenPosition(positions);
                 positions.Add(pos);
                 GameObject fObj = Instantiate(finishPrefab, pos, transform.rotation);
-                finishesOnScreen.Add(fObj.GetComponent<FinishObject>());
+                FinishObject finishObject = fObj.GetComponent<FinishObject>();
+                objects.Add(finishObject);
+                finishesOnScreen.Add(finishObject);
                 finishesOnScreen[0].spawnIndex = i;
 
                 //Adds 1 to the apple and spike counts if they are less than their max
@@ -218,7 +242,7 @@ public class Generator : MonoBehaviour
                     damageCounts[1] += damageCounts[1] == damagePrefabs[1].maxOnScreen ? 0 : 1;
                 }
                 //Triggers if on a 30th iteration
-                if(i % 30 == 0)
+                if (i % 30 == 0)
                 {
                     //Adds 1 to the impostor and orange counts if they are less than their max
                     damageCounts[2] += damageCounts[2] == damagePrefabs[2].maxOnScreen ? 0 : 1;
@@ -228,7 +252,7 @@ public class Generator : MonoBehaviour
             else
             {
                 //Triggers if i is greater than 10 and on a 2nd iteration and not in the tutorial
-                if(i > 10 && i % 2 == 0 && !Gamemode.inLevel("Tutorial"))
+                if (i > 10 && i % 2 == 0 && !Gamemode.inLevel("Tutorial"))
                 {
                     //Spawns a gear
                     Vector3Int pos = GenPosition(positions);
@@ -237,10 +261,10 @@ public class Generator : MonoBehaviour
                 }
 
                 //Loops through each score count
-                for(int j = 0; j < scoreCounts.Length; j++)
+                for (int j = 0; j < scoreCounts.Length; j++)
                 {
                     //Loops for the score count
-                    for(int k = 0; k < scoreCounts[j]; k++)
+                    for (int k = 0; k < scoreCounts[j]; k++)
                     {
                         //Spawns the score object
                         Vector3Int pos = GenPosition(positions);
@@ -270,11 +294,11 @@ public class Generator : MonoBehaviour
             while (time < spawnSpeed)
             {
                 //Adds a set amount of time to time and waits the time
-                time += Time.deltaTime;
+                time += Time.deltaTime * relativeSpeed;
                 yield return new WaitForEndOfFrame();
 
                 //If the player is at a finish, wait until they arent
-                yield return new WaitUntil(() => { return !Player.isAtFinish; });
+                yield return new WaitUntil(() => !Player.isAtFinish);
             }
         }
     }
@@ -286,21 +310,21 @@ public class Generator : MonoBehaviour
         while (true)
         {
             //Variables for counting the time waited and the total time to wait
-            float time = 0, wait = Random.Range(3f, 4f);
+            float time = 0, wait = Random.Range(1f, 2f);
 
             //Waits for the current wait time
             while (time < wait)
             {
                 //Adds a set amount of time to time and waits the time
-                time += Time.deltaTime;
+                time += Time.deltaTime * relativeSpeed;
                 yield return new WaitForEndOfFrame();
 
                 //If the player is at a finish, wait until they arent
-                yield return new WaitUntil(() => { return !Player.isAtFinish; });
+                yield return new WaitUntil(() => !Player.isAtFinish);
             }
 
             //Spawns the front parallax object
-            Instantiate(frontStarPrefab, GenPosition(new List<Vector3Int>()), frontStarPrefab.transform.rotation);
+            SpawnParallax(frontStarPrefab, GenPosition(new List<Vector3Int>()));
         }
     }
 
@@ -311,21 +335,21 @@ public class Generator : MonoBehaviour
         while (true)
         {
             //Variables for counting the time waited and the total time to wait
-            float time = 0, wait = Random.Range(4f, 6f);
+            float time = 0, wait = Random.Range(2f, 3f);
 
             //Waits for the current wait time
             while (time < wait)
             {
                 //Adds a set amount of time to time and waits the time
-                time += Time.deltaTime;
+                time += Time.deltaTime * relativeSpeed;
                 yield return new WaitForEndOfFrame();
 
                 //If the player is at a finish, wait until they arent
-                yield return new WaitUntil(() => { return !Player.isAtFinish; });
+                yield return new WaitUntil(() => !Player.isAtFinish);
             }
 
             //Spawns the middle parallax object
-            Instantiate(middleStarPrefab, GenPosition(new List<Vector3Int>()), frontStarPrefab.transform.rotation);
+            SpawnParallax(middleStarPrefab, GenPosition(new List<Vector3Int>()));
         }
     }
 
@@ -336,21 +360,21 @@ public class Generator : MonoBehaviour
         while (true)
         {
             //Variables for counting the time waited and the total time to wait
-            float time = 0, wait = Random.Range(6f, 10f);
+            float time = 0, wait = Random.Range(3f, 5f);
 
             //Waits for the current wait time
             while (time < wait)
             {
                 //Adds a set amount of time to time and waits the time
-                time += Time.deltaTime;
+                time += Time.deltaTime * relativeSpeed;
                 yield return new WaitForEndOfFrame();
 
                 //If the player is at a finish, wait until they arent
-                yield return new WaitUntil(() => { return !Player.isAtFinish; });
+                yield return new WaitUntil(() => !Player.isAtFinish);
             }
 
             //Spawns the back parallax object
-            Instantiate(backStarPrefab, GenPosition(new List<Vector3Int>()), frontStarPrefab.transform.rotation);
+            SpawnParallax(backStarPrefab, GenPosition(new List<Vector3Int>()));
         }
     }
 
@@ -377,7 +401,7 @@ public class Generator : MonoBehaviour
         GameObject[] objs = GameObject.FindGameObjectsWithTag("Object");
 
         //Destroys all of the objectss
-        foreach(GameObject obj in objs)
+        foreach (GameObject obj in objs)
         {
             Destroy(obj);
         }
@@ -386,7 +410,26 @@ public class Generator : MonoBehaviour
     //Method called to spawn an object at a given position
     public GameObject SpawnObject(Object obj, Vector3 position)
     {
-        return Instantiate(obj.gameObject, position, transform.rotation);
+        GameObject gameObj = Instantiate(obj.gameObject, position, obj.transform.rotation);
+        objects.Add(gameObj.GetComponent<Object>());
+        return gameObj;
+    }
+
+    public void RemoveFrontObject()
+    {
+        objects.RemoveAt(0);
+    }
+
+    public GameObject SpawnParallax(GameObject obj, Vector3 position)
+    {
+        GameObject gameObj = Instantiate(obj, position, obj.transform.rotation);
+        parallax_Objects.Add(gameObj.GetComponent<Parallax_Object>());
+        return gameObj;
+    }
+
+    public void RemoveFrontParallax()
+    {
+        parallax_Objects.RemoveAt(0);
     }
 
     //Method called to get the bounds distance of the generator
@@ -396,4 +439,18 @@ public class Generator : MonoBehaviour
     //Method called to set the bounds of the generator
     public static void SetBounds(float val) =>
         bounds = val;
+
+    //Getter and Setter for relative speed
+    public static float GetRelativeSpeed() =>
+        relativeSpeed;
+
+    public static void SetRelativeSpeed(float _relativeSpeed) =>
+        relativeSpeed = _relativeSpeed;
+
+    private void UpdateConstantPosition() =>
+        constantPosition = transform.position;
+
+    public void SetDestroyerPosition(float x) =>
+        destroyerPosition = x;
+
 }

@@ -1,33 +1,34 @@
 using System;
 using System.IO;
-using System.Collections;
-using System.Collections.Generic;
+using System.Text;
 using System.Runtime.Serialization.Formatters.Binary;
 using UnityEngine;
+using EncryptorLIB;
 
 //Class to contorl the serilization and saving of the gane data
 static class Serializer
 {
+    //Key for encryption
+    public static string key => SystemInfo.deviceUniqueIdentifier;
     //Variable to store the game's data
     public static Save_Data activeData = null;
 
     //Property to calculate the data path to save to
-    static string fileName => 
+    static string fileName =>
         Application.persistentDataPath + "/blcksnk.bin";
 
     //Method called to save the data to the hardware
     public static void SaveData()
     {
-        //Debug.Log(fileName);
-
-        //Creates a new object to format the data into binary
-        BinaryFormatter bf = new BinaryFormatter();
-
-        //Creates file at persisten data path
+        //Creates file at persistent data path
         FileStream file = File.Create(fileName);
-        
-        //Serializes the data into the file
-        bf.Serialize(file, activeData);
+
+        //Encrypts the data
+        string data = Encryptor.EncryptWithKey(activeData.ToString(), key);
+
+        //Writes it to the file
+        byte[] bytes = Encoding.UTF8.GetBytes(data);
+        file.Write(bytes, 0, bytes.Length);
 
         //Closes the file stream
         file.Close();
@@ -39,27 +40,24 @@ static class Serializer
         //Triggers if the file exists at the persistent data path
         if (File.Exists(fileName))
         {
-            //Debug.Log("Save loaded");
+            //Reads all bytes in the file
+            byte[] bytes = File.ReadAllBytes(fileName);
 
-            //Creates a new object to format the binary data into game data
-            BinaryFormatter bf = new BinaryFormatter();
+            Debug.Log("Save exists at " + fileName);
 
-            //Opens the file
-            FileStream file = File.Open(fileName, FileMode.Open);
+            //Converts the bytes into a string
+            string data = Encoding.UTF8.GetString(bytes);
 
-            //Gets the data from the file and deserializes it
-            Save_Data data = (Save_Data)bf.Deserialize(file);
-
-            //Closes the file stream
-            file.Close();
+            //Decrypts the string
+            data = Encryptor.DecryptWithKey(data, key);
 
             //Sets the active data to the data from the file
-            activeData = data;
+            activeData = new Save_Data(data);
         }
         //Else no save file was found
         else
         {
-            //Debug.LogWarning("File does not exist - Loading base save data");
+            Debug.LogWarning("File does not exist at " + fileName + " - Loading base save data");
 
             //Sets the save data to the default value
             ResetData();
@@ -69,11 +67,7 @@ static class Serializer
     //Method called to reset the save data to its default value
     public static void ResetData()
     {
-        //Array to set the first (base) skin to being purchased
-        bool[] purchased = new bool[9];
-        purchased[0] = true;
-
         //Creates new save data with default values and sets active data to it
-        activeData = new Save_Data(0, purchased, new Level(0), 0, 0, new Settings_Data(QualityController.QualityLevel.Fast, false, true));
+        activeData = new Save_Data("");
     }
 }

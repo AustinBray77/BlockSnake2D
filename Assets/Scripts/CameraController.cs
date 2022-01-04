@@ -2,37 +2,56 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+[RequireComponent(typeof(Camera))]
 //Class to control the camera
 public class CameraController : MonoBehaviour
 {
-    //Stores how many iterations it should wait before moving again, { backup <= 0 }
-    public int backup;
+    //Variables for animation
+    private float targetSize;
+    private float timeCounter;
+    private float targetTime;
+
+    //Method called on scene instatiation
+    private void Start()
+    {
+        timeCounter = 0;
+        targetTime = 0;
+        targetSize = GetComponent<Camera>().orthographicSize;
+    }
+
+    //Method called on every frame
+    private void Update()
+    {
+        if (!Player.isDead && !Player.isAtFinish)
+        {
+            transform.position += new Vector3(Object.speed * Time.deltaTime * Generator.GetRelativeSpeed(), 0);
+        }
+
+        if (targetTime > timeCounter)
+        {
+            Refrence.cam.orthographicSize += Time.deltaTime * (targetSize - Refrence.cam.orthographicSize) / (targetTime - timeCounter);
+            timeCounter += Time.deltaTime;
+        }
+        else if (targetTime <= timeCounter && timeCounter != 0)
+        {
+            targetTime = 0;
+            timeCounter = 0;
+            Refrence.cam.orthographicSize = targetSize;
+        }
+    }
 
     //Method called when a segment is added to the player
-    public void OnSegmentChange(int amount)
+    public void OnSegmentChange(int amount, bool useAnimation)
     {
-        //Triggers if the camera should wait iterations
-        if (backup != 0)
+        //Changes the screen size of the camera, uses animation if requested
+        if (useAnimation)
         {
-            //Triggers if that iteration amount is less than the amount of segments added
-            if (backup + amount > 0)
-            {
-                //Changes the screen size of the camera
-                StartCoroutine(AnimationPlus.ZoomOutOrthagraphic(Refrence.cam, amount, Refrence.cam.orthographicSize + Player.increaseFactor * (backup + amount)));
-
-                //Resets the backup
-                backup = 0;
-            }
-            //Else deiterates the backup by the amount of segments added
-            else
-            {
-                backup += amount;
-            }
+            targetSize += Player.increaseFactor * amount;
+            targetTime += amount * 0.2f;
         }
-        //Else changes the screen size of the camera by the desired amount
         else
         {
-            StartCoroutine(AnimationPlus.ZoomOutOrthagraphic(Refrence.cam, amount, Refrence.cam.orthographicSize + Player.increaseFactor * amount));
+            Refrence.cam.orthographicSize += Player.increaseFactor * amount;
         }
     }
 }

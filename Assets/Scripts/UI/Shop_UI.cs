@@ -7,6 +7,9 @@ using TMPro;
 //Class to contorl the shop UI
 public class Shop_UI : UI
 {
+    //Static variable storing the number of skins in the game, CHANGE EVERY TIME A SKIN IS ADDED
+    public static int skinCount = 10;
+
     //Stores the active skin cards and skin managers
     private List<GameObject> skinCards;
     private List<Skin_Manager> skin_Managers;
@@ -32,7 +35,7 @@ public class Shop_UI : UI
     private IEnumerator SetGearText()
     {
         yield return new WaitUntil(() => { return Serializer.activeData != null; });
-        gearText.text = Serializer.activeData.gearCount.ToString(); 
+        gearText.text = Serializer.activeData.gearCount.ToString();
     }
 
     //Method called when the UI is to show
@@ -47,7 +50,7 @@ public class Shop_UI : UI
         skin_Managers = new List<Skin_Manager>();
 
         //Instantiates each skin card ath the correct location and adds its manager
-        for(int i = 0; i < _skins.Length; i++)
+        for (int i = 0; i < _skins.Length; i++)
         {
             skinCards.Add(CreateSkinCard(new Vector2(i * 625, 0), new Vector3(i == 0 ? 1 : 0.9f, i == 0 ? 1 : 0.9f), _skins[i]));
             skin_Managers.Add(skinCards[i].GetComponent<Skin_Manager>());
@@ -58,7 +61,7 @@ public class Shop_UI : UI
     public override void Hide()
     {
         //Destroys all the skin cards
-        while(skinCards.Count > 0)
+        while (skinCards.Count > 0)
         {
             Destroy(skinCards[0]);
             skinCards.RemoveAt(0);
@@ -75,12 +78,12 @@ public class Shop_UI : UI
         activeSkinCard += direction;
 
         //Moves each of the skin cards
-        for(int i = 0; i < skinCards.Count; i++)
+        for (int i = 0; i < skinCards.Count; i++)
         {
             RectTransform rt = skinCards[i].GetComponent<RectTransform>();
             rt.LeanMove(new Vector3((i - activeSkinCard) * 625, 0), 1f);
             rt.LeanScale(new Vector3(i - activeSkinCard == 0 ? 1 : 0.9f, i - activeSkinCard == 0 ? 1 : 0.9f), 1f);
-        }   
+        }
     }
 
     //Method to update the data on all of the skin cards
@@ -119,7 +122,8 @@ public class Shop_UI : UI
     {
         //Switches to the Start UI with fade
         StartCoroutine(ClickWithFade(
-            () => {
+            () =>
+            {
                 Refrence.startUI.Show();
                 Hide();
             }, fadeTime));

@@ -1,13 +1,14 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 //Class to control the UI for each finish object
 public class Finish_UI : UI
 {
     //Property to store the prefab of the card
     [SerializeField] private GameObject cardPrefab;
-    
+
     //Arrays to store the instantiated objects
     private GameObject[] cardObjects = new GameObject[3];
 
@@ -19,7 +20,7 @@ public class Finish_UI : UI
             return;
 
         //Loops through each object and assings it associated card data
-        for(int i = 0;  i < 3; i++)
+        for (int i = 0; i < 3; i++)
         {
             cardObjects[i].GetComponent<Card_Manager>().DataFromCard(cards[i]);
         }
@@ -28,6 +29,7 @@ public class Finish_UI : UI
     //Method called when the UI is to be shown
     public override void Show()
     {
+
         //Activates the UI Elements
         UIContainer.SetActive(true);
 
@@ -38,6 +40,8 @@ public class Finish_UI : UI
             cardObjects[i] = Instantiate(cardPrefab, UIContainer.transform);
             cardObjects[i].GetComponent<RectTransform>().anchoredPosition = new Vector2(630 - (i * 630), 0);
         }
+
+        transform.parent.gameObject.GetComponent<GraphicRaycaster>().enabled = true;
     }
 
     //Method call when the UI is to be hidden
@@ -52,6 +56,8 @@ public class Finish_UI : UI
         //Sets the player to not be at the finish and activates the Game UI
         Player.isAtFinish = false;
         Refrence.gameUI.gameObject.SetActive(true);
+
+        transform.parent.gameObject.GetComponent<GraphicRaycaster>().enabled = false;
 
         //Decativates the gameobject hiding the UI
         UIContainer.SetActive(false);

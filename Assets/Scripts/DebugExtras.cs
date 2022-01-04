@@ -37,10 +37,15 @@ public class DebugExtras : MonoBehaviour
             }
 
             //If the g key is hit, 10 gears are added to the player
-            if(Input.GetKeyDown(KeyCode.G))
+            if (Input.GetKeyDown(KeyCode.G))
             {
                 Player.gearCount += 10;
                 Debug.Log("10 Gears Added");
+            }
+
+            if (Input.GetKeyDown(KeyCode.B))
+            {
+                Refrence.player.AddScore(5);
             }
 
             //If the h key is hit, 1 shield is added to the player
@@ -56,10 +61,16 @@ public class DebugExtras : MonoBehaviour
                 Refrence.player.UseShield();
                 Debug.Log("1 Shield Used");
             }
+
+            //if the ; key is hit level up the slowdown powerup
+            if (Input.GetKeyDown(KeyCode.Semicolon))
+            {
+                Refrence.cardTypes[4].Call();
+            }
         }
 
         //If the R key is hit, the save game is reset
-        if(Input.GetKeyDown(KeyCode.R))
+        if (Input.GetKeyDown(KeyCode.R))
         {
             Serializer.ResetData();
             Serializer.SaveData();

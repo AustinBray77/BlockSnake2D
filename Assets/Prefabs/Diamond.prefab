@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 4613861754367969012}
   - component: {fileID: 4200963731238298655}
   - component: {fileID: 5616399994677276308}
-  - component: {fileID: 4613861754367969016}
+  - component: {fileID: 1308703399723343813}
   m_Layer: 0
   m_Name: Diamond
   m_TagString: Untagged
@@ -44,7 +44,6 @@ SpriteRenderer:
   m_CastShadows: 0
   m_ReceiveShadows: 0
   m_DynamicOccludee: 1
-  m_StaticShadowCaster: 0
   m_MotionVectors: 1
   m_LightProbeUsage: 1
   m_ReflectionProbeUsage: 1
@@ -98,8 +97,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   maxOnScreen: 2
---- !u!61 &4613861754367969016
-BoxCollider2D:
+--- !u!60 &1308703399723343813
+PolygonCollider2D:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -121,6 +120,9 @@ BoxCollider2D:
     drawMode: 0
     adaptiveTiling: 0
   m_AutoTiling: 0
-  serializedVersion: 2
-  m_Size: {x: 1, y: 1}
-  m_EdgeRadius: 0
+  m_Points:
+    m_Paths:
+    - - {x: 0, y: 0.5}
+      - {x: -0.5, y: 0}
+      - {x: 0, y: -0.5}
+      - {x: 0.5, y: 0}

@@ -1,25 +1,32 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 
 //Class to contorl the player
-[RequireComponent(typeof(Rigidbody2D))]
+[RequireComponent(typeof(AudioSource))]
 public class Player : MonoBehaviour
 {
+    //Enum for movement types
+    public enum MovementType
+    {
+        Buttons,
+        Mouse,
+        Keyboard
+    }
+
     //Refrences to the segments following the player
-    [SerializeField] private Segment segmentAfter;
-    [SerializeField] private Segment segmentLast;
+    private Segment segmentAfter;
+    private Segment segmentLast;
     [SerializeField] private GameObject segmentPrefab;
 
     //Refrence to the fade panel
     [SerializeField] private Image fadePanel;
 
-    private Rigidbody2D rb;
-
     //Properties to control how the player moves
-    [HideInInspector] public float turnDelay;
+    [HideInInspector] public static float turnDelay;
     [HideInInspector] public float speed;
     [HideInInspector] public float rotSpeed;
 
@@ -29,7 +36,7 @@ public class Player : MonoBehaviour
     //Saves the move buttons the user is touching
     private bool[] moveArr = new bool[] { false, false };
 
-    //Stores how much objects should move eacht ime a segment is added
+    //Stores how much objects should move each time a segment is added
     public static float increaseFactor = 1.5f;
 
     //Stores whether the player is dead or at a finish
@@ -42,27 +49,49 @@ public class Player : MonoBehaviour
     //Stores variables at the last finish.
     public static int scoreAtLastFinish, segmentCountAtLastFinish, backupAtLastFinish;
     public static float xBoundAtLastFinish, yBoundAtLastFinish;
+    private static Vector3 positionAtLastFinish;
 
     //Stores the starting bounds of the camera
     public static int xStartBounds = 30, yStartBounds = 12;
-    
+
     //Property to get the active skin
-    public static Skin activeSkin => 
+    public static Skin activeSkin =>
         Shop_UI.skins[Serializer.activeData.activeSkin];
 
-    //Variable which stores the offset of how many iterations the camera should wait before moving again, { backup <= 0 }
-    private int camBackup;
-
-    //Variable to store the transforms for the segments to move into
-    private Queue<Vector3> positions;
-    private Queue<Vector3> rotations;
-
-    //Variables to store when the player should begin dequeuing the transforms
-    private float timeCounter;
-    private bool beginDequeing;
+    //Variable to store the transforms for the segments to move into, and the times of the rotations and positions
+    private List<Vector3> positions;
+    private List<Vector3> rotations;
+    private List<float> rotPosTimes;
+    private int next;
 
     //Variable to store the amount of shields the player has left
     public int shieldCount;
+
+    //Variable to store the slow down percentage of the slow down object
+    private static float slowdownPercentage;
+
+    //Variable to store the delay of the slow down power up
+    private const float slowdownTime = 50f, slowdownUseTime = 10f;
+    private static bool canUseSlowDown;
+
+    //Refrence to cover for the slowdown img
+    [SerializeField] private RectTransform slowDownCover;
+
+    //Saves a refrence to the movement type the player using
+    private MovementType movementType;
+
+    //Refrence to the last finish the player hit
+    public static GameObject lastFinishHit = null;
+
+    //Refrence to the camera controller
+    [SerializeField] private CameraController cameraController;
+
+    //Backup for all objects
+    private static int backup;
+
+    //Audio source and clips
+    private AudioSource audioSource;
+    [SerializeField] private AudioClip scoreAddedSound, deathSound, shieldSound, slowdownTheme;
 
     //Method called on scene load
     private void Start()
@@ -71,14 +100,12 @@ public class Player : MonoBehaviour
         StartCoroutine(AnimationPlus.FadeToColor(fadePanel, new Color(0, 0, 0, 0), UI.fadeTime, false));
 
         //Assigns the default vaules for the variables
-        rb = GetComponent<Rigidbody2D>();
         isDead = false;
         isAtFinish = false;
         score = 0;
         scoreAtLastFinish = 0;
-        camBackup = 0;
-        turnDelay = 0.2f;
-        speed = 100000;
+        turnDelay = 0.25f;
+        speed = 50;
         rotSpeed = 10;
         shieldCount = 0;
 
@@ -91,99 +118,257 @@ public class Player : MonoBehaviour
         GetComponent<SpriteRenderer>().sprite = activeSkin.frontSprite;
         segmentPrefab.GetComponent<SpriteRenderer>().sprite = activeSkin.segmentSprite;
 
-        positions = new Queue<Vector3>();
-        rotations = new Queue<Vector3>();
+        positions = new List<Vector3>();
+        rotations = new List<Vector3>();
+        rotPosTimes = new List<float>();
+        next = -1;
 
-        timeCounter = 0;
-        beginDequeing = false;
+        slowdownPercentage = 0;
+        canUseSlowDown = true;
+        slowDownCover.gameObject.SetActive(false);
+
+        movementType = Serializer.activeData.settings.movementType;
+
+        lastFinishHit = null;
+        backup = 0;
+
+        audioSource = GetComponent<AudioSource>();
     }
 
     //Method called on each frame
     private void Update()
     {
-        //Waits the turn delay before dequeing the tranforms
-        if (!beginDequeing)
-            timeCounter += Time.deltaTime;
-
-        if (timeCounter >= turnDelay)
-            beginDequeing = true;
-
-        //Sets the velocity to 0 if the player is dead or at a finish
-        if (isAtFinish || isDead)
+        //Checks if the player went out of bounds
+        if (Mathf.Abs(transform.position.y) >= Refrence.wallTop.transform.position.y && !Player.isDead)
         {
-            rb.velocity = new Vector2(0, 0);
+            shieldCount = 0;
+            KillPlayer();
         }
 
-        //Sets the angular velocity to zore
-        rb.angularVelocity = 0;
+        //Gets the direction the player is trying to move
+        GetInput();
 
-        //Moves up if the player is hitting the up or w button
-        if (Input.GetKey(KeyCode.W) || moveArr[0])
+        //Moves the player if they are trying to move
+        if (moveArr[0])
         {
             Move(1);
         }
-
-        //Move down if the player if the down or s button
-        if(Input.GetKey(KeyCode.S) || moveArr[1])
+        if (moveArr[1])
         {
             Move(-1);
         }
 
-        //Triggers if the player is to move
-        if (transform.rotation.eulerAngles.z != 0 && !isAtFinish && !isDead)
+        //Moves the player if they are not dead or at finish
+        if (!isAtFinish && !isDead)
         {
-            //Triggers if the player is pointing down
-            if(transform.rotation.eulerAngles.z >= 270)
-            {
-                //Resets the velocity
-                rb.velocity = new Vector2(0, 0);
-                //Adds downward velocity
-                rb.AddForce(Vector2.up * Time.deltaTime * -speed * ((transform.rotation.eulerAngles.z - 360) * -1 / 90));
-            }
-            //Triggers if the polayer is pointing up
-            else
-            {
-                //Resets the velocity
-                rb.velocity = new Vector2(0, 0);
-                //Adds upward velocity
-                rb.AddForce(Vector2.up * Time.deltaTime * speed * (transform.rotation.eulerAngles.z / 90));
-            }
+            MovePlayer();
         }
 
         //Triggers if the player is not dead or at finish
         if (!isAtFinish && !isDead)
         {
-            //Saves the transforms
-            positions.Enqueue(transform.position);
-            rotations.Enqueue(transform.rotation.eulerAngles);
+            MoveSegments();
+        }
+    }
 
-            //Triggers if the current transform should be popped
-            if (beginDequeing)
+    //Method used to move the player
+    private void MovePlayer()
+    {
+        transform.position += new Vector3(Object.speed * Time.deltaTime * Generator.GetRelativeSpeed(), 0);
+        //Triggers if the player is to move
+        if (transform.rotation.eulerAngles.z != 0)
+        {
+            //Triggers if the player is pointing down
+            if (transform.rotation.eulerAngles.z >= 270)
             {
-                //Gets the rotation and position from a certain time peroid ago
-                Vector3 curPos = positions.Dequeue();
-                Vector3 curRot = rotations.Dequeue();
-
-                //Triggers if there is a segment after
-                if (segmentAfter != null)
-                {
-                    //Sets the segments movement
-                    segmentAfter.SetMovement(curPos + -1.5f * Vector3.right, curRot);
-                }
+                //Moves downward
+                transform.position += new Vector3(0, -1 * Time.deltaTime * speed * ((transform.rotation.eulerAngles.z - 360) * -1 / 90));
+            }
+            //Triggers if the polayer is pointing up
+            else
+            {
+                //Moves upward
+                transform.position += new Vector3(0, Time.deltaTime * speed * (transform.rotation.eulerAngles.z / 90));
             }
         }
     }
-    
-    //Method called when the player clicks down on a movement button
-    public void OnMovePointerDown(int button)
+
+    //Method used to move the segments
+    private void MoveSegments()
     {
-        moveArr[button] = true;
+        int next = this.next;
+        int newNext = next;
+
+        for (int i = newNext + 1; i < rotPosTimes.Count; i++)
+        {
+            rotPosTimes[i] += Time.deltaTime;
+
+            if (rotPosTimes[i] >= turnDelay)
+            {
+                newNext = i;
+            }
+        }
+
+        //Saves the transforms
+        positions.Add(transform.position);
+        rotations.Add(transform.rotation.eulerAngles);
+        rotPosTimes.Add(0);
+
+        //Gets the rotation and position from a certain time peroid ago
+        Vector3 curPos = new Vector3();
+        Vector3 curRot = new Vector3();
+        Segment curSegment = segmentAfter;
+
+        if (newNext > -1 && newNext != next)
+        {
+            curPos = Functions.CopyVector3(positions[newNext]);
+            curRot = Functions.CopyVector3(rotations[newNext]);
+
+            this.next = newNext;
+        }
+
+        while (curSegment != null)
+        {
+            if (newNext > -1 && newNext != next)
+            {
+                curSegment.transform.rotation = Quaternion.Euler(curRot);
+
+                if (!curSegment.canCollide)
+                {
+                    if (curSegment.useAnimation)
+                    {
+                        //Animates the segment instantiation
+                        curSegment.transform.LeanScale(new Vector2(1, 1), 0.1f);
+                    }
+                    else
+                    {
+                        //Otherwise don't animate, but set use animation to true to trigger future animations
+                        curSegment.transform.localScale = new Vector2(1, 1);
+                        curSegment.useAnimation = true;
+                    }
+
+                    curSegment.GetComponent<BoxCollider2D>().size = new Vector2(1, 1);
+
+                    curSegment.transform.position = new Vector3(curPos.x, curPos.y);
+                    curSegment.canCollide = true;
+                }
+                else
+                {
+                    float x = curSegment.transform.position.x;
+                    curSegment.transform.position = new Vector3(x < curPos.x - 2f ? curPos.x : x, curPos.y);
+                }
+
+                //curSegment.UpdateConstantPosition();
+            }
+
+            if (ReferenceEquals(curSegment, segmentLast))
+            {
+                break;
+            }
+
+            next = curSegment.next;
+            newNext = next;
+
+            for (int i = newNext + 1; i < curSegment.rotPosTimes.Count; i++)
+            {
+                curSegment.rotPosTimes[i] += Time.deltaTime;
+
+                if (curSegment.rotPosTimes[i] >= turnDelay)
+                {
+                    newNext = i;
+                }
+            }
+
+            if (newNext > -1 && newNext != next)
+            {
+                curPos = Functions.CopyVector3(curSegment.positions[newNext]);
+                curRot = Functions.CopyVector3(curSegment.rotations[newNext]);
+
+                curSegment.next = newNext;
+            }
+
+            curSegment.positions.Add(curSegment.transform.position);
+            curSegment.rotations.Add(curSegment.transform.rotation.eulerAngles);
+            curSegment.rotPosTimes.Add(0);
+
+            curSegment = curSegment.segmentAfter;
+        }
     }
 
-    //Method called when the player unclicks on a movement button
-    public void OnMovePointerUp(int button)
+    //Method used to get the direction the player should be moving
+    private void GetInput()
     {
-        moveArr[button] = false;
+        //Reset moveArr before input checking
+        moveArr[0] = false;
+        moveArr[1] = false;
+
+        //Checks for mouse based movement if that is what the user has selected
+        if (movementType == MovementType.Mouse)
+        {
+            //Mouse input checking
+            if (Input.GetMouseButton(0) || Input.touchCount > 0)
+            {
+                //Gets the mouse position
+                Vector2 inputPosition = Refrence.cam.ScreenToWorldPoint(Input.mousePosition);
+
+                //If the mouse position is above the player move up
+                if (inputPosition.y > transform.position.y)
+                {
+                    moveArr[0] = true;
+                }
+                //Else move down
+                else
+                {
+                    moveArr[1] = true;
+                }
+            }
+        }
+
+        //Checks for keyboard based movement if that is what the user has selected
+        if (movementType == MovementType.Keyboard)
+        {
+            //Moves up if the player is hitting the up or w button
+            if (Input.GetKey(KeyCode.W))
+            {
+                moveArr[0] = true;
+            }
+
+            //Move down if the player if the down or s button
+            if (Input.GetKey(KeyCode.S))
+            {
+                moveArr[1] = true;
+            }
+        }
+
+        //Checks for keyboard based movement if that is what the user has selected
+        if (movementType == MovementType.Buttons)
+        {
+            //Gets the bounds for the buttons from the gameUI
+            Vector2[] bounds = Refrence.gameUI.GetButtonBounds();
+
+            //Checks if the mouse position is in bounds and the user is clicking
+            if (Functions.PositionIsInBounds2D(Input.mousePosition, bounds[0], bounds[3]) && Functions.UserIsClicking())
+            {
+                //Gets which button the mouse is in and sets it to true
+                if (Input.mousePosition.y >= bounds[1].y)
+                {
+                    moveArr[0] = true;
+                }
+                else
+                {
+                    moveArr[1] = true;
+                }
+            }
+        }
+
+        if (Functions.UserIsClicking() || Input.touchCount > 0)
+        {
+            Vector2[] bounds = Refrence.gameUI.GetButtonBounds();
+            if (Functions.PositionIsInBounds2D(Input.mousePosition, bounds[4], bounds[5]))
+            {
+                UseSlowDown();
+            }
+        }
     }
 
     //Method called to rotate the player
@@ -193,10 +378,10 @@ public class Player : MonoBehaviour
         float nextZ = transform.rotation.eulerAngles.z + (rotSpeed * direction * Time.deltaTime);
 
         //Assigns the new rotation
-        transform.rotation = Quaternion.Euler(0, 0, 
-            nextZ < 270 && nextZ > 90 ? 
-                direction == -1 ? 
-                    270 : 90 
+        transform.rotation = Quaternion.Euler(0, 0,
+            nextZ < 270 && nextZ > 90 ?
+                direction == -1 ?
+                    270 : 90
                         : nextZ);
     }
 
@@ -204,11 +389,17 @@ public class Player : MonoBehaviour
     public void KillPlayer()
     {
         //Uses shield if the player has one
-        if(shieldCount >= 1)
+        if (shieldCount >= 1)
         {
             UseShield();
             return;
         }
+
+        //Stops any other sounds
+        audioSource.Stop();
+
+        //Plays death sound
+        audioSource.PlayOneShot(deathSound);
 
         //Stops all couroutines in the following segments
         StopAllMovement();
@@ -232,6 +423,10 @@ public class Player : MonoBehaviour
         //Tells the generator that the player is dead
         Refrence.gen.OnPlayerDeath();
 
+        Refrence.gameUI.transform.parent.GetComponent<GraphicRaycaster>().enabled = true;
+
+        CleanMovementBuffers();
+
         //Hides the game UI and shows the death UI
         Refrence.gameUI.Hide();
         Refrence.deathUI.Show();
@@ -246,30 +441,43 @@ public class Player : MonoBehaviour
         //Moves the entire player to the middle of the screen
         MoveWhole(new Vector3(0, 0), new Vector3(0, 0, 0));
 
-        //Sets the properties to there values at last finish
-        score = scoreAtLastFinish;
-        Refrence.cam.orthographicSize = yBoundAtLastFinish;
-        Refrence.wallTop.transform.position = new Vector3(0, yBoundAtLastFinish - 0.5f);
-        Refrence.wallBottom.transform.position = new Vector3(0, -yBoundAtLastFinish + 0.5f);
-        Refrence.gen.transform.position = new Vector3(xBoundAtLastFinish, 0);
-        Generator.SetBounds(yBoundAtLastFinish - 2);
-        Refrence.des.transform.position = new Vector3(-xBoundAtLastFinish, 0);
-        SetBackups(backupAtLastFinish);
-
         //Resets the segment count to the segment count at last finish
         if (CountSegments() - segmentCountAtLastFinish > 0)
         {
-            RemoveSegments(CountSegments() - segmentCountAtLastFinish);
+            RemoveSegments(CountSegments() - segmentCountAtLastFinish, false);
         }
         else if (CountSegments() - segmentCountAtLastFinish < 0)
         {
-            AddSegments((CountSegments() - segmentCountAtLastFinish) * -1);
+            AddSegments((CountSegments() - segmentCountAtLastFinish) * -1, false);
         }
+
+        //Sets the properties to there values at last finish
+        transform.position = positionAtLastFinish;
+        score = scoreAtLastFinish;
+        Refrence.cam.orthographicSize = yBoundAtLastFinish;
+        Refrence.cam.transform.position = new Vector3(positionAtLastFinish.x, 0);
+        Refrence.wallTop.transform.position = new Vector3(positionAtLastFinish.x, yBoundAtLastFinish - 0.5f);
+        Refrence.wallBottom.transform.position = new Vector3(positionAtLastFinish.x, -yBoundAtLastFinish + 0.5f);
+        Refrence.gen.transform.position = new Vector3(positionAtLastFinish.x + xBoundAtLastFinish, 0);
+        Refrence.gen.SetDestroyerPosition(positionAtLastFinish.x - xBoundAtLastFinish);
+        Generator.SetBounds(yBoundAtLastFinish - 2);
+        backup = backupAtLastFinish;
 
         //Shows the game UI, sets the score text, and sets is dead to false
         Refrence.gameUI.Show();
         Refrence.gameUI.UpdateScore(score);
         isDead = false;
+        //Allows the player to use the slowdown (if they have it) and resets the movement type and last finish hit
+        canUseSlowDown = true;
+        movementType = Serializer.activeData.settings.movementType;
+        lastFinishHit = null;
+        positions = new List<Vector3>();
+        rotations = new List<Vector3>();
+        rotPosTimes = new List<float>();
+        next = -1;
+
+        Refrence.gameUI.UpdateShieldCount(shieldCount);
+        Refrence.gameUI.transform.parent.GetComponent<GraphicRaycaster>().enabled = false;
     }
 
     //Method called when the player enters a finish
@@ -279,11 +487,14 @@ public class Player : MonoBehaviour
         isAtFinish = true;
 
         //Saves the values to the at last finish refrence
+        positionAtLastFinish = transform.position;
         segmentCountAtLastFinish = CountSegments();
         xBoundAtLastFinish = Refrence.gen.transform.position.x;
         yBoundAtLastFinish = Refrence.cam.orthographicSize;
-        backupAtLastFinish = camBackup;
+        backupAtLastFinish = backup;
         scoreAtLastFinish = score;
+
+        CleanMovementBuffers();
     }
 
     //Method called to add gears to the player
@@ -326,53 +537,57 @@ public class Player : MonoBehaviour
     }
 
     //Method called to add segments to the player
-    public void AddSegments(int add)
+    public void AddSegments(int add, bool useAnimation = true)
     {
         //Loops to add each segment
         for (int i = 0; i < add; i++)
         {
             //Triggers if there is already one other segement
-            if (segmentLast != null)
+            if (!ReferenceEquals(segmentLast, null))
             {
                 //Creates the new segment and adds refrence to it to the player and segment before it
                 GameObject newSegment = Instantiate(segmentPrefab, segmentLast.transform.position - new Vector3(1.5f, 0f), segmentLast.transform.rotation);
-                segmentLast.segmentAfter = newSegment.GetComponent<Segment>();
-                segmentLast = newSegment.GetComponent<Segment>();
+                newSegment.transform.parent = transform.parent;
+                Segment newSegmentRefrence = newSegment.GetComponent<Segment>();
+                newSegmentRefrence.useAnimation = useAnimation;
+                segmentLast.segmentAfter = newSegmentRefrence;
+                segmentLast = newSegmentRefrence;
             }
             //Triggers if this is the players first segment
             else
             {
                 //Creates the new segment and adds refrences to it to the player
                 GameObject newSegment = Instantiate(segmentPrefab, transform.position - new Vector3(1.5f, 0f), transform.rotation);
-                segmentAfter = newSegment.GetComponent<Segment>();
-                segmentLast = newSegment.GetComponent<Segment>();
+                newSegment.transform.parent = transform.parent;
+                Segment newSegmentRefrence = newSegment.GetComponent<Segment>();
+                newSegmentRefrence.useAnimation = useAnimation;
+                segmentAfter = newSegmentRefrence;
+                segmentLast = newSegmentRefrence;
             }
 
             //Increases the speed of objects
             Object.speed *= 1.01f;
         }
 
-        //Calls on segment change in the other objects
-        Refrence.camController.OnSegmentChange(add);
-        Refrence.gen.OnSegmentChange(add);
-        Refrence.des.OnSegmentChange(add);
-        Refrence.wallTop.OnSegmentChange(add);
-        Refrence.wallBottom.OnSegmentChange(add);
-    }
+        add += backup;
 
-    //Method called to set the backups in the other objects
-    public void SetBackups(int amount)
-    {
-        //Sets the backups
-        camBackup = amount;
-        Refrence.gen.backup = amount;
-        Refrence.des.backup = amount;
-        Refrence.wallTop.backup = amount;
-        Refrence.wallBottom.backup = amount;
+        if (add > 0)
+        {
+            //Calls on segment change in the other objects
+            Refrence.camController.OnSegmentChange(add, useAnimation);
+            Refrence.gen.OnSegmentChange(add);
+            Refrence.wallTop.OnSegmentChange(add, useAnimation);
+            Refrence.wallBottom.OnSegmentChange(add, useAnimation);
+        }
+
+        if (backup < 0)
+        {
+            backup = Mathf.Min(add, 0);
+        }
     }
 
     //Method called to remove segments from the player
-    public void RemoveSegments(int remove)
+    public void RemoveSegments(int remove, bool useAnimation = true)
     {
         //Variable to store the current segment, the amount of segments removed, and a refrence to all segments
         Segment cur = segmentAfter;
@@ -380,15 +595,16 @@ public class Player : MonoBehaviour
         List<Segment> segmentList = new List<Segment>();
 
         //Gets all segmetns
-        while(cur != null)
+        while (!ReferenceEquals(cur, null))
         {
             segmentList.Add(cur);
             cur = cur.segmentAfter;
         }
 
-        //Loops to remove the amount of segments
-        for(int i = Mathf.Max(0, segmentList.Count - remove); i < segmentList.Count; i++, amountRemoved++)
+        //Loops to remove the amount of segments, uses animation based on the input
+        for (int i = Mathf.Max(0, segmentList.Count - remove); i < segmentList.Count; i++, amountRemoved++)
         {
+            segmentList[i].useAnimation = useAnimation;
             StartCoroutine(segmentList[i].DestroySegment());
         }
 
@@ -405,25 +621,27 @@ public class Player : MonoBehaviour
             segmentLast = null;
             segmentAfter = null;
         }
+
+        backup -= Mathf.Min(remove, segmentList.Count);
     }
 
     //Method called to move the entire player and its segments to a set location and rotation
     private void MoveWhole(Vector3 position, Vector3 rotation, Segment segment = null)
     {
         //Triggers if no segment is passed as a parameter
-        if (segment == null)
+        if (segment != null)
         {
             //Sets the position and rotation of the player
             transform.position = position;
             transform.rotation = Quaternion.Euler(rotation);
 
             //Triggers if the player has a segment
-            if(segmentAfter != null)
+            if (segmentAfter != null)
             {
                 //Calls move whole from that segment
                 MoveWhole(position - transform.right * 1.5f, rotation, segmentAfter);
             }
-        } 
+        }
         //Else triggers if a segment was passed
         else
         {
@@ -444,13 +662,13 @@ public class Player : MonoBehaviour
     private void StopAllMovement(Segment segment = null)
     {
         //Triggers if no segment is passed as a parameter
-        if(segment == null)
+        if (segment == null)
         {
             //Stops the movement in the player
-            positions = new Queue<Vector3>();
-            rotations = new Queue<Vector3>();
-            beginDequeing = false;
-            timeCounter = 0;
+            positions = new List<Vector3>();
+            rotations = new List<Vector3>();
+            rotPosTimes = new List<float>();
+            next = -1;
 
             //Triggers if the player has a segment
             if (segmentAfter != null)
@@ -458,7 +676,7 @@ public class Player : MonoBehaviour
                 //Recursises using that segment
                 StopAllMovement(segmentAfter);
             }
-        } 
+        }
         //Else triggers if a segment was passed
         else
         {
@@ -466,7 +684,7 @@ public class Player : MonoBehaviour
             segment.StopMovement();
 
             //Triggers if the segment has a segment after it
-            if(segment.segmentAfter != null)
+            if (segment.segmentAfter != null)
             {
                 //Recursises using that segment
                 StopAllMovement(segment.segmentAfter);
@@ -479,10 +697,10 @@ public class Player : MonoBehaviour
     {
         //Variable to stroe the current segment and the segment count
         int output = 0;
-        var cur = segmentAfter;
+        Segment cur = segmentAfter;
 
         //Loop while there is another segment
-        while(cur != null)
+        while (cur != null)
         {
             output++;
             cur = cur.segmentAfter;
@@ -507,8 +725,142 @@ public class Player : MonoBehaviour
     //Method called when the player uses a shield instead of dying
     public void UseShield()
     {
-        //Removes a shield and updates the UI
+        //Removes a shield, updates the UI, and plays the sound
         shieldCount--;
         Refrence.gameUI.UpdateShieldCount(shieldCount);
+
+        if (Serializer.activeData.settings.soundEnabled)
+        {
+            audioSource.PlayOneShot(shieldSound);
+        }
+    }
+
+    //Method called to increase the slowdown percentage of the slowdown powerup
+    public void IncreaseSlowDownPercentage(float percentage)
+    {
+        if (slowdownPercentage == 0)
+        {
+            //Increases the slow down percentage if it was at 0
+            slowdownPercentage += percentage;
+        }
+        else
+        {
+            //Multiple the slow down percentage if it was above 0
+            slowdownPercentage = 1 - ((1 - slowdownPercentage) * (1 - percentage));
+        }
+
+        //Enable the slow down if it wasn't already
+        if (slowdownPercentage - percentage == 0)
+        {
+            Refrence.gameUI.EnableSlowDown(true);
+        }
+    }
+
+    //Method called to use the slowdown powerup
+    public void UseSlowDown()
+    {
+        if (canUseSlowDown && slowdownPercentage != 0)
+        {
+            StartCoroutine(CountSlowDown());
+        }
+    }
+
+    //Coroutine used to wait call the powerup for a certain time and wait for reuse
+    private IEnumerator CountSlowDown()
+    {
+        canUseSlowDown = false;
+        float time = 0;
+
+        Generator.SetRelativeSpeed(slowdownPercentage > 1 ? 0.01f : 1 - slowdownPercentage);
+
+        slowDownCover.gameObject.SetActive(true);
+        slowDownCover.offsetMax = new Vector2(0, 0);
+
+        if (Serializer.activeData.settings.soundEnabled)
+        {
+            audioSource.clip = slowdownTheme;
+            audioSource.loop = true;
+            audioSource.Play();
+        }
+
+        while (time < slowdownUseTime)
+        {
+            time += Time.deltaTime;
+            Debug.Log(Time.deltaTime / slowdownUseTime);
+            slowDownCover.offsetMax -= new Vector2(0, 100 * Time.deltaTime / slowdownUseTime);
+            yield return new WaitForEndOfFrame();
+
+            yield return new WaitUntil(() => !isAtFinish);
+        }
+
+        audioSource.Stop();
+        audioSource.clip = null;
+        audioSource.loop = false;
+
+        Generator.SetRelativeSpeed(1);
+        time = 0;
+
+        slowDownCover.offsetMax = new Vector2(0, 0);
+
+        while (time < slowdownTime)
+        {
+            time += Time.deltaTime;
+            slowDownCover.offsetMax -= new Vector2(0, 100 * Time.deltaTime / slowdownTime);
+            yield return new WaitForEndOfFrame();
+
+            yield return new WaitUntil(() => !isAtFinish);
+        }
+
+        slowDownCover.offsetMax = new Vector2(0, -100);
+
+        canUseSlowDown = true;
+
+        yield return null;
+    }
+
+    //Returns the default movement type for the platform
+    public static Player.MovementType DefaultMovementType(Gamemode.Platform platform) =>
+        (platform == Gamemode.Platform.Windows) ?
+            MovementType.Keyboard : MovementType.Buttons;
+
+    //Method called to collect unused times and positions in the segments and player
+    private void CleanMovementBuffers()
+    {
+        if (next + 1 > 0 && positions.Count > next + 1)
+        {
+            positions = positions.Skip(next + 1).ToList();
+            rotations = rotations.Skip(next + 1).ToList();
+            rotPosTimes = rotPosTimes.Skip(next + 1).ToList();
+        }
+        else if (positions.Count <= next + 1)
+        {
+            positions = new List<Vector3>();
+            rotations = new List<Vector3>();
+            rotPosTimes = new List<float>();
+        }
+
+        next = -1;
+
+        Segment curSegment = segmentAfter;
+
+        while (curSegment != null)
+        {
+            if (0 < curSegment.next + 1 && curSegment.positions.Count != curSegment.next + 1)
+            {
+                curSegment.positions = curSegment.positions.Skip(curSegment.next + 1).ToList();
+                curSegment.rotations = curSegment.rotations.Skip(curSegment.next + 1).ToList();
+                curSegment.rotPosTimes = curSegment.rotPosTimes.Skip(curSegment.next + 1).ToList();
+            }
+            else if (positions.Count == next + 1)
+            {
+                curSegment.positions = new List<Vector3>();
+                curSegment.rotations = new List<Vector3>();
+                curSegment.rotPosTimes = new List<float>();
+            }
+
+            curSegment.next = -1;
+
+            curSegment = curSegment.segmentAfter;
+        }
     }
 }

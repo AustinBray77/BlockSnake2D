@@ -173,6 +173,20 @@ MonoBehaviour:
       m_Height: 19
     m_Scale: 1
     m_AtlasIndex: 0
+  - m_Index: 17
+    m_Metrics:
+      m_Width: 17.578125
+      m_Height: 17.578125
+      m_HorizontalBearingX: 2.203125
+      m_HorizontalBearingY: 17.578125
+      m_HorizontalAdvance: 21.96875
+    m_GlyphRect:
+      m_X: 164
+      m_Y: 172
+      m_Width: 18
+      m_Height: 18
+    m_Scale: 1
+    m_AtlasIndex: 0
   - m_Index: 19
     m_Metrics:
       m_Width: 61.515625
@@ -1041,20 +1055,6 @@ MonoBehaviour:
       m_Height: 18
     m_Scale: 1
     m_AtlasIndex: 0
-  - m_Index: 17
-    m_Metrics:
-      m_Width: 17.578125
-      m_Height: 17.578125
-      m_HorizontalBearingX: 2.203125
-      m_HorizontalBearingY: 17.578125
-      m_HorizontalAdvance: 21.96875
-    m_GlyphRect:
-      m_X: 164
-      m_Y: 172
-      m_Width: 18
-      m_Height: 18
-    m_Scale: 1
-    m_AtlasIndex: 0
   m_CharacterTable:
   - m_ElementType: 1
     m_Unicode: 32
@@ -1079,6 +1079,10 @@ MonoBehaviour:
   - m_ElementType: 1
     m_Unicode: 45
     m_GlyphIndex: 16
+    m_Scale: 1
+  - m_ElementType: 1
+    m_Unicode: 46
+    m_GlyphIndex: 17
     m_Scale: 1
   - m_ElementType: 1
     m_Unicode: 48
@@ -1327,10 +1331,6 @@ MonoBehaviour:
   - m_ElementType: 1
     m_Unicode: 8230
     m_GlyphIndex: 121
-    m_Scale: 1
-  - m_ElementType: 1
-    m_Unicode: 46
-    m_GlyphIndex: 17
     m_Scale: 1
   m_AtlasTextures:
   - {fileID: -100260264346714585}
@@ -37799,7 +37799,7 @@ Material:
     m_Ints: []
     m_Floats:
     - _Ambient: 0.5
-    - _Bevel: 0.5
+    - _Bevel: 0.394
     - _BevelClamp: 0
     - _BevelOffset: 0
     - _BevelRoundness: 0
@@ -37812,10 +37812,10 @@ Material:
     - _FaceDilate: 0
     - _FaceUVSpeedX: 0
     - _FaceUVSpeedY: 0
-    - _GlowInner: 0.408
-    - _GlowOffset: 0
-    - _GlowOuter: 0.05
-    - _GlowPower: 0.75
+    - _GlowInner: 0.127
+    - _GlowOffset: 0.025
+    - _GlowOuter: 0.457
+    - _GlowPower: 0.3
     - _GradientScale: 10
     - _LightAngle: 3.1416
     - _MaskSoftnessX: 0
@@ -37853,9 +37853,9 @@ Material:
     - _ClipRect: {r: -32767, g: -32767, b: 32767, a: 32767}
     - _EnvMatrixRotation: {r: 0, g: 0, b: 0, a: 0}
     - _FaceColor: {r: 1, g: 1, b: 1, a: 1}
-    - _GlowColor: {r: 1, g: 0, b: 0.008412361, a: 0.5}
+    - _GlowColor: {r: 0, g: 0.3813261, b: 0.84687346, a: 1}
     - _MaskCoord: {r: 0, g: 0, b: 32767, a: 32767}
-    - _OutlineColor: {r: 0, g: 0, b: 0, a: 1}
+    - _OutlineColor: {r: 0.03, g: 0.0005, b: 0, a: 1}
     - _ReflectFaceColor: {r: 0, g: 0, b: 0, a: 1}
     - _ReflectOutlineColor: {r: 0, g: 0, b: 0, a: 1}
     - _SpecularColor: {r: 1, g: 1, b: 1, a: 1}

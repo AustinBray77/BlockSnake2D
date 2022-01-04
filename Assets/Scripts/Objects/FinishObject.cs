@@ -7,20 +7,20 @@ using UnityEngine;
 public class FinishObject : Object
 {
     //Instance variables
-    private BoxCollider2D _collider;
     private bool fromData = false;
     private Card[] selectedCards;
 
     [SerializeField] private GameObject tilePrefab;
-    
+
     [HideInInspector] public int spawnIndex;
+
+    private BoxCollider2D _collider;
 
     //Overrides the ObjAwake function, called when the object spawns
     internal override void ObjAwake()
     {
-        //Assigns the collider and generates the finish object
         _collider = GetComponent<BoxCollider2D>();
-        Generate();
+        Generate(true);
     }
 
     //Method to shuffle the cards
@@ -29,7 +29,7 @@ public class FinishObject : Object
         //Creates a new int array and assigns each value to its index
         int[] vals = new int[Refrence.cardTypes.Length];
 
-        for(int i = 0; i < vals.Length; i++)
+        for (int i = 0; i < vals.Length; i++)
         {
             vals[i] = i;
         }
@@ -47,35 +47,42 @@ public class FinishObject : Object
     }
 
     //Method to generate the finish object
-    public void Generate()
+    public void Generate(bool baseGeneration, int amount = 0)
     {
-        //Gets all child objects of the gameobject
-        List<Transform> children = transform.GetComponentsInChildren<Transform>().ToList();
-        
-        //If there are child objects, they are destroyed
-        while(children.Count > 0)
-        {
-            if(children[0] != transform)
-                Destroy(children[0].gameObject);
+        float boundsDistance = Generator.GetBoundsDistance();
+        float ceilBoundsDistance = Mathf.Ceil(boundsDistance);
 
-            children.RemoveAt(0);
-        }
-
-        //Generates (2, -(Mathf.Ceil(Generator.GetBoundsDistance()) + 2)) tiles
-        for (int i = 0; i >= -(Mathf.Ceil(Generator.GetBoundsDistance()) + 2); i--)
+        if (baseGeneration)
         {
-            for(int j = 0; j < 2; j++)
+            //Generates (2, -(Mathf.Ceil(Generator.GetBoundsDistance()) + 2)) tiles
+            for (int i = 0; i >= -(ceilBoundsDistance + 2); i--)
             {
-                //Instantiates the tile object from the prefab
-                GameObject tile = Instantiate(tilePrefab, transform);
-                //Assigns the correct position to the tile object
-                tile.transform.localPosition = new Vector3(j, i);
+                for (int j = 0; j < 2; j++)
+                {
+                    //Instantiates the tile object from the prefab
+                    GameObject tile = Instantiate(tilePrefab, transform);
+                    //Assigns the correct position to the tile object
+                    tile.transform.localPosition = new Vector3(j, i);
+                }
+            }
+        }
+        else
+        {
+            for (int i = 0; i < 3 * amount; i++)
+            {
+                for (int j = 0; j < 2; j++)
+                {
+                    //Instantiates the tile object from the prefab
+                    GameObject tile = Instantiate(tilePrefab, transform);
+                    //Assigns the correct position to the tile object
+                    tile.transform.localPosition = new Vector3(j, i - ceilBoundsDistance - 2);
+                }
             }
         }
 
         //Sets position to the middle of the screen (vertically), and sets the bounds of the collider
-        transform.position = new Vector3(transform.position.x, Generator.GetBoundsDistance() / 2f + 1);
-        _collider.size = new Vector3(2, Generator.GetBoundsDistance() + 2);
+        transform.position = new Vector3(transform.position.x, boundsDistance / 2f + 1);
+        _collider.size = new Vector3(2, boundsDistance + 2);
         _collider.offset = new Vector2(0.5f, -_collider.size.y / 2f);
     }
 
@@ -85,6 +92,15 @@ public class FinishObject : Object
         //Triggers if the object collided with the player
         if (collision.gameObject.tag == "Player")
         {
+            //Returns if the player already hit this finish
+            if (Player.lastFinishHit == gameObject)
+            {
+                return;
+            }
+
+            //Sets that the player hit htis finish last
+            Player.lastFinishHit = gameObject;
+
             //Tells the player object it has entered the finish
             Refrence.player.OnEnterFinish();
 
@@ -117,64 +133,4 @@ public class FinishObject : Object
     //Converts FinishObject to Finish_Data
     public Finish_Data ToData()
         => new Finish_Data(selectedCards);
-
-    //Following functions are used for upgrades and are called when the user selects the upgrade.
-
-    //Increases the players speed
-    public void Card_IncreaseSpeed(int cardIndex)
-    {
-        //Increases the players speed by the current determind amount
-        Refrence.player.speed *= Refrence.cardTypes[cardIndex].value;
-
-        //Hides the Finish UI and sets the last upgraded card to the selected card
-        Refrence.finishUI.GetComponent<Finish_UI>().Hide();
-        Refrence.player.lastUpgraded = Refrence.cardTypes[cardIndex];
-    }
-
-    //Increases the players rotation speed
-    public void Card_IncreaseRotSpeed(int cardIndex)
-    {
-        //Increases the players rotation speed by the current determind amount
-        Refrence.player.rotSpeed *= Refrence.cardTypes[cardIndex].value;
-
-        //Hides the Finish UI and sets the last upgraded card to the selected card
-        Refrence.finishUI.GetComponent<Finish_UI>().Hide();
-        Refrence.player.lastUpgraded = Refrence.cardTypes[cardIndex];
-    }
-
-    //Removes a segment from the player
-    public void Card_RemoveSegment(int cardIndex)
-    {
-        //Removes the determind amount of segments
-        Refrence.player.RemoveSegments((int)Refrence.cardTypes[cardIndex].value * -1);
-
-        //Sets an offset so that when the player gains score the screen size does not change
-        Refrence.player.SetBackups(Refrence.gen.backup + (int)Refrence.cardTypes[cardIndex].value);
-
-        //Hides the Finish UI and sets the last upgraded card to the selected card
-        Refrence.finishUI.GetComponent<Finish_UI>().Hide();
-        Refrence.player.lastUpgraded = Refrence.cardTypes[cardIndex];
-    }
-
-    //Decreases the spawn speed of the objects
-    public void Card_DecreaseSpawnSpeed(int cardIndex)
-    {
-        //Decreases the spawn speed by the current determind amount
-        Refrence.gen.spawnSpeed *= Refrence.cardTypes[cardIndex].value;
-
-        //Hides the Finish UI and sets the last upgraded card to the selected card
-        Refrence.finishUI.GetComponent<Finish_UI>().Hide();
-        Refrence.player.lastUpgraded = Refrence.cardTypes[cardIndex];
-    }
-
-    //Adds a shield to the player
-    public void Card_AddShield(int cardIndex)
-    {
-        //Adds the shields to the player
-        Refrence.player.AddShields((int)Refrence.cardTypes[cardIndex].value);
-
-        //Hides the Finish UI and sets the last upgraded card to the selected card
-        Refrence.finishUI.GetComponent<Finish_UI>().Hide();
-        Refrence.player.lastUpgraded = Refrence.cardTypes[cardIndex];
-    }
 }

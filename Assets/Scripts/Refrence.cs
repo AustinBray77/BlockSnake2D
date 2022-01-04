@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System;
 using UnityEngine;
 
 //Class to save static refrences to multiple frequently accessed objects.
@@ -8,7 +9,6 @@ public class Refrence : MonoBehaviour
     //Instance refrences to the objects
     [SerializeField] private Player _player;
     [SerializeField] private Generator _gen;
-    [SerializeField] private Destroyer _des;
     [SerializeField] private Camera _cam;
     [SerializeField] private BorderWall _wallTop, _wallBottom;
     [SerializeField] private Death_UI _deathUI;
@@ -24,7 +24,6 @@ public class Refrence : MonoBehaviour
     //Static refrences
     public static Player player;
     public static Generator gen;
-    public static Destroyer des;
     public static Camera cam;
     public static CameraController camController;
     public static BorderWall wallTop, wallBottom;
@@ -43,7 +42,6 @@ public class Refrence : MonoBehaviour
         //Assigns the instance refrences to the static refrences
         player = _player;
         gen = _gen;
-        des = _des;
         cam = _cam;
         camController = _cam.GetComponent<CameraController>();
         wallTop = _wallTop;
@@ -56,5 +54,12 @@ public class Refrence : MonoBehaviour
         settingsUI = _settingsUI;
         adManager = _adManager;
         cardTypes = _cardTypes;
+
+        if (cardTypes.Length > 0 && (Gamemode.platform == Gamemode.Platform.Android || Gamemode.platform == Gamemode.Platform.IOS))
+        {
+            Card[] newCardTypes = new Card[cardTypes.Length - 1];
+            Array.Copy(cardTypes, newCardTypes, cardTypes.Length - 1);
+            cardTypes = newCardTypes;
+        }
     }
 }

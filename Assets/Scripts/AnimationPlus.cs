@@ -18,7 +18,7 @@ public static class AnimationPlus
         float timeCount = 0f;
 
         //Loops while frames still need to be counted
-        while(timeCount < time)
+        while (timeCount < time)
         {
             //Gets the time the passed
             float timePassed = Time.deltaTime;
@@ -32,7 +32,7 @@ public static class AnimationPlus
         }
 
         //Sets the image color to the final color, in case it is off by a bit
-        img.color = endColor;
+        //img.color = endColor;
 
         //Sets the object to active if it is supposed to be
         img.gameObject.SetActive(stateAfterCall);
@@ -55,9 +55,9 @@ public static class AnimationPlus
 
             //Changes the level bar value
             levelBar.levelBar.value += differencePerSecond * timePassed;
-            
+
             //Triggers if the player should level up and the level has to change on the level bar
-            if(levelBar.levelBar.value >= levelBar.levelBar.maxValue)
+            if (levelBar.levelBar.value >= levelBar.levelBar.maxValue)
             {
                 //Inccrements lower level and assigns the values of the level bar
                 lowerLevel++;
@@ -103,7 +103,7 @@ public static class AnimationPlus
         }
 
         //Sets the text color to the final value, in case it is off by a bit
-        text.color = startColor + new Color(0, 0, 0, (fadeOut ? -1 : 1));
+        if (fadeOut) text.color = new Color(text.color.r, text.color.g, text.color.b, 0);
     }
 
     //Method called to zoom the camera in or out
@@ -132,6 +132,6 @@ public static class AnimationPlus
         }
 
         //Sets the orthagraphic size to the final value, in case it is off by a bit
-        cam.orthographicSize = endSize;
+        //cam.orthographicSize = endSize;
     }
 }

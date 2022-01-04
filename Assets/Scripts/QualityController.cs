@@ -26,16 +26,8 @@ public class QualityController : MonoBehaviour
         //If the active data is null, find the apropriate quality
         if (Serializer.activeData == null)
         {
-            //If the platform is windows or debug the SMAA quality is set to high, else (Android, IOS) it is set to low
-            if (Gamemode.platform == Gamemode.Platform.Windows || Gamemode.platform == Gamemode.Platform.Debug)
-            {
-                SetQuality(QualityLevel.Ultra);
-            }
-            else
-            {
-                SetQuality(QualityLevel.Fast);
-            }
-        } 
+            SetQuality(DefaultQualityLevel(Gamemode.platform));
+        }
         //Else set the quality to the saved quality
         else
         {
@@ -104,4 +96,8 @@ public class QualityController : MonoBehaviour
         yield return new WaitUntil(() => { return Serializer.activeData != null; });
         Serializer.activeData.settings.SetQualityLevel(level);
     }
+
+    public static QualityLevel DefaultQualityLevel(Gamemode.Platform platform) =>
+        (platform == Gamemode.Platform.Windows || platform == Gamemode.Platform.Debug) ?
+            QualityLevel.Ultra : QualityLevel.Fast;
 }

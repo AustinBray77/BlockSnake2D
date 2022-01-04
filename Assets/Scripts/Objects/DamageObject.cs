@@ -8,11 +8,26 @@ public class DamageObject : Object
     //Method called when an another object collides with the object
     private void OnTriggerEnter2D(Collider2D collision)
     {
+        if (!interactable)
+        {
+            return;
+        }
+
         //Kills the player if the object hit the player or one of its segments
         if (collision.gameObject.tag == "Player" || collision.gameObject.tag == "Segment")
         {
+            bool destroy = Refrence.player.shieldCount > 0;
             Refrence.player.KillPlayer();
-            Destroy(gameObject);
+
+            if (destroy)
+            {
+                if (Serializer.activeData.settings.soundEnabled)
+                {
+                    //audioSource.PlayOneShot(audioSource.clip);
+                }
+
+                ObjectDestroy();
+            }
         }
     }
 }

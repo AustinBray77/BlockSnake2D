@@ -34,7 +34,8 @@ public class Start_UI : UI
     {
         //Loads the main scene with fade
         StartCoroutine(ClickWithFade(
-            () => {
+            () =>
+            {
                 SceneManager.LoadScene("Main", LoadSceneMode.Single);
             }, fadeTime, true));
     }
@@ -44,7 +45,8 @@ public class Start_UI : UI
     {
         //Loads the shop UI with fade
         StartCoroutine(ClickWithFade(
-            () => {
+            () =>
+            {
                 Refrence.shopUI.Show();
                 Hide();
             }, fadeTime));
@@ -55,7 +57,8 @@ public class Start_UI : UI
     {
         //Loads the tutorial scene with fade
         StartCoroutine(ClickWithFade(
-             () => {
+             () =>
+             {
                  SceneManager.LoadScene("Tutorial", LoadSceneMode.Single);
              }, fadeTime, true));
     }
@@ -65,7 +68,8 @@ public class Start_UI : UI
     {
         //Loads the settings scree with fade
         StartCoroutine(ClickWithFade(
-            () => {
+            () =>
+            {
                 Refrence.settingsUI.Show();
                 Hide();
             }, fadeTime));

@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
@@ -7,7 +8,7 @@ using TMPro;
 public abstract class UI : MonoBehaviour
 {
     //Stores the normal fade time between screens
-    public static float fadeTime = 1f;
+    public static float fadeTime = 0.2f;
 
     //Internal refrence to the screens fade panel
     [SerializeField] protected Image fadePanel;
@@ -24,7 +25,7 @@ public abstract class UI : MonoBehaviour
     }
 
     //Overidable method called to show the UI object
-    public virtual void Show() 
+    public virtual void Show()
     {
         UIContainer.SetActive(true);
     }
@@ -46,7 +47,7 @@ public abstract class UI : MonoBehaviour
         action.Invoke();
 
         //Triggers another screen fade if the action does not switch scenes
-        if(!changesScenes)
+        if (!changesScenes)
             yield return StartCoroutine(AnimationPlus.FadeToColor(fadePanel, new Color(0, 0, 0, 0), seconds, false));
     }
 }

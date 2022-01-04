@@ -5,50 +5,64 @@ using UnityEngine;
 //Class to control the Top and Bottom border walls
 public class BorderWall : MonoBehaviour
 {
-    //Variable which stores the offset of how many iterations it should wait before moving again, { backup <= 0 }
-    public int backup;
+    //Variables for animation
+    private Vector3 targetPosition;
+    private float timeCounter;
+    private float targetTime;
 
     //Method called on scene load, assigns default values
     private void Start()
     {
-        backup = 0;
+        timeCounter = 0;
+        targetTime = 0;
+        targetPosition = transform.position;
+    }
+
+    //Method called on every frame
+    private void Update()
+    {
+        Vector3 position = transform.position;
+
+        if (!Player.isDead && !Player.isAtFinish)
+        {
+            transform.position += new Vector3(Object.speed * Time.deltaTime * Generator.GetRelativeSpeed(), 0);
+            targetPosition += new Vector3(Object.speed * Time.deltaTime * Generator.GetRelativeSpeed(), 0);
+            position = transform.position;
+        }
+
+        if (targetTime > timeCounter)
+        {
+            transform.position += Time.deltaTime * (targetPosition - position) / (targetTime - timeCounter);
+            timeCounter += Time.deltaTime;
+        }
+        else if (targetTime <= timeCounter && timeCounter != 0)
+        {
+            targetTime = 0;
+            timeCounter = 0;
+            transform.position = targetPosition;
+        }
+
+        if (Mathf.Abs(targetPosition.y) > Mathf.Abs(position.y) && timeCounter == 0)
+        {
+            targetPosition = transform.position;
+        }
     }
 
     //Method called when the 
-    public void OnSegmentChange(int amount)
+    public void OnSegmentChange(int amount, bool useAnimation)
     {
-        //Triggers if the border wall should wait an amount of iterations
-        if (backup != 0)
-        { 
-            //Triggers if that iteration amount is less than the amount of segments added
-            if (backup + amount > 0)
-            {
-                //Changes the position and size so the wall is just on the border of the screen
-                gameObject.LeanMove(transform.position + new Vector3(0, (backup + amount) * Player.increaseFactor * (transform.position.y < 0 ? -1 : 1)), amount);
-                transform.localScale += new Vector3(4 * Player.increaseFactor * (Screen.width / Screen.height) * (backup + amount), 0);
 
-                //Resets backup
-                backup = 0;
-            }
-            //Else just uniterates backup by the amount
-            else
-            {
-                backup += amount;
-            }
+        //Changes the position and size so the wall is just on the border of the screen, uses animation if requested
+        if (useAnimation)
+        {
+            targetPosition += new Vector3(0, amount * Player.increaseFactor * (transform.position.y < 0 ? -1 : 1));
+            targetTime += amount * 0.2f;
         }
-        //Else just adds the amount and changes the position and size by the desired amount
         else
         {
-            gameObject.LeanMove(transform.position + new Vector3(0, (backup + amount) * Player.increaseFactor * (transform.position.y < 0 ? -1 : 1)), amount);
-            transform.localScale += new Vector3(4 * Player.increaseFactor * (Screen.width / Screen.height) * (backup + amount), 0);
+            transform.position += new Vector3(0, amount * Player.increaseFactor * (transform.position.y < 0 ? -1 : 1));
         }
-    }
 
-    //Method called when an another object collides with the object
-    private void OnTriggerEnter2D(Collider2D collision)
-    {
-        //Kills the player if they collide with the object
-        if (collision.tag == "Player" || collision.tag == "Segment")
-            Refrence.player.KillPlayer();
+        transform.localScale += new Vector3(4 * Player.increaseFactor * Refrence.cam.aspect * amount, 0);
     }
 }

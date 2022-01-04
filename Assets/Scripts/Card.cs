@@ -19,6 +19,7 @@ public class Card
     public int level;
     public Sprite image;
     public float value;
+    public bool inverse = false;
 
     [SerializeField] private bool isPercentage;
     [SerializeField] private UnityEvent _event;
@@ -86,6 +87,10 @@ public class Card
             //Triggers if the card should deupgrade, and reverts the upgrade
             if (lastValueTriggered.levelAmount > level)
             {
+                inverse = true;
+                _event.Invoke();
+                inverse = false;
+
                 value -= lastValueTriggered.increaseAmount;
                 valueCurve.Insert(0, lastValueTriggered);
             }

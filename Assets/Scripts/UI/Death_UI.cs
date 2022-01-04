@@ -35,7 +35,7 @@ public class Death_UI : UI
 
             //Animates the level bar
             StartCoroutine(AnimateLevelBar());
-        } 
+        }
         //Else flags that the level bar has finished animating and deactivates it
         else
         {
@@ -114,11 +114,20 @@ public class Death_UI : UI
     //Method called when the player is to respawn
     public void OnRespawn()
     {
-        //Tells the Player and Generator that the player is respawning
-        Refrence.player.Respawn();
-        Refrence.gen.Respawn();
+        //If the player never hit a check point reload the scene
+        if (Refrence.gen.lastFinish == null)
+        {
+            Click_Restart();
+            return;
+        }
 
-        //Hides the UI
-        Hide();
+        StartCoroutine(ClickWithFade(() =>
+        {
+            //Tells the Player and Generator that the player is respawning
+            Refrence.player.Respawn();
+            Refrence.gen.Respawn();
+            //Hides the UI
+            Hide();
+        }, fadeTime, false));
     }
 }

@@ -20,6 +20,14 @@ public class Level
         xp = _xp;
     }
 
+    //Constructor using String, stirng will be xp in string form
+    public Level(string xpStr)
+    {
+        //Converts xp from string to float
+        float.TryParse(xpStr, out float _xp);
+        xp = _xp;
+    }
+
     //Method called to set the xp
     public void SetXP(float _xp) =>
         xp = _xp;
@@ -34,5 +42,11 @@ public class Level
 
     //Method called to convert XP to Level
     public static int XPToLevel(float xp) =>
-        (int) Mathf.Sqrt(xp / 2.5f);
+        (int)Mathf.Sqrt(xp / 2.5f);
+
+    //ToString Method
+    public override string ToString()
+    {
+        return xp.ToString();
+    }
 }

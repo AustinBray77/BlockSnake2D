@@ -4,7 +4,7 @@ using UnityEngine;
 
 //Inherited class to control all objects which move across the screen
 //Requires a 2D collider for collision, and a sprite renderer for renderering the objects sprite
-[RequireComponent(typeof(Collider2D), typeof(SpriteRenderer))]
+[RequireComponent(typeof(SpriteRenderer), typeof(Collider2D))]
 public abstract class Object : MonoBehaviour
 {
     public static float speed = 5;
@@ -13,28 +13,40 @@ public abstract class Object : MonoBehaviour
     //Stores the max number objects of this type which can occur on screen
     public int maxOnScreen;
 
+    //Bool to check if it is interactable
+    internal bool interactable;
+
     //Method called when the object is instantiated
     private void Awake()
     {
         //Assigns the gameobjects tag and sorting layer to the appropriate values
         gameObject.tag = "Object";
         GetComponent<SpriteRenderer>().sortingOrder = objectLayer;
+        interactable = true;
 
         //Allows for inherited classes to still call on instatiation
         ObjAwake();
     }
 
+    /*
     //Method called on each frame
     private void Update()
     {
         //If the player isn't dead or at finish the object moves to the left at the assigned speed variable
         if (!Player.isDead && !Player.isAtFinish)
         {
-            transform.position += -transform.right * speed * Time.deltaTime;
+            transform.position += new Vector3(-1 * speed * Time.deltaTime * Generator.GetRelativeSpeed(), 0);
         }
 
         //Allows for inherited classes to still call on each frame
         ObjUpdate();
+    }*/
+
+    //Method to destroy the object
+    public void ObjectDestroy()
+    {
+        interactable = false;
+        gameObject.LeanScale(new Vector3(0, 0, 0), 0.2f);
     }
 
     //Inhertied functions

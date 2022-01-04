@@ -10,11 +10,6 @@ public class Tutorial : MonoBehaviour
     //List to store the keys the user should press during the tutorial and the associated text elements
     [SerializeField] private List<KeyCode> nextKey;
     [SerializeField] private List<TextMeshProUGUI> nextText;
-
-    //Refrences to UI Elements
-    [SerializeField] private TextMeshProUGUI scoreText, gearText;
-    [SerializeField] private Image gearImage;
-
     //Refrence to Top and Bottom walls
     [SerializeField] private GameObject topWall, bottomWall;
 
@@ -37,20 +32,20 @@ public class Tutorial : MonoBehaviour
         LeanTween.init(1600);
 
         //Changes the tutorial text based on the platform
-        if(Gamemode.platform == Gamemode.Platform.Windows)
+        if (Serializer.activeData.settings.movementType == Player.MovementType.Keyboard)
         {
             nextText[0].text = "Press W to Move Upward";
             nextText[1].text = "Press S to Move Downward";
         }
-        else if (Gamemode.platform == Gamemode.Platform.Android || Gamemode.platform == Gamemode.Platform.IOS)
+        else if (Serializer.activeData.settings.movementType == Player.MovementType.Buttons)
         {
             nextText[0].text = "Press the Up Arrow to Move Upward";
             nextText[1].text = "Press the Down Arrow to Move Downward";
-        } 
+        }
         else
         {
-            nextText[0].text = "Press W or the Up Arrow to Move Upward";
-            nextText[1].text = "Press S or the Down Arrow to Move Downward";
+            nextText[0].text = "Press Above the Snake to Move Upward";
+            nextText[1].text = "Press Below the Snake to Move Downward";
         }
     }
 
@@ -65,19 +60,19 @@ public class Tutorial : MonoBehaviour
             {
                 //Removes it and iterates and animates to the next text
                 nextKey.RemoveAt(0);
-                
-                if(curFadeIn != null)
+
+                if (curFadeIn != null)
                 {
                     StopCoroutine(curFadeIn);
                 }
 
-                curFadeOut = StartCoroutine(AnimationPlus.FadeText(nextText[0], 2f));
+                curFadeOut = StartCoroutine(AnimationPlus.FadeText(nextText[0], UI.fadeTime));
                 nextText.RemoveAt(0);
 
                 //Checks that there is a next text, fades in the next text if there is
                 if (nextText.Count >= 1)
                 {
-                    curFadeIn = StartCoroutine(AnimationPlus.FadeText(nextText[0], 2f, false));
+                    curFadeIn = StartCoroutine(AnimationPlus.FadeText(nextText[0], UI.fadeTime, false));
                 }
 
                 //Triggers after the W and S key have been hit
@@ -87,13 +82,13 @@ public class Tutorial : MonoBehaviour
                     DropWalls();
 
                     //Animates the UI
-                    AnimateGameUI();
+                    Refrence.gameUI.FadeInElements();
 
                     //Starts the generator
                     gen.Initialize();
 
                     //Animates and removes the next text
-                    StartCoroutine(WaitFadeCurrentText(3f, 2f));
+                    StartCoroutine(WaitFadeCurrentText(3f, UI.fadeTime));
                 }
             }
         }
@@ -103,17 +98,9 @@ public class Tutorial : MonoBehaviour
     private void DropWalls()
     {
         //Moves the top and bottom wall into position
-        topWall.LeanMove(new Vector3(0, 11.5f), 2f);
-        bottomWall.LeanMove(new Vector3(0, -11.5f), 2f);    
+        topWall.LeanMove(new Vector3(0, 11.5f), UI.fadeTime);
+        bottomWall.LeanMove(new Vector3(0, -11.5f), UI.fadeTime);
     }
-
-    //Method called to fade in the game ui
-    private void AnimateGameUI()
-    {
-        //Fades in each UI Element
-        StartCoroutine(AnimationPlus.FadeText(scoreText, 2f, false));
-    }
-
     //Functions to wait then fade the current text element
     private IEnumerator WaitFadeCurrentText(float waitTime, float fadeTime, bool fadeOut = true)
     {

@@ -8,7 +8,7 @@ public class Parallax_Object : MonoBehaviour
     //Variables to store the layer and speed
     public int layer;
     private static float baseSpeed = 2;
-    private float speed;
+    public float speed;
 
     //Called when the object is instantiated
     private void Awake()
@@ -17,10 +17,10 @@ public class Parallax_Object : MonoBehaviour
     }
 
     //Method called on each frame
-    private void Update()
+    /*private void Update()
     {
         //If the player is not at finish or dead and moves the object by the calculated speed
-        if(!Player.isAtFinish && !Player.isDead)
-            transform.position += new Vector3(-speed, 0) * Time.deltaTime;
-    }
+        if (!Player.isAtFinish && !Player.isDead)
+            transform.position += new Vector3(-1 * speed * Time.deltaTime * Generator.GetRelativeSpeed(), 0);
+    }*/
 }
