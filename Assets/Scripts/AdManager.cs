@@ -14,7 +14,7 @@ public class AdManager : MonoBehaviour, IUnityAdsLoadListener, IUnityAdsShowList
     private void Start()
     {
         //Deactivates the object if the platform is windows
-        if (Gamemode.platform == Gamemode.Platform.Windows)
+        /*if (Gamemode.platform == Gamemode.Platform.Windows)
         {
             gameObject.SetActive(false);
             return;
@@ -40,10 +40,13 @@ public class AdManager : MonoBehaviour, IUnityAdsLoadListener, IUnityAdsShowList
             isValid = false;
             Debug.Log("Invalid Platform");
             return;
-        }
+        } */
+
+        gameID = "4271826";
+        adID = "Rewarded_Android";
 
         //Initializes the advertisment
-        Advertisement.Initialize(gameID, testMode);
+        Advertisement.Initialize(gameID, false);
     }
 
     // Load content to the Ad Unit:
