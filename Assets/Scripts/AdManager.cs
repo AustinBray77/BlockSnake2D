@@ -14,7 +14,7 @@ public class AdManager : MonoBehaviour, IUnityAdsLoadListener, IUnityAdsShowList
     private void Start()
     {
         //Deactivates the object if the platform is windows
-        if(Gamemode.platform == Gamemode.Platform.Windows)
+        if (Gamemode.platform == Gamemode.Platform.Windows)
         {
             gameObject.SetActive(false);
             return;
@@ -24,16 +24,18 @@ public class AdManager : MonoBehaviour, IUnityAdsLoadListener, IUnityAdsShowList
         testMode = Gamemode.platform == Gamemode.Platform.Debug;
 
         //Determinds the ad ID and game ID
-        if (Application.platform == RuntimePlatform.Android)
+        if (Gamemode.platform == Gamemode.Platform.Android || Gamemode.platform == Gamemode.Platform.Debug)
         {
+            //gameID = "415970920840";
             gameID = "4271826";
             adID = "Rewarded_Android";
         }
-        else if (Application.platform == RuntimePlatform.IPhonePlayer)
+        else if (Gamemode.platform == Gamemode.Platform.IOS)
         {
             gameID = "4271827";
             adID = "Rewarded_iOS";
-        } else if(!testMode)
+        }
+        else if (!testMode)
         {
             isValid = false;
             Debug.Log("Invalid Platform");

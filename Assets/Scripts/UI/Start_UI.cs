@@ -66,11 +66,23 @@ public class Start_UI : UI
     //Called when the user clicks to enter the settings
     public void Click_Settings()
     {
-        //Loads the settings scree with fade
+        //Loads the settings screen with fade
         StartCoroutine(ClickWithFade(
             () =>
             {
                 Refrence.settingsUI.Show();
+                Hide();
+            }, fadeTime));
+    }
+
+    //Called when the user clicks to enter the credits
+    public void Click_Credits()
+    {
+        //Loads credits screen with fade
+        StartCoroutine(ClickWithFade(
+            () =>
+            {
+                Refrence.creditsUI.Show();
                 Hide();
             }, fadeTime));
     }

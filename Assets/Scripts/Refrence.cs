@@ -17,6 +17,7 @@ public class Refrence : MonoBehaviour
     [SerializeField] private Shop_UI _shopUI;
     [SerializeField] private Start_UI _startUI;
     [SerializeField] private Settings_UI _settingsUI;
+    [SerializeField] private Credits_UI _creditsUI;
     [SerializeField] private AdManager _adManager;
     [SerializeField] private Card[] _cardTypes;
     [SerializeField] private Skin _baseSkin;
@@ -33,6 +34,7 @@ public class Refrence : MonoBehaviour
     public static Shop_UI shopUI;
     public static Start_UI startUI;
     public static Settings_UI settingsUI;
+    public static Credits_UI creditsUI;
     public static AdManager adManager;
     public static Card[] cardTypes;
 
@@ -52,6 +54,7 @@ public class Refrence : MonoBehaviour
         shopUI = _shopUI;
         startUI = _startUI;
         settingsUI = _settingsUI;
+        creditsUI = _creditsUI;
         adManager = _adManager;
         cardTypes = _cardTypes;
 

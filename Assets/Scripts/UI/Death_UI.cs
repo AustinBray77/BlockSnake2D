@@ -73,11 +73,11 @@ public class Death_UI : UI
             return;
 
         //Shows an ad if the user is on phone, respawns if the game is in debug mode
-        if ((Gamemode.platform == Gamemode.Platform.Android || Gamemode.platform == Gamemode.Platform.IOS) && !Gamemode.inLevel("Tutorial"))
+        if ((Gamemode.platform != Gamemode.Platform.Windows) && !Gamemode.inLevel("Tutorial"))
         {
             Refrence.adManager.ShowAd();
         }
-        else if (Gamemode.platform == Gamemode.Platform.Debug || Gamemode.inLevel("Tutorial"))
+        else if (Gamemode.inLevel("Tutorial"))
         {
             OnRespawn();
         }
