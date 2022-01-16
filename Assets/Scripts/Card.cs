@@ -12,6 +12,12 @@ public class Card
     {
         public float increaseAmount;
         public int levelAmount;
+
+        public IncrementTrigger(IncrementTrigger trigger)
+        {
+            increaseAmount = trigger.increaseAmount;
+            levelAmount = trigger.levelAmount;
+        }
     }
 
     //Properties to store data about the card
@@ -41,7 +47,7 @@ public class Card
             if (valueCurve[0].levelAmount <= level)
             {
                 value += valueCurve[0].increaseAmount;
-                lastValueTriggered = valueCurve[0];
+                lastValueTriggered = new IncrementTrigger(valueCurve[0]);
                 valueCurve.RemoveAt(0);
             }
         }
@@ -93,6 +99,7 @@ public class Card
 
                 value -= lastValueTriggered.increaseAmount;
                 valueCurve.Insert(0, lastValueTriggered);
+                lastValueTriggered = null;
             }
         }
     }

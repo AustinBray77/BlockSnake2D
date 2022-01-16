@@ -1,9 +1,36 @@
 using UnityEngine;
+using System.Collections.Generic;
 
 //Serializable class to control the level
 [System.Serializable]
 public class Level
 {
+    [System.Serializable]
+    public class LevelUpTrigger
+    {
+        [System.Serializable]
+        public class Reward
+        {
+            public int gearReward;
+            public bool unlocksSkin;
+
+            public Reward(int reward, bool unlocks)
+            {
+                gearReward = reward;
+                unlocksSkin = unlocks;
+            }
+        }
+
+        public int levelTrigger;
+        public Reward reward;
+
+        public LevelUpTrigger(int trigger, int gearReward, bool unlocksSkin)
+        {
+            levelTrigger = trigger;
+            reward = new Reward(gearReward, unlocksSkin);
+        }
+    }
+
     //Properties to store the xp and level
     public float xp { get; private set; }
     [HideInInspector] public int level => XPToLevel(xp);

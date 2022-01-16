@@ -11,9 +11,10 @@ class Save_Data
     public int gearCount { get; private set; }
     public int highScore { get; private set; }
     public Settings_Data settings { get; private set; }
+    public bool[] activatedLevelTriggers { get; private set; }
 
     //Default constructor
-    public Save_Data(int _activeSkin, bool[] _purchasedSkins, Level _level, int _gearCount, int _highScore, Settings_Data _settings)
+    public Save_Data(int _activeSkin, bool[] _purchasedSkins, Level _level, int _gearCount, int _highScore, Settings_Data _settings, bool[] _activatedLevelTriggers)
     {
         activeSkin = _activeSkin;
         purchasedSkins = _purchasedSkins;
@@ -21,6 +22,7 @@ class Save_Data
         gearCount = _gearCount;
         highScore = _highScore;
         settings = _settings;
+        activatedLevelTriggers = _activatedLevelTriggers;
     }
 
     //Constructor with string data for parsin
@@ -112,6 +114,25 @@ class Save_Data
             //Sets settings to base value
             settings = new Settings_Data("");
         }
+
+        activatedLevelTriggers = new bool[Refrence.levelUpTriggers.Count];
+
+        if (vals.Length >= 7)
+        {
+            string[] activatedTriggerStrings = vals[6].Split(' ');
+
+            //The string values to bools
+            for (int i = 0; i < activatedLevelTriggers.Length && i < activatedTriggerStrings.Length; i++)
+            {
+                activatedLevelTriggers[i] = activatedTriggerStrings[i].ToLower() == "true";
+            }
+
+            //Sets unknowns to false
+            for (int i = activatedTriggerStrings.Length; i < activatedLevelTriggers.Length; i++)
+            {
+                activatedLevelTriggers[i] = false;
+            }
+        }
     }
 
     //Public setters for instance variables
@@ -139,6 +160,12 @@ class Save_Data
         purchasedSkins[index] = true;
     }
 
+    public void TriggerActivated(int index)
+    {
+        activatedLevelTriggers[index] = true;
+        gearCount += Refrence.levelUpTriggers[index].reward.gearReward;
+    }
+
     //Method to set the settings
     public void SetSettings(Settings_Data _settings) =>
         settings = _settings;
@@ -151,6 +178,7 @@ class Save_Data
         level + "\n" +
         gearCount + "\n" +
         highScore + "\n" +
-        settings + "\n";
+        settings + "\n" +
+        Functions.ArrayToString<bool>(activatedLevelTriggers) + "\n";
     }
 }

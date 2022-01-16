@@ -1,5 +1,5 @@
 using System.Collections;
-using System.Collections.Generic;
+/*using System.Collections.Generic;
 using UnityEngine;
 
 //Class to control the gear objects
@@ -22,10 +22,11 @@ public class GearObject : Object
             /*if (Serializer.activeData.settings.soundEnabled)
             {
                 audioSource.PlayOneShot(audioSource.clip);
-            }*/
+            }
 
-            Refrence.player.AddGears(gearsAdded);
-            ObjectDestroy();
+Refrence.player.AddGears(gearsAdded);
+ObjectDestroy();
         }
     }
 }
+*/

@@ -6,44 +6,30 @@ using UnityEngine.Advertisements;
 public class AdManager : MonoBehaviour, IUnityAdsLoadListener, IUnityAdsShowListener
 {
     //Instance variables
-    private string gameID = "4271826", adID = "";
     private bool testMode;
     private bool isValid = true;
+    private System.Action actionAfterAd;
+    private string adID;
+
+#if UNITY_ANDROID
+    private string gameID = "4271826";
+    private string rewarded_AD = "Rewarded_Android";
+    private string intersertial_AD = "Interstitial_Android";
+#elif UNITY_IOS
+    private string gameID = "4271827";
+    private string rewarded_AD = "Rewarded_IOS";
+    private string intersertial_AD = "Interstitial_IOS";
+#endif
 
     //Method called on scene load
     private void Start()
     {
         //Deactivates the object if the platform is windows
-        /*if (Gamemode.platform == Gamemode.Platform.Windows)
+        if (Gamemode.platform == Gamemode.Platform.Windows)
         {
             gameObject.SetActive(false);
             return;
         }
-
-        //Determines if the ad manager should be in test mode
-        testMode = Gamemode.platform == Gamemode.Platform.Debug;
-
-        //Determinds the ad ID and game ID
-        if (Gamemode.platform == Gamemode.Platform.Android || Gamemode.platform == Gamemode.Platform.Debug)
-        {
-            //gameID = "415970920840";
-            gameID = "4271826";
-            adID = "Rewarded_Android";
-        }
-        else if (Gamemode.platform == Gamemode.Platform.IOS)
-        {
-            gameID = "4271827";
-            adID = "Rewarded_iOS";
-        }
-        else if (!testMode)
-        {
-            isValid = false;
-            Debug.Log("Invalid Platform");
-            return;
-        } */
-
-        gameID = "4271826";
-        adID = "Rewarded_Android";
 
         //Initializes the advertisment
         Advertisement.Initialize(gameID, false);
@@ -64,7 +50,7 @@ public class AdManager : MonoBehaviour, IUnityAdsLoadListener, IUnityAdsShowList
     }
 
     // Implement a method to execute when the user clicks the button.
-    public void ShowAd()
+    private void ShowAd()
     {
         // Then show the ad:
         Advertisement.Show(adID, this);
@@ -75,8 +61,15 @@ public class AdManager : MonoBehaviour, IUnityAdsLoadListener, IUnityAdsShowList
     {
         if (adUnitId.Equals(adID) && showCompletionState.Equals(UnityAdsShowCompletionState.COMPLETED))
         {
-            Debug.Log("Unity Ads Rewarded Ad Completed");
-            Refrence.deathUI.OnRespawn();
+            actionAfterAd.Invoke();
+            actionAfterAd = null;
+            adID = "";
+        }
+        else if (adID == intersertial_AD && showCompletionState.Equals(UnityAdsCompletionState.SKIPPED))
+        {
+            actionAfterAd.Invoke();
+            actionAfterAd = null;
+            adID = "";
         }
     }
 
@@ -98,5 +91,19 @@ public class AdManager : MonoBehaviour, IUnityAdsLoadListener, IUnityAdsShowList
     {
         // Clean up the button listeners:
         //_showAdButton.onClick.RemoveAllListeners();
+    }
+
+    public void ShowRewardedAdThenCall(System.Action action)
+    {
+        actionAfterAd = action;
+        adID = rewarded_AD;
+        ShowAd();
+    }
+
+    public void ShowIntersertialAdThenCall(System.Action action)
+    {
+        actionAfterAd = action;
+        adID = intersertial_AD;
+        ShowAd();
     }
 }

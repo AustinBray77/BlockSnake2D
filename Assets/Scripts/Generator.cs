@@ -12,7 +12,7 @@ public class Generator : MonoBehaviour
     //Refrences to the prefabs that are instantiated
     [SerializeField] private ScoreObject[] scorePrefabs;
     [SerializeField] private DamageObject[] damagePrefabs;
-    [SerializeField] private GearObject gearPrefab;
+    //[SerializeField] private GearObject gearPrefab;
     [SerializeField] private GameObject finishPrefab;
     [SerializeField] private GameObject frontStarPrefab, middleStarPrefab, backStarPrefab;
 
@@ -23,6 +23,8 @@ public class Generator : MonoBehaviour
 
     //Stores the spawn speed and the data of the last finish the player hit (used for respawning)
     public float spawnSpeed;
+    private float speedAtLastFinish;
+    private float spawnSpeedAtLastFinish;
     public Finish_Data lastFinish;
 
     //Stores the bounds of the generator and the finish objeccts which are on screen
@@ -59,8 +61,26 @@ public class Generator : MonoBehaviour
     public void Initialize()
     {
         //Assigns the base data for all of the properties
-        Object.speed = 5;
-        spawnSpeed = 2;
+        if (Gamemode.inLevel("Tutorial"))
+        {
+            Object.speed = 5f;
+            spawnSpeed = 2f;
+        }
+        else
+        {
+            switch (Gamemode.mode)
+            {
+                case Gamemode.Mode.Normal:
+                    Object.speed = 6f;
+                    spawnSpeed = 1.7f;
+                    break;
+                case Gamemode.Mode.Fast:
+                    Object.speed = 8f;
+                    spawnSpeed = 1.4f;
+                    break;
+            }
+        }
+
         bounds = 10;
         finishesOnScreen = new List<FinishObject>();
         lastFinish = null;
@@ -107,6 +127,26 @@ public class Generator : MonoBehaviour
                 }
             }
 
+            if (parallax_Objects.Count >= 1)
+            {
+                while (parallax_Objects[0].transform.position.x <= destroyerPosition)
+                {
+                    Destroy(parallax_Objects[0].gameObject);
+
+                    if (parallax_Objects[0].gameObject.name.Contains("Finish"))
+                    {
+                        OnFinishDestroyed();
+                    }
+
+                    parallax_Objects.RemoveAt(0);
+
+                    if (parallax_Objects.Count <= 0)
+                    {
+                        break;
+                    }
+                }
+            }
+
             transform.position += new Vector3(Object.speed * Time.deltaTime * relativeSpeed, 0);
             destroyerPosition += Object.speed * Time.deltaTime * relativeSpeed;
         }
@@ -116,11 +156,17 @@ public class Generator : MonoBehaviour
     public void Respawn()
     {
         //Destroys all objects on screen
+        StopAllCoroutines();
         DestroyAllObjects();
 
         //Resets the damage and score counts
-        scoreCounts = scoreCountsAtLastFinish;
-        damageCounts = damageCountsAtLastFinish;
+        scoreCounts = (int[])scoreCountsAtLastFinish.Clone();
+        damageCounts = (int[])damageCountsAtLastFinish.Clone();
+        objects = new List<Object>();
+        parallax_Objects = new List<Parallax_Object>();
+        finishesOnScreen = new List<FinishObject>();
+        Object.speed = speedAtLastFinish;
+        spawnSpeed = spawnSpeedAtLastFinish;
 
         //Creates the new finish for the player to spawn into
         GameObject nextFinish = Instantiate(finishPrefab, new Vector3(transform.position.x, 0), transform.rotation);
@@ -177,6 +223,8 @@ public class Generator : MonoBehaviour
         damageCountsAtLastFinish = (int[])damageCounts.Clone();
         counterAtLastFinishEnter = obj.spawnIndex + 1;
         lastFinish = obj.ToData();
+        speedAtLastFinish = Object.speed;
+        spawnSpeedAtLastFinish = spawnSpeed;
 
         //Debugging
         //Debug.Log(counterAtLastFinishEnter);
@@ -252,13 +300,13 @@ public class Generator : MonoBehaviour
             else
             {
                 //Triggers if i is greater than 10 and on a 2nd iteration and not in the tutorial
-                if (i > 10 && i % 2 == 0 && !Gamemode.inLevel("Tutorial"))
+                /*if (i > 10 && i % 2 == 0 && !Gamemode.inLevel("Tutorial"))
                 {
                     //Spawns a gear
                     Vector3Int pos = GenPosition(positions);
                     positions.Add(pos);
                     SpawnObject(gearPrefab, pos);
-                }
+                }*/
 
                 //Loops through each score count
                 for (int j = 0; j < scoreCounts.Length; j++)

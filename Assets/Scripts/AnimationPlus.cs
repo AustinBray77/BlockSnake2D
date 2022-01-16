@@ -5,9 +5,8 @@ using UnityEngine.UI;
 using TMPro;
 
 //Class used to store more animations
-public static class AnimationPlus
+public class AnimationPlus
 {
-
     //Method to fade an image to a color
     public static IEnumerator FadeToColor(Image img, Color endColor, float time, bool stateAfterCall = true)
     {
@@ -66,6 +65,8 @@ public static class AnimationPlus
                 levelBar.levelBar.value = Level.LevelToXP(lowerLevel);
                 levelBar.lowerLevel.text = lowerLevel.ToString();
                 levelBar.higherLevel.text = (lowerLevel + 1).ToString();
+
+                if (lowerLevel < 100) Refrence.deathUI.TriggerLevelPrompt(lowerLevel - 1);
             }
 
             //Increments the frame counter and waits the required amount of time

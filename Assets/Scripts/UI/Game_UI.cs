@@ -9,7 +9,8 @@ using System.Linq;
 public class Game_UI : UI
 {
     //Object refrence to the controls
-    [SerializeField] private GameObject controls;
+    private GameObject controls;
+    [SerializeField] private GameObject controlsLeft, controlsRight;
 
     //Refrence to the score text
     [SerializeField] private TextMeshProUGUI scoreText;
@@ -39,6 +40,17 @@ public class Game_UI : UI
     //Called when the scene is loaded
     private void Start()
     {
+        if (Serializer.activeData.settings.leftHandedControls)
+        {
+            controls = controlsLeft;
+            controlsRight.SetActive(false);
+        }
+        else
+        {
+            controls = controlsRight;
+            controlsLeft.SetActive(false);
+        }
+
         //Deactivates the on screen controls if the user is playing with button or all controls
         controls.SetActive(/*Serializer.activeData.settings.movementType == Player.MovementType.All ||*/ Serializer.activeData.settings.movementType == Player.MovementType.Buttons);
 

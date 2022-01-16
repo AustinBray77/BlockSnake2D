@@ -15,9 +15,10 @@ public class Shop_UI : UI
     private List<Skin_Manager> skin_Managers;
 
     //Stores valid skins, skin card prefab, and gear amount text
-    [SerializeField] private Skin[] _skins;
+    public Skin[] _skins;
     [SerializeField] private GameObject skinCardPrefab;
     [SerializeField] private TMP_Text gearText;
+    [SerializeField] private RectTransform contentGroup;
 
     //Stores a static refrence to valid skins and active skin card
     public static Skin[] skins;
@@ -32,7 +33,7 @@ public class Shop_UI : UI
     }
 
     //Sets the text after the serializer is assigned
-    private IEnumerator SetGearText()
+    public IEnumerator SetGearText()
     {
         yield return new WaitUntil(() => { return Serializer.activeData != null; });
         gearText.text = Serializer.activeData.gearCount.ToString();
@@ -52,7 +53,7 @@ public class Shop_UI : UI
         //Instantiates each skin card ath the correct location and adds its manager
         for (int i = 0; i < _skins.Length; i++)
         {
-            skinCards.Add(CreateSkinCard(new Vector2(i * 625, 0), new Vector3(i == 0 ? 1 : 0.9f, i == 0 ? 1 : 0.9f), _skins[i]));
+            skinCards.Add(CreateSkinCard(new Vector2(i * 625, 0), new Vector3(0.9f, 0.9f), _skins[i]));
             skin_Managers.Add(skinCards[i].GetComponent<Skin_Manager>());
         }
     }
@@ -69,21 +70,6 @@ public class Shop_UI : UI
 
         //Sets the gameobject to inactive, hiding it
         UIContainer.SetActive(false);
-    }
-
-    //Method called to move all the skin cards
-    public void MoveCards(int direction)
-    {
-        //Increments the active skin card
-        activeSkinCard += direction;
-
-        //Moves each of the skin cards
-        for (int i = 0; i < skinCards.Count; i++)
-        {
-            RectTransform rt = skinCards[i].GetComponent<RectTransform>();
-            rt.LeanMove(new Vector3((i - activeSkinCard) * 625, 0), 1f);
-            rt.LeanScale(new Vector3(i - activeSkinCard == 0 ? 1 : 0.9f, i - activeSkinCard == 0 ? 1 : 0.9f), 1f);
-        }
     }
 
     //Method to update the data on all of the skin cards
@@ -109,6 +95,7 @@ public class Shop_UI : UI
         //Sets the location
         rt.anchoredPosition = location;
         rt.localScale = scale;
+        rt.parent = contentGroup;
 
         //Sets the data
         skinCard.GetComponent<Skin_Manager>().FromSkinObject(skin);
@@ -127,5 +114,15 @@ public class Shop_UI : UI
                 Refrence.startUI.Show();
                 Hide();
             }, fadeTime));
+    }
+
+    //Method called when the user clicks to watch an ad for gears
+    public void WatchAdForGears(int reward)
+    {
+        Refrence.adManager.ShowRewardedAdThenCall(() =>
+        {
+            Serializer.activeData.SetGearCount(Serializer.activeData.gearCount + 5);
+            StartCoroutine(Refrence.shopUI.SetGearText());
+        });
     }
 }

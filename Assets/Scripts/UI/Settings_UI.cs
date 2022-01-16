@@ -9,8 +9,12 @@ public class Settings_UI : UI
 {
     //Stores refrences to the UI
     [SerializeField] private TMP_Dropdown qualitySelect, movementSelect;
-    [SerializeField] private Toggle soundEffectsToggle, vsyncToggle;
-    [SerializeField] private TextMeshProUGUI warning;
+    [SerializeField] private Toggle soundEffectsToggle, vsyncToggle, leftHandedControlsToggle;
+    [SerializeField] private TextMeshProUGUI warning, title;
+    [SerializeField] private GameObject[] pages;
+    [SerializeField] private Button[] pageButtons;
+
+    private int currentPageIndex;
 
     //Method called on object instatiation
     private void Start()
@@ -36,12 +40,24 @@ public class Settings_UI : UI
         movementSelect.onValueChanged.AddListener(new UnityEngine.Events.UnityAction<int>(OnMovementSelectChanged));
         soundEffectsToggle.onValueChanged.AddListener(new UnityEngine.Events.UnityAction<bool>(OnSoundEffectToggleChanged));
         vsyncToggle.onValueChanged.AddListener(new UnityEngine.Events.UnityAction<bool>(OnVsyncChanged));
+        leftHandedControlsToggle.onValueChanged.AddListener(new UnityEngine.Events.UnityAction<bool>(OnLeftHandedChanged));
 
         //Sets values to default values
         qualitySelect.value = (int)Serializer.activeData.settings.qualityLevel;
         movementSelect.value = (int)Serializer.activeData.settings.movementType;
         soundEffectsToggle.isOn = Serializer.activeData.settings.soundEnabled;
         vsyncToggle.isOn = Serializer.activeData.settings.vsyncEnabled;
+        leftHandedControlsToggle.isOn = Serializer.activeData.settings.leftHandedControls;
+        currentPageIndex = 0;
+
+        pageButtons[currentPageIndex].image.color = new Color(0.2196079f, 0.2196079f, 0.2196079f, 1);
+        title.text = pages[currentPageIndex].name;
+
+        for (int i = 1; i < pages.Length; i++)
+        {
+            pages[i].SetActive(false);
+            pageButtons[i].image.color = new Color(0.2196079f, 0.2196079f, 0.2196079f, 0);
+        }
     }
 
     //Overriden method to show the screen
@@ -49,9 +65,20 @@ public class Settings_UI : UI
     {
         //Sets the base values for the UI elements
         qualitySelect.value = (int)Serializer.activeData.settings.qualityLevel;
-        vsyncToggle.isOn = Serializer.activeData.settings.vsyncEnabled;
+        movementSelect.value = (int)Serializer.activeData.settings.movementType;
         soundEffectsToggle.isOn = Serializer.activeData.settings.soundEnabled;
+        vsyncToggle.isOn = Serializer.activeData.settings.vsyncEnabled;
+        leftHandedControlsToggle.isOn = Serializer.activeData.settings.leftHandedControls;
+        currentPageIndex = 0;
 
+        pageButtons[currentPageIndex].image.color = new Color(0.2196079f, 0.2196079f, 0.2196079f, 1);
+        title.text = pages[currentPageIndex].name;
+
+        for (int i = 1; i < pages.Length; i++)
+        {
+            pages[i].SetActive(false);
+            pageButtons[i].image.color = new Color(0.2196079f, 0.2196079f, 0.2196079f, 0);
+        }
         //Activates the UI
         UIContainer.SetActive(true);
     }
@@ -75,6 +102,13 @@ public class Settings_UI : UI
     {
         //Sets the vsync
         Serializer.activeData.settings.EnableVsync(value);
+    }
+
+    //Method called when the user changes the value in the left handed controls toggle
+    private void OnLeftHandedChanged(bool value)
+    {
+        //Sets the controls to left or right
+        Serializer.activeData.settings.EnableLeftHanded(value);
     }
 
     //Method called when the user changes the value in the movement select
@@ -102,24 +136,17 @@ public class Settings_UI : UI
             }, fadeTime));
     }
 
-    //Method called to fill a dropdown object with enum data
-    private void FillDropFromEnum<T>(TMP_Dropdown dropdown, int[] ingoreValues = null) where T : System.Enum
+    public void SwapToPage(int index)
     {
-        //Adds the items to the quality select dropdown
-        foreach (T value in System.Enum.GetValues(typeof(T)))
-        {
-            //Trigger if the some ignore values were passed in
-            if (ingoreValues != null)
-            {
-                //If the value should be ignored, continue
-                if (System.Array.IndexOf(ingoreValues, (int)(object)value) != -1)
-                {
-                    continue;
-                }
-            }
+        if (currentPageIndex == index) return;
 
-            //Adds the item text
-            dropdown.options.Add(new TMP_Dropdown.OptionData(value.ToString()));
-        }
+        pageButtons[currentPageIndex].image.color = new Color(0.2196079f, 0.2196079f, 0.2196079f, 0);
+        pages[currentPageIndex].SetActive(false);
+        pageButtons[index].image.color = new Color(0.2196079f, 0.2196079f, 0.2196079f, 1);
+        pages[index].SetActive(true);
+
+        title.text = pages[index].name;
+
+        currentPageIndex = index;
     }
 }

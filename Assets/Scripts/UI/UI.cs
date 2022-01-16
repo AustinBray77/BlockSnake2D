@@ -16,6 +16,9 @@ public abstract class UI : MonoBehaviour
     //Refrence to the container storing all the UI of this screen
     [SerializeField] protected GameObject UIContainer;
 
+    //Refrence to some images
+    [SerializeField] private Sprite gearImg, skinBaseImg;
+
     //Serializable class to store a refrence to a level bar
     [System.Serializable]
     public class LevelBar
@@ -49,5 +52,50 @@ public abstract class UI : MonoBehaviour
         //Triggers another screen fade if the action does not switch scenes
         if (!changesScenes)
             yield return StartCoroutine(AnimationPlus.FadeToColor(fadePanel, new Color(0, 0, 0, 0), seconds, false));
+    }
+
+    //Method called to fill a dropdown object with enum data
+    protected void FillDropFromEnum<T>(TMP_Dropdown dropdown, int[] ingoreValues = null) where T : System.Enum
+    {
+        //Adds the items to the quality select dropdown
+        foreach (T value in System.Enum.GetValues(typeof(T)))
+        {
+            //Trigger if the some ignore values were passed in
+            if (ingoreValues != null)
+            {
+                //If the value should be ignored, continue
+                if (System.Array.IndexOf(ingoreValues, (int)(object)value) != -1)
+                {
+                    continue;
+                }
+            }
+
+            //Adds the item text
+            dropdown.options.Add(new TMP_Dropdown.OptionData(value.ToString()));
+        }
+    }
+
+    public void TriggerLevelPrompt(int index)
+    {
+        var trigger = Refrence.levelUpTriggers[index];
+        Serializer.activeData.TriggerActivated(index);
+
+        Prompt p;
+
+        if (!trigger.reward.unlocksSkin)
+        {
+            p = Instantiate(Refrence.smallPrompt, Refrence.canvas).GetComponent<Prompt>();
+            p.SetDescriptions(new string[] { "+" + trigger.reward.gearReward.ToString() + " Gears" });
+            p.SetImages(new List<Sprite>() { gearImg });
+        }
+        else
+        {
+            p = Instantiate(Refrence.mediumPrompt, Refrence.canvas).GetComponent<Prompt>();
+            p.SetDescriptions(new string[] { "+" + trigger.reward.gearReward.ToString() + " Gears", "New skin unlocked!" });
+            p.SetImages(new List<Sprite>() { gearImg, skinBaseImg });
+        }
+
+        p.SetTitleText("Leveled Up To Level " + (index + 1));
+        p.ToCloseOnClick();
     }
 }

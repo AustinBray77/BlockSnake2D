@@ -7,17 +7,21 @@ public class Settings_Data
     //Variables to store the users settings
     public QualityController.QualityLevel qualityLevel { get; private set; }
     public Player.MovementType movementType { get; private set; }
+    public Gamemode.Mode gamemode { get; private set; }
     public bool vsyncEnabled { get; private set; }
     public bool soundEnabled { get; private set; }
+    public bool leftHandedControls { get; private set; }
 
     //Default contructor
-    public Settings_Data(QualityController.QualityLevel _qualityLevel, Player.MovementType _movementType, bool _vsyncEnabled, bool _soundEnabled)
+    public Settings_Data(QualityController.QualityLevel _qualityLevel, Player.MovementType _movementType, bool _vsyncEnabled, bool _soundEnabled, bool _leftHandedControls, Gamemode.Mode _gamemode)
     {
         //Assigns the instance values
         qualityLevel = _qualityLevel;
         movementType = _movementType;
         vsyncEnabled = _vsyncEnabled;
         soundEnabled = _soundEnabled;
+        leftHandedControls = _leftHandedControls;
+        gamemode = _gamemode;
     }
 
     //Constructor from string
@@ -73,6 +77,29 @@ public class Settings_Data
             //Set movement type to base movement type
             movementType = Player.DefaultMovementType(Gamemode.platform);
         }
+
+        if (vals.Length >= 5)
+        {
+            //Converts left handed controls
+            leftHandedControls = vals[4].ToLower() == "true";
+        }
+        else
+        {
+            //Set left handed controls to base value
+            leftHandedControls = false;
+        }
+
+        if (vals.Length >= 6)
+        {
+            //Converts movement type
+            int.TryParse(vals[5], out int _gamemode);
+            gamemode = (Gamemode.Mode)_gamemode;
+        }
+        else
+        {
+            //Set movement type to base movement type
+            gamemode = Gamemode.Mode.Normal;
+        }
     }
 
     //Public setters for instance variables
@@ -92,9 +119,12 @@ public class Settings_Data
     public void EnableSound(bool enable) =>
         soundEnabled = enable;
 
+    public void EnableLeftHanded(bool enable) =>
+        leftHandedControls = enable;
+
     //ToString Method
     public override string ToString()
     {
-        return (int)qualityLevel + " " + vsyncEnabled + " " + soundEnabled + " " + (int)movementType;
+        return (int)qualityLevel + " " + vsyncEnabled + " " + soundEnabled + " " + (int)movementType + " " + leftHandedControls;
     }
 }

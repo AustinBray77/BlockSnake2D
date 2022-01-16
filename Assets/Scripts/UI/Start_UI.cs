@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
+using TMPro;
 
 //Class to contorl the start UI
 public class Start_UI : UI
@@ -19,6 +20,16 @@ public class Start_UI : UI
             loadingText.SetActive(true);
             Serializer.LoadData();
             loadingText.SetActive(false);
+
+            for (int i = 0; i < Serializer.activeData.activatedLevelTriggers.Length; i++)
+            {
+                if (!Serializer.activeData.activatedLevelTriggers[i] && Refrence.levelUpTriggers[i].levelTrigger <= Serializer.activeData.level.level)
+                {
+                    TriggerLevelPrompt(i);
+                }
+            }
+
+            Serializer.SaveData();
         }
 
         //Fades in
@@ -36,8 +47,9 @@ public class Start_UI : UI
         StartCoroutine(ClickWithFade(
             () =>
             {
-                SceneManager.LoadScene("Main", LoadSceneMode.Single);
-            }, fadeTime, true));
+                Refrence.modeSelectUI.Show();
+                Hide();
+            }, fadeTime));
     }
 
     //Called when the user clicks to the shop

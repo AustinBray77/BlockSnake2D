@@ -29,7 +29,6 @@ public class Finish_UI : UI
     //Method called when the UI is to be shown
     public override void Show()
     {
-
         //Activates the UI Elements
         UIContainer.SetActive(true);
 

@@ -6,15 +6,13 @@ using TMPro;
 
 //Class to control the UI of each skin
 public class Skin_Manager : MonoBehaviour
-{ 
+{
     //Refrences to UI elements
     [SerializeField] private TextMeshProUGUI title, desc;
-    [SerializeField] private Image frontImage, segmentImage;
+    [SerializeField] private Image frontImage, segmentImage, gearImage;
 
     //Refrence to the associated skin
     private Skin skin;
-
-
     private string lockedTitle = "LOCKED";
     [SerializeField] private Sprite lockedSprite;
     private string lockedDesc =>
@@ -40,8 +38,10 @@ public class Skin_Manager : MonoBehaviour
         //Gets the description and assigns it
         desc.text = skin.locked ?
             lockedDesc : !skin.purchased ?
-                skin.price.ToString() + " GEARS" : skin.equipped ?
+                skin.price.ToString() : skin.equipped ?
                     "EQUIPPED" : "EQUIP";
+
+        gearImage.gameObject.SetActive(!skin.locked && !skin.purchased);
 
         //Assigns the two sprites
         frontImage.sprite = skin.locked ? lockedSprite : skin.frontSprite;
@@ -63,7 +63,7 @@ public class Skin_Manager : MonoBehaviour
     public void OnClick()
     {
         //Triggers if this card is the current card in the middle
-        if(Shop_UI.activeSkinCard == index)
+        if (Shop_UI.activeSkinCard == index)
         {
             //Triggers if the skin has been unlocked
             if (!skin.locked)
@@ -83,11 +83,11 @@ public class Skin_Manager : MonoBehaviour
                     Refrence.shopUI.UpdateAllCards();
                 }
             }
-        } 
+        }
         //Else animate so that this card is in the middle
         else
         {
-            Refrence.shopUI.MoveCards(ExtraMath.NormalizeInt(index - Shop_UI.activeSkinCard));
+            Shop_UI.activeSkinCard = index;
         }
     }
 }

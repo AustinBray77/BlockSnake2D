@@ -11,8 +11,11 @@ public class Death_UI : UI
     //Properties to store refrences to the aspects of the UI
     [SerializeField] private TMP_Text scoreText;
     [SerializeField] private LevelBar levelBar;
+    [SerializeField] private Sprite adImg;
 
     private bool levelBarAnimationFinished = false;
+
+    public float multiplier = 1f;
 
     //Method called when the UI is to be shown
     public override void Show()
@@ -33,8 +36,24 @@ public class Death_UI : UI
             levelBar.levelBar.maxValue = Level.LevelToXP(Serializer.activeData.level.level + 1);
             levelBar.levelBar.value = Serializer.activeData.level.xp;
 
+            //Prompt ad
+            multiplier = 0f;
+
+            Prompt prompt = Instantiate(Refrence.smallPrompt, Refrence.canvas).GetComponent<Prompt>();
+            prompt.SetTitleText("Watch an Ad for 4x Rewards", 48);
+            prompt.SetImages(new List<Sprite>() { adImg });
+
+            prompt.AddButtonListener(new UnityEngine.Events.UnityAction(() =>
+            {
+                Refrence.adManager.ShowRewardedAdThenCall(new System.Action(() =>
+                {
+                    Refrence.deathUI.multiplier = 3f;
+                    prompt.OnClickClose();
+                }));
+            }));
+
             //Animates the level bar
-            StartCoroutine(AnimateLevelBar());
+            StartCoroutine(AnimateLevelBar(prompt.gameObject));
         }
         //Else flags that the level bar has finished animating and deactivates it
         else
@@ -44,9 +63,12 @@ public class Death_UI : UI
     }
 
     //Method called when teh level bar is to be animated
-    private IEnumerator AnimateLevelBar()
+    private IEnumerator AnimateLevelBar(GameObject prompt)
     {
+        yield return new WaitUntil(() => prompt == null);
+
         levelBarAnimationFinished = false;
+        Player.level.AddXP((Player.level.xp - Serializer.activeData.level.xp) * multiplier);
 
         //Calculates the length of the animation
         float time = Level.XPToLevel(Player.level.xp) - Serializer.activeData.level.level > 0 ?
@@ -75,7 +97,7 @@ public class Death_UI : UI
         //Shows an ad if the user is on phone, respawns if the game is in debug mode
         if ((Gamemode.platform != Gamemode.Platform.Windows) && !Gamemode.inLevel("Tutorial"))
         {
-            Refrence.adManager.ShowAd();
+            Refrence.adManager.ShowRewardedAdThenCall(() => Refrence.deathUI.OnRespawn());
         }
         else if (Gamemode.inLevel("Tutorial"))
         {

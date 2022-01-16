@@ -92,6 +92,7 @@ public class Player : MonoBehaviour
     //Audio source and clips
     private AudioSource audioSource;
     [SerializeField] private AudioClip scoreAddedSound, deathSound, shieldSound, slowdownTheme;
+    private static int adCounter;
 
     //Method called on scene load
     private void Start()
@@ -130,6 +131,7 @@ public class Player : MonoBehaviour
         movementType = Serializer.activeData.settings.movementType;
 
         lastFinishHit = null;
+        lastUpgraded = null;
         backup = 0;
 
         audioSource = GetComponent<AudioSource>();
@@ -217,7 +219,7 @@ public class Player : MonoBehaviour
         //Gets the rotation and position from a certain time peroid ago
         Vector3 curPos = new Vector3();
         Vector3 curRot = new Vector3();
-        Segment curSegment = segmentAfter;
+        Segment curSegment = segmentAfter, segmentBefore = null;
 
         if (newNext > -1 && newNext != next)
         {
@@ -249,13 +251,38 @@ public class Player : MonoBehaviour
 
                     curSegment.GetComponent<BoxCollider2D>().size = new Vector2(1, 1);
 
-                    curSegment.transform.position = new Vector3(curPos.x, curPos.y);
+                    curSegment.transform.position = new Vector3(curPos.x + (Object.speed - 5f) / 6f, curPos.y);
                     curSegment.canCollide = true;
+
+                    Vector3 segPos = curSegment.transform.position;
+
+                    if (segmentBefore == null)
+                    {
+                        if (segPos.x + 1f > transform.position.x)
+                        {
+                            curSegment.transform.position = new Vector3(transform.position.x - 1.5f, curSegment.transform.position.y);
+                        }
+                        else if (segPos.x < transform.position.x - 1.5f)
+                        {
+                            curSegment.transform.position = new Vector3(transform.position.x - 1.5f, curSegment.transform.position.y);
+                        }
+                    }
+                    else
+                    {
+                        if (segPos.x + 1f > segmentBefore.transform.position.x)
+                        {
+                            curSegment.transform.position = new Vector3(segmentBefore.transform.position.x - 1.5f, curSegment.transform.position.y);
+                        }
+                        else if (segPos.x < segmentBefore.transform.position.x - 1.5f)
+                        {
+                            curSegment.transform.position = new Vector3(segmentBefore.transform.position.x - 1.5f, curSegment.transform.position.y);
+                        }
+                    }
+
                 }
                 else
                 {
-                    float x = curSegment.transform.position.x;
-                    curSegment.transform.position = new Vector3(x < curPos.x - 2f ? curPos.x : x, curPos.y);
+                    curSegment.transform.position = new Vector3(curSegment.transform.position.x, curPos.y);
                 }
 
                 //curSegment.UpdateConstantPosition();
@@ -291,6 +318,7 @@ public class Player : MonoBehaviour
             curSegment.rotations.Add(curSegment.transform.rotation.eulerAngles);
             curSegment.rotPosTimes.Add(0);
 
+            segmentBefore = curSegment;
             curSegment = curSegment.segmentAfter;
         }
     }
@@ -396,7 +424,8 @@ public class Player : MonoBehaviour
         }
 
         //Stops any other sounds
-        audioSource.Stop();
+        if (audioSource.isPlaying)
+            audioSource.Stop();
 
         //Plays death sound
         audioSource.PlayOneShot(deathSound);
@@ -427,19 +456,39 @@ public class Player : MonoBehaviour
 
         CleanMovementBuffers();
 
-        //Hides the game UI and shows the death UI
+        //Hides the game UI and shows an ad then the death UI
         Refrence.gameUI.Hide();
         Refrence.deathUI.Show();
+
+        if (!Gamemode.inLevel("Tutorial"))
+        {
+            if (adCounter >= 2)
+            {
+                Refrence.adManager.ShowIntersertialAdThenCall(() =>
+                {
+                    Debug.Log("Ad was completed");
+                });
+                adCounter = 0;
+            }
+            else
+            {
+                adCounter++;
+            }
+        }
     }
 
     //Method called when the player is to respawn
     public void Respawn()
     {
         //Removes the level from the last upgraded card
-        lastUpgraded.RemoveLevel();
+        if (lastUpgraded != null)
+        {
+            lastUpgraded.RemoveLevel();
+            lastUpgraded = null;
+        }
 
         //Moves the entire player to the middle of the screen
-        MoveWhole(new Vector3(0, 0), new Vector3(0, 0, 0));
+        MoveWhole(new Vector3(positionAtLastFinish.x, 0), new Vector3(0, 0, 0));
 
         //Resets the segment count to the segment count at last finish
         if (CountSegments() - segmentCountAtLastFinish > 0)
@@ -452,12 +501,12 @@ public class Player : MonoBehaviour
         }
 
         //Sets the properties to there values at last finish
-        transform.position = positionAtLastFinish;
         score = scoreAtLastFinish;
-        Refrence.cam.orthographicSize = yBoundAtLastFinish;
-        Refrence.cam.transform.position = new Vector3(positionAtLastFinish.x, 0);
-        Refrence.wallTop.transform.position = new Vector3(positionAtLastFinish.x, yBoundAtLastFinish - 0.5f);
-        Refrence.wallBottom.transform.position = new Vector3(positionAtLastFinish.x, -yBoundAtLastFinish + 0.5f);
+        Debug.Log(xBoundAtLastFinish + " " + yBoundAtLastFinish);
+        Refrence.camController.SetSize(yBoundAtLastFinish);
+        Refrence.cam.transform.position = new Vector3(positionAtLastFinish.x, 0, -1);
+        Refrence.wallTop.SetPosition(new Vector3(positionAtLastFinish.x, yBoundAtLastFinish - 0.5f));
+        Refrence.wallBottom.SetPosition(new Vector3(positionAtLastFinish.x, -yBoundAtLastFinish + 0.5f));
         Refrence.gen.transform.position = new Vector3(positionAtLastFinish.x + xBoundAtLastFinish, 0);
         Refrence.gen.SetDestroyerPosition(positionAtLastFinish.x - xBoundAtLastFinish);
         Generator.SetBounds(yBoundAtLastFinish - 2);
@@ -487,9 +536,9 @@ public class Player : MonoBehaviour
         isAtFinish = true;
 
         //Saves the values to the at last finish refrence
-        positionAtLastFinish = transform.position;
+        positionAtLastFinish = Functions.CopyVector3(transform.position);
         segmentCountAtLastFinish = CountSegments();
-        xBoundAtLastFinish = Refrence.gen.transform.position.x;
+        xBoundAtLastFinish = Refrence.gen.transform.position.x - positionAtLastFinish.x;
         yBoundAtLastFinish = Refrence.cam.orthographicSize;
         backupAtLastFinish = backup;
         scoreAtLastFinish = score;
@@ -529,7 +578,7 @@ public class Player : MonoBehaviour
         if (!Gamemode.inLevel("Tutorial"))
         {
             //Adds XP
-            level.AddXP(add);
+            level.AddXP(add * Gamemode.ModeMultiplier(Gamemode.mode));
         }
 
         //Adds Segments
@@ -539,6 +588,7 @@ public class Player : MonoBehaviour
     //Method called to add segments to the player
     public void AddSegments(int add, bool useAnimation = true)
     {
+        Debug.Log("Adding segments: " + add);
         //Loops to add each segment
         for (int i = 0; i < add; i++)
         {
@@ -546,7 +596,7 @@ public class Player : MonoBehaviour
             if (!ReferenceEquals(segmentLast, null))
             {
                 //Creates the new segment and adds refrence to it to the player and segment before it
-                GameObject newSegment = Instantiate(segmentPrefab, segmentLast.transform.position - new Vector3(1.5f, 0f), segmentLast.transform.rotation);
+                GameObject newSegment = Instantiate(segmentPrefab, segmentLast.transform.position, segmentLast.transform.rotation);
                 newSegment.transform.parent = transform.parent;
                 Segment newSegmentRefrence = newSegment.GetComponent<Segment>();
                 newSegmentRefrence.useAnimation = useAnimation;
@@ -557,7 +607,7 @@ public class Player : MonoBehaviour
             else
             {
                 //Creates the new segment and adds refrences to it to the player
-                GameObject newSegment = Instantiate(segmentPrefab, transform.position - new Vector3(1.5f, 0f), transform.rotation);
+                GameObject newSegment = Instantiate(segmentPrefab, transform.position, transform.rotation);
                 newSegment.transform.parent = transform.parent;
                 Segment newSegmentRefrence = newSegment.GetComponent<Segment>();
                 newSegmentRefrence.useAnimation = useAnimation;
@@ -578,6 +628,7 @@ public class Player : MonoBehaviour
             Refrence.gen.OnSegmentChange(add);
             Refrence.wallTop.OnSegmentChange(add, useAnimation);
             Refrence.wallBottom.OnSegmentChange(add, useAnimation);
+            backup = 0;
         }
 
         if (backup < 0)
@@ -589,6 +640,7 @@ public class Player : MonoBehaviour
     //Method called to remove segments from the player
     public void RemoveSegments(int remove, bool useAnimation = true)
     {
+        Debug.Log("Removing segments: " + remove);
         //Variable to store the current segment, the amount of segments removed, and a refrence to all segments
         Segment cur = segmentAfter;
         int amountRemoved = 0;
@@ -629,7 +681,7 @@ public class Player : MonoBehaviour
     private void MoveWhole(Vector3 position, Vector3 rotation, Segment segment = null)
     {
         //Triggers if no segment is passed as a parameter
-        if (segment != null)
+        if (segment == null)
         {
             //Sets the position and rotation of the player
             transform.position = position;

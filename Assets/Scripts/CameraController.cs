@@ -54,4 +54,13 @@ public class CameraController : MonoBehaviour
             Refrence.cam.orthographicSize += Player.increaseFactor * amount;
         }
     }
+
+    //Method to set the camera size and override animation
+    public void SetSize(float size)
+    {
+        Refrence.cam.orthographicSize = size;
+        targetSize = size;
+        targetTime = 0;
+        timeCounter = 0;
+    }
 }

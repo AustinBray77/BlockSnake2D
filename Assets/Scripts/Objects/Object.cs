@@ -7,7 +7,7 @@ using UnityEngine;
 [RequireComponent(typeof(SpriteRenderer), typeof(Collider2D))]
 public abstract class Object : MonoBehaviour
 {
-    public static float speed = 5;
+    public static float speed = 7.5f;
     public static int objectLayer = 3;
 
     //Stores the max number objects of this type which can occur on screen
