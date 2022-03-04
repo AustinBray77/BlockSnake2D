@@ -21,23 +21,29 @@ public class Card
     }
 
     //Properties to store data about the card
-    public string title;
+    public string title, desc;
     public int level;
     public Sprite image;
     public float value;
-    public bool inverse = false;
 
     [SerializeField] private bool isPercentage;
-    [SerializeField] private UnityEvent _event;
+    [SerializeField] private UnityEvent<float, int> normalEvent, inverseEvent;
     [SerializeField] private List<IncrementTrigger> valueCurve;
 
     private IncrementTrigger lastValueTriggered;
+    private int cardIndex;
+
+    //Method to set the index of the card
+    public void SetIndex(int index)
+    {
+        cardIndex = index;
+    }
 
     //Method clalled when the card is clicked
     public void Call()
     {
         //Invokes the event associated with the card and increments the level
-        _event.Invoke();
+        RunEvent(normalEvent);
         level++;
 
         //Triggers if the card may be able to level up
@@ -86,6 +92,7 @@ public class Card
     {
         //Decrements level
         level--;
+        RunEvent(inverseEvent);
 
         //Triggers if the card has experenced an upgrade
         if (lastValueTriggered != null)
@@ -93,14 +100,21 @@ public class Card
             //Triggers if the card should deupgrade, and reverts the upgrade
             if (lastValueTriggered.levelAmount > level)
             {
-                inverse = true;
-                _event.Invoke();
-                inverse = false;
-
                 value -= lastValueTriggered.increaseAmount;
                 valueCurve.Insert(0, lastValueTriggered);
                 lastValueTriggered = null;
             }
         }
+    }
+
+    //Base method to call powerup upgrades
+    public void RunEvent(UnityEvent<float, int> method)
+    {
+        //Runs the card method
+        method.Invoke(value, cardIndex);
+
+        //Hides the Finish UI and sets the last upgraded card to the selected card
+        Reference.finishUI.GetComponent<Finish_UI>().Hide();
+        Reference.player.lastUpgraded = Reference.cardTypes[cardIndex];
     }
 }
