@@ -27,7 +27,7 @@ public class FinishObject : Object
     private int[] ShuffleCards()
     {
         //Creates a new int array and assigns each value to its index
-        int[] vals = new int[Refrence.cardTypes.Length];
+        int[] vals = new int[Reference.cardTypes.Length];
 
         for (int i = 0; i < vals.Length; i++)
         {
@@ -35,7 +35,7 @@ public class FinishObject : Object
         }
 
         //Randomly swaps each index with a different index
-        for (int i = 0; i < Refrence.cardTypes.Length; i++)
+        for (int i = 0; i < Reference.cardTypes.Length; i++)
         {
             int index = Random.Range(0, vals.Length);
             //Evil bit hack to swap variables
@@ -102,22 +102,22 @@ public class FinishObject : Object
             Player.lastFinishHit = gameObject;
 
             //Tells the player object it has entered the finish
-            Refrence.player.OnEnterFinish();
+            Reference.player.OnEnterFinish();
 
             //Randomizes the cards if the finish was not loaded after respawn
             if (!fromData)
             {
                 int[] vals = ShuffleCards();
 
-                selectedCards = new Card[] { Refrence.cardTypes[vals[0]], Refrence.cardTypes[vals[1]], Refrence.cardTypes[vals[2]] };
+                selectedCards = new Card[] { Reference.cardTypes[vals[0]], Reference.cardTypes[vals[1]], Reference.cardTypes[vals[2]] };
             }
 
             //Tells the generator object the player has entered the finish
-            Refrence.gen.OnPlayerEnterFinish(this);
+            Reference.gen.OnPlayerEnterFinish(this);
 
             //Shows the cards
-            Refrence.finishUI.Show();
-            Refrence.finishUI.SetCardData(selectedCards);
+            Reference.finishUI.Show();
+            Reference.finishUI.SetCardData(selectedCards);
         }
     }
 

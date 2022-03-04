@@ -63,7 +63,7 @@ public class BorderWall : MonoBehaviour
             transform.position += new Vector3(0, amount * Player.increaseFactor * (transform.position.y < 0 ? -1 : 1));
         }
 
-        transform.localScale += new Vector3(4 * Player.increaseFactor * Refrence.cam.aspect * amount, 0);
+        transform.localScale += new Vector3(4 * Player.increaseFactor * Reference.cam.aspect * amount, 0);
     }
 
     //Method called to set position without messing up the animation

@@ -12,9 +12,12 @@ class Save_Data
     public int highScore { get; private set; }
     public Settings_Data settings { get; private set; }
     public bool[] activatedLevelTriggers { get; private set; }
+    public long lastRewardTime { get; private set; }
+    public int lastReward { get; private set; }
 
     //Default constructor
-    public Save_Data(int _activeSkin, bool[] _purchasedSkins, Level _level, int _gearCount, int _highScore, Settings_Data _settings, bool[] _activatedLevelTriggers)
+    public Save_Data(int _activeSkin, bool[] _purchasedSkins, Level _level, int _gearCount, int _highScore, Settings_Data _settings, bool[] _activatedLevelTriggers,
+        long _lastRewardTime, int _lastReward)
     {
         activeSkin = _activeSkin;
         purchasedSkins = _purchasedSkins;
@@ -23,6 +26,8 @@ class Save_Data
         highScore = _highScore;
         settings = _settings;
         activatedLevelTriggers = _activatedLevelTriggers;
+        lastRewardTime = _lastRewardTime;
+        lastReward = _lastReward;
     }
 
     //Constructor with string data for parsin
@@ -32,7 +37,6 @@ class Save_Data
         string[] vals = data.Split('\n');
 
         //If statements are to prevent index out of bounds error, if the data is too short the data is set to a defualt value
-
         if (vals.Length >= 0)
         {
             //Converts Active Skin
@@ -115,7 +119,7 @@ class Save_Data
             settings = new Settings_Data("");
         }
 
-        activatedLevelTriggers = new bool[Refrence.levelUpTriggers.Count];
+        activatedLevelTriggers = new bool[Reference.levelUpTriggers.Count];
 
         if (vals.Length >= 7)
         {
@@ -132,6 +136,26 @@ class Save_Data
             {
                 activatedLevelTriggers[i] = false;
             }
+        }
+
+        if (vals.Length >= 8)
+        {
+            long.TryParse(vals[7], out long _lastLoginTime);
+            lastRewardTime = _lastLoginTime == 0 ? Functions.CurrentTimeInMillis() : _lastLoginTime;
+        }
+        else
+        {
+            lastRewardTime = Functions.CurrentTimeInMillis() + (3600000 * Functions.TimezoneOffset());
+        }
+
+        if (vals.Length >= 9)
+        {
+            int.TryParse(vals[8], out int _lastReward);
+            lastReward = _lastReward;
+        }
+        else
+        {
+            lastReward = 5;
         }
     }
 
@@ -163,12 +187,20 @@ class Save_Data
     public void TriggerActivated(int index)
     {
         activatedLevelTriggers[index] = true;
-        gearCount += Refrence.levelUpTriggers[index].reward.gearReward;
+        gearCount += Reference.levelUpTriggers[index].reward.gearReward;
     }
 
     //Method to set the settings
     public void SetSettings(Settings_Data _settings) =>
         settings = _settings;
+
+    //Method to set the last reward time
+    public void SetLastRewardTime(long _lastRewardTime) =>
+        lastRewardTime = _lastRewardTime;
+
+    //Method to set the last reward
+    public void SetLastReward(int _lastReward) =>
+        lastReward = _lastReward;
 
     //ToString Method
     public override string ToString()
@@ -179,6 +211,8 @@ class Save_Data
         gearCount + "\n" +
         highScore + "\n" +
         settings + "\n" +
-        Functions.ArrayToString<bool>(activatedLevelTriggers) + "\n";
+        Functions.ArrayToString<bool>(activatedLevelTriggers) + "\n" +
+        lastRewardTime + "\n" +
+        lastReward;
     }
 }

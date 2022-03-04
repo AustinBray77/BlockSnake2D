@@ -21,18 +21,12 @@ public class QualityController : MonoBehaviour
     [SerializeField] private PostProcessProfile profile;
 
     //Method called on scene load
-    private void Start()
+    private IEnumerator Start()
     {
-        //If the active data is null, find the apropriate quality
-        if (Serializer.activeData == null)
-        {
-            SetQuality(DefaultQualityLevel(Gamemode.platform));
-        }
-        //Else set the quality to the saved quality
-        else
-        {
-            SetQuality(Serializer.activeData.settings.qualityLevel);
-        }
+        yield return new WaitUntil(() => Serializer.activeData != null);
+
+        //Else Set the quality to the saved quality
+        SetQuality(Serializer.activeData.settings.qualityLevel);
     }
 
     //Method called to change the graphics quality level

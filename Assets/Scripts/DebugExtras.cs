@@ -13,19 +13,19 @@ public class DebugExtras : MonoBehaviour
             return;
 
         //Triggers if the current scene is main (play will not be null)
-        if (Refrence.player != null)
+        if (Reference.player != null)
         {
             //If the j key is hit, 1 segment is removed from the player
             if (Input.GetKeyDown(KeyCode.J))
             {
-                Refrence.player.RemoveSegments(1);
+                Reference.player.RemoveSegments(1);
                 Debug.Log("1 Segment Removed");
             }
 
             //If the k key is hit, 5 segments are removed from the player
             if (Input.GetKeyDown(KeyCode.K))
             {
-                Refrence.player.RemoveSegments(5);
+                Reference.player.RemoveSegments(5);
                 Debug.Log("5 Segment Removed");
             }
 
@@ -37,35 +37,35 @@ public class DebugExtras : MonoBehaviour
             }
 
             //If the g key is hit, 10 gears are added to the player
-            if (Input.GetKeyDown(KeyCode.G))
+            /*if (Input.GetKeyDown(KeyCode.G))
             {
                 Player.gearCount += 10;
                 Debug.Log("10 Gears Added");
-            }
+            }*/
 
             if (Input.GetKeyDown(KeyCode.B))
             {
-                Refrence.player.AddScore(5);
+                Reference.player.AddScore(5);
             }
 
             //If the h key is hit, 1 shield is added to the player
             if (Input.GetKeyDown(KeyCode.H))
             {
-                Refrence.player.AddShields(1);
+                Reference.player.AddShields(1);
                 Debug.Log("1 Shield Added");
             }
 
             //If the v key is hit, 1 shield is used
             if (Input.GetKeyDown(KeyCode.V))
             {
-                Refrence.player.UseShield();
+                Reference.player.UseShield();
                 Debug.Log("1 Shield Used");
             }
 
             //if the ; key is hit level up the slowdown powerup
             if (Input.GetKeyDown(KeyCode.Semicolon))
             {
-                Refrence.cardTypes[4].Call();
+                Reference.cardTypes[4].Call();
             }
         }
 

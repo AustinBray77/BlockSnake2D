@@ -16,8 +16,8 @@ public class DamageObject : Object
         //Kills the player if the object hit the player or one of its segments
         if (collision.gameObject.tag == "Player" || collision.gameObject.tag == "Segment")
         {
-            bool destroy = Refrence.player.shieldCount > 0;
-            Refrence.player.KillPlayer();
+            bool destroy = Reference.player.shieldCount > 0;
+            Reference.player.KillPlayer();
 
             if (destroy)
             {

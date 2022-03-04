@@ -29,14 +29,14 @@ public class CameraController : MonoBehaviour
 
         if (targetTime > timeCounter)
         {
-            Refrence.cam.orthographicSize += Time.deltaTime * (targetSize - Refrence.cam.orthographicSize) / (targetTime - timeCounter);
+            Reference.cam.orthographicSize += Time.deltaTime * (targetSize - Reference.cam.orthographicSize) / (targetTime - timeCounter);
             timeCounter += Time.deltaTime;
         }
         else if (targetTime <= timeCounter && timeCounter != 0)
         {
             targetTime = 0;
             timeCounter = 0;
-            Refrence.cam.orthographicSize = targetSize;
+            Reference.cam.orthographicSize = targetSize;
         }
     }
 
@@ -51,14 +51,14 @@ public class CameraController : MonoBehaviour
         }
         else
         {
-            Refrence.cam.orthographicSize += Player.increaseFactor * amount;
+            Reference.cam.orthographicSize += Player.increaseFactor * amount;
         }
     }
 
     //Method to set the camera size and override animation
     public void SetSize(float size)
     {
-        Refrence.cam.orthographicSize = size;
+        Reference.cam.orthographicSize = size;
         targetSize = size;
         targetTime = 0;
         timeCounter = 0;

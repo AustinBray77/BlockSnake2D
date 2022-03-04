@@ -27,7 +27,7 @@ public class ScoreObject : Object
                 audioSource.Play();
             }
 
-            Refrence.player.AddScore(scoreAdded);
+            Reference.player.AddScore(scoreAdded);
             ObjectDestroy();
         }
     }

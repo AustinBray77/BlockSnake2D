@@ -66,7 +66,7 @@ public class AnimationPlus
                 levelBar.lowerLevel.text = lowerLevel.ToString();
                 levelBar.higherLevel.text = (lowerLevel + 1).ToString();
 
-                if (lowerLevel < 100) Refrence.deathUI.TriggerLevelPrompt(lowerLevel - 1);
+                if (lowerLevel < 100) Reference.deathUI.TriggerLevelPrompt(lowerLevel - 1);
             }
 
             //Increments the frame counter and waits the required amount of time
