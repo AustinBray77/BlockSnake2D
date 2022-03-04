@@ -721,7 +721,6 @@ MonoBehaviour:
   - {fileID: 1972610904526880299, guid: 55a9452cd3379fd4384f99162ebedcfb, type: 3}
   - {fileID: 5616399994677276308, guid: 8a7aff88e204c254e8fe60cffab097ec, type: 3}
   - {fileID: 6437491729717031763, guid: e0e1c6f05bd6eec4186c639ede200e45, type: 3}
-  gearPrefab: {fileID: 4582012530627007147, guid: 7eee89ee8ca17a44d8834dec57b31e92, type: 3}
   finishPrefab: {fileID: 6456931124705207205, guid: 94452952a24c29e4490105d05225c9a6, type: 3}
   frontStarPrefab: {fileID: 7738930305965085528, guid: a4df939c6f8356e43a86ec229a481665, type: 3}
   middleStarPrefab: {fileID: 3201301701260706424, guid: e38820d30d8a590459865baf55902914, type: 3}
@@ -1167,6 +1166,7 @@ MonoBehaviour:
   rotSpeed: 10
   lastUpgraded:
     title: 
+    desc: 
     level: 0
     image: {fileID: 0}
     value: 0
@@ -1660,11 +1660,15 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   fadePanel: {fileID: 1414110153}
   UIContainer: {fileID: 867331907}
+  gearImg: {fileID: 0}
+  skinBaseImg: {fileID: 0}
   scoreText: {fileID: 2111294450}
   levelBar:
     lowerLevel: {fileID: 0}
     higherLevel: {fileID: 0}
     levelBar: {fileID: 0}
+  adImg: {fileID: 0}
+  multiplier: 1
 --- !u!1 &1162835226
 GameObject:
   m_ObjectHideFlags: 0
@@ -1716,6 +1720,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   fadePanel: {fileID: 1414110153}
   UIContainer: {fileID: 1864625836}
+  gearImg: {fileID: 0}
+  skinBaseImg: {fileID: 0}
   cardPrefab: {fileID: 6489429858179956720, guid: 8f85aa92ee10325469aae8d027518b32, type: 3}
 --- !u!1 &1188162493
 GameObject:
@@ -1768,6 +1774,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   fadePanel: {fileID: 1414110153}
   UIContainer: {fileID: 72050145}
+  gearImg: {fileID: 0}
+  skinBaseImg: {fileID: 0}
   controlsLeft: {fileID: 1415938756}
   controlsRight: {fileID: 829953571}
   scoreText: {fileID: 595518940}
@@ -4013,8 +4021,10 @@ MonoBehaviour:
   _creditsUI: {fileID: 0}
   _modeSelectUI: {fileID: 0}
   _adManager: {fileID: 0}
+  _tutorial: {fileID: 567644595}
   _cardTypes:
   - title: Remove Segments
+    desc: Removes segments off of your snake making it shorter and easier to control.
     level: 0
     image: {fileID: 21300000, guid: 65d33fb6788edc64696ee586a902ea9e, type: 3}
     value: -1
@@ -4047,6 +4057,8 @@ MonoBehaviour:
     - increaseAmount: -50
       levelAmount: 20
   - title: Increase Spawn Delay
+    desc: Increases the amount of time it takes for the next objects to spawn, causing
+      them to be more spaced out.
     level: 0
     image: {fileID: 21300000, guid: 0e8af467c8e1ac042a963289f6a0ad20, type: 3}
     value: 1.1
@@ -4077,6 +4089,8 @@ MonoBehaviour:
     - increaseAmount: 0.05
       levelAmount: 20
   - title: Increase Speed
+    desc: Increases the speed the snake moves vertically at, making it easier to
+      dodge.
     level: 0
     image: {fileID: 21300000, guid: b84f2bfd0b929a041aa1a968f07d785d, type: 3}
     value: 1.05
@@ -4107,6 +4121,8 @@ MonoBehaviour:
     - increaseAmount: 0.05
       levelAmount: 20
   - title: Shield
+    desc: Adds an amount of one time use shields which prevent you from dying to
+      floating objects.
     level: 0
     image: {fileID: 21300000, guid: 9bb809d41e8ff234da594fdbaf16019e, type: 3}
     value: 1
@@ -4135,6 +4151,7 @@ MonoBehaviour:
     - increaseAmount: 1
       levelAmount: 40
   - title: Increase Turn Speed
+    desc: Increases the speed you rotate at allowing you to turn faster.
     level: 0
     image: {fileID: 21300000, guid: 2a822fdf726e0f747aebaccdcb7d7955, type: 3}
     value: 1.1
@@ -4165,6 +4182,7 @@ MonoBehaviour:
     - increaseAmount: 0.05
       levelAmount: 20
   - title: Slow Time
+    desc: Gives/Increases the player's ability to slow time.
     level: 0
     image: {fileID: 21300000, guid: ac1dd6749bba86244b229f1f55f317c2, type: 3}
     value: 0.15
@@ -4197,6 +4215,11 @@ MonoBehaviour:
     levelRequirement: 0
     price: 0
     index: 0
+  _smallPrompt: {fileID: 0}
+  _mediumPrompt: {fileID: 0}
+  _largePrompt: {fileID: 0}
+  _infoObject: {fileID: 6264314650965677710, guid: 8b4c1b76292c3b04b994fa41a58c43f4, type: 3}
+  _canvas: {fileID: 1676986768}
 --- !u!4 &2069519327
 Transform:
   m_ObjectHideFlags: 0
