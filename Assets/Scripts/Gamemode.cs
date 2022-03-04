@@ -23,18 +23,25 @@ public class Gamemode : MonoBehaviour
         Fast
     }
 
-    //Properties to store the current platform
-    [SerializeField] private Platform _platform;
+    //Properties to store the current mode
     [SerializeField] private Mode _mode;
 
-    public static Platform platform;
+#if UNITY_EDITOR
+    public static Platform platform = Platform.Debug;
+#elif UNITY_STANDALONE_WIN
+    public static Platform platform = Platform.Windows;
+#elif UNITY_IOS
+    public static Platform platform = Platform.IOS;
+#else
+    public static Platform platform = Platform.Android;
+#endif
+
     public static Mode mode;
 
     //Method called on scene load
     private void Start()
     {
-        //Assigns the static refrence of Platform
-        platform = _platform;
+        //Assigns default values
         mode = _mode;
     }
 
