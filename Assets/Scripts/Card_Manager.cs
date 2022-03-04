@@ -1,5 +1,5 @@
 using System.Collections;
-using System.Collections.Generic;
+using System;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.Events;
@@ -15,6 +15,7 @@ public class Card_Manager : MonoBehaviour
     [SerializeField] private Image image;
 
     private Button btn;
+    private string desc;
 
     //Method called on instantiation
     private void Awake()
@@ -30,9 +31,24 @@ public class Card_Manager : MonoBehaviour
         title.text = data.title.ToUpper() + " - LEVEL " + (data.level + 1).ToString();
         description.text = data.GetDescription();
         image.sprite = data.image;
+        desc = data.desc;
 
         //Assigns the listener to the button
         btn.onClick.RemoveAllListeners();
         btn.onClick.AddListener(new UnityAction(data.Call));
+    }
+
+    public void ShowInfo_Click() => StartCoroutine(ShowInfo());
+
+    private IEnumerator ShowInfo()
+    {
+        GameObject infoObject = Instantiate(Reference.infoObject, Reference.canvas.transform);
+
+        TextMeshProUGUI text = infoObject.GetComponentInChildren<TextMeshProUGUI>();
+        text.text = desc + "\n(Press anywhere to continue)";
+
+        yield return new WaitUntil(() => Functions.UserIsClicking());
+
+        Destroy(infoObject);
     }
 }
