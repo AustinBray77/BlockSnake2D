@@ -82,7 +82,7 @@ public class Tutorial : MonoBehaviour
                     DropWalls();
 
                     //Animates the UI
-                    Refrence.gameUI.FadeInElements();
+                    Reference.gameUI.FadeInElements();
 
                     //Starts the generator
                     gen.Initialize();
@@ -117,13 +117,25 @@ public class Tutorial : MonoBehaviour
     {
         //Returns the up button if the keycode is W
         if (keyCode == KeyCode.W)
-            return Refrence.player.GetControls()[0];
+            return Reference.player.GetControls()[0];
 
         //Returns the down button if the keycode is S
         if (keyCode == KeyCode.S)
-            return Refrence.player.GetControls()[1];
+            return Reference.player.GetControls()[1];
 
         //Returns false if the key doesn't have an associated button
         return false;
+    }
+
+    //Method to show popup pertaining to the popup
+    public IEnumerator ShowFinishInfo()
+    {
+        GameObject infoObject = Instantiate(Reference.infoObject, Reference.canvas.transform);
+        TextMeshProUGUI text = infoObject.GetComponentInChildren<TextMeshProUGUI>();
+        text.text = "Congrats you just reached a checkpoint.\nPick one of the following upgrades to be applied to your snake.\n(Click anywhere to continue)";
+
+        yield return new WaitUntil(() => Functions.UserIsClicking());
+
+        Destroy(infoObject);
     }
 }

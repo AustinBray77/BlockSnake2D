@@ -12,6 +12,9 @@ public class Finish_UI : UI
     //Arrays to store the instantiated objects
     private GameObject[] cardObjects = new GameObject[3];
 
+    //Stores whether the info tip in the tutorial has been shown
+    public static bool tipWasShown = false;
+
     //Method called to set the data of the cards
     public void SetCardData(Card[] cards)
     {
@@ -30,7 +33,7 @@ public class Finish_UI : UI
     public override void Show()
     {
         //Activates the UI Elements
-        UIContainer.SetActive(true);
+        base.Show();
 
         //Loops for each card data object
         for (int i = 0; i < 3; i++)
@@ -38,6 +41,17 @@ public class Finish_UI : UI
             //Instantiates the card prefab, sets the position of the card object, and sets its data to the current data 
             cardObjects[i] = Instantiate(cardPrefab, UIContainer.transform);
             cardObjects[i].GetComponent<RectTransform>().anchoredPosition = new Vector2(630 - (i * 630), 0);
+            cardObjects[i].GetComponent<Button>().interactable = false;
+        }
+
+        if (Gamemode.inLevel("Tutorial") && !tipWasShown)
+        {
+            StartCoroutine(ActiveCardsFirst());
+            tipWasShown = true;
+        }
+        else
+        {
+            StartCoroutine(ActiveCardsAfterTime(0.5f));
         }
 
         transform.parent.gameObject.GetComponent<GraphicRaycaster>().enabled = true;
@@ -54,11 +68,39 @@ public class Finish_UI : UI
 
         //Sets the player to not be at the finish and activates the Game UI
         Player.isAtFinish = false;
-        Refrence.gameUI.gameObject.SetActive(true);
+        Reference.gameUI.gameObject.SetActive(true);
 
         transform.parent.gameObject.GetComponent<GraphicRaycaster>().enabled = false;
 
         //Decativates the gameobject hiding the UI
-        UIContainer.SetActive(false);
+        base.Hide();
+    }
+
+    //Method to active athe cards after a certain amount of time
+    private IEnumerator ActiveCardsAfterTime(float time)
+    {
+        yield return new WaitForSeconds(time);
+
+        for (int i = 0; i < cardObjects.Length; i++)
+        {
+            cardObjects[i].GetComponent<Button>().interactable = true;
+        }
+    }
+
+    //Method used to show the cards for the first time in the tutorial
+    private IEnumerator ActiveCardsFirst()
+    {
+        for (int i = 0; i < cardObjects.Length; i++)
+        {
+            cardObjects[i].SetActive(false);
+        }
+
+        yield return StartCoroutine(Reference.tutorial.ShowFinishInfo());
+
+        for (int i = 0; i < cardObjects.Length; i++)
+        {
+            cardObjects[i].SetActive(true);
+            cardObjects[i].GetComponent<Button>().interactable = true;
+        }
     }
 }

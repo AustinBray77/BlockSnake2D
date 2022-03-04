@@ -16,8 +16,8 @@ public class Shop_UI : UI
 
     //Stores valid skins, skin card prefab, and gear amount text
     public Skin[] _skins;
-    [SerializeField] private GameObject skinCardPrefab;
-    [SerializeField] private TMP_Text gearText;
+    [SerializeField] private GameObject skinCardPrefab, dailyGearImage;
+    [SerializeField] private TMP_Text gearText, dailyRewardText;
     [SerializeField] private RectTransform contentGroup;
 
     //Stores a static refrence to valid skins and active skin card
@@ -25,17 +25,18 @@ public class Shop_UI : UI
     public static int activeSkinCard = 0;
 
     //Method called after the scene loads
-    public void Start()
+    public IEnumerator Start()
     {
+        yield return new WaitUntil(() => Serializer.activeData != null);
+
         //Assigns the static refrence for skins and sets the gear text to the current gear count
         skins = _skins;
-        StartCoroutine(SetGearText());
+        SetGearText();
     }
 
     //Sets the text after the serializer is assigned
-    public IEnumerator SetGearText()
+    public void SetGearText()
     {
-        yield return new WaitUntil(() => { return Serializer.activeData != null; });
         gearText.text = Serializer.activeData.gearCount.ToString();
     }
 
@@ -56,6 +57,8 @@ public class Shop_UI : UI
             skinCards.Add(CreateSkinCard(new Vector2(i * 625, 0), new Vector3(0.9f, 0.9f), _skins[i]));
             skin_Managers.Add(skinCards[i].GetComponent<Skin_Manager>());
         }
+
+        UpdateDailyReward();
     }
 
     //Method called when the UI is to hide
@@ -69,7 +72,7 @@ public class Shop_UI : UI
         }
 
         //Sets the gameobject to inactive, hiding it
-        UIContainer.SetActive(false);
+        base.Hide();
     }
 
     //Method to update the data on all of the skin cards
@@ -95,7 +98,7 @@ public class Shop_UI : UI
         //Sets the location
         rt.anchoredPosition = location;
         rt.localScale = scale;
-        rt.parent = contentGroup;
+        rt.SetParent(contentGroup);
 
         //Sets the data
         skinCard.GetComponent<Skin_Manager>().FromSkinObject(skin);
@@ -111,7 +114,7 @@ public class Shop_UI : UI
         StartCoroutine(ClickWithFade(
             () =>
             {
-                Refrence.startUI.Show();
+                Reference.startUI.Show();
                 Hide();
             }, fadeTime));
     }
@@ -119,10 +122,38 @@ public class Shop_UI : UI
     //Method called when the user clicks to watch an ad for gears
     public void WatchAdForGears(int reward)
     {
-        Refrence.adManager.ShowRewardedAdThenCall(() =>
+        Reference.adManager.ShowRewardedAdThenCall(() =>
         {
             Serializer.activeData.SetGearCount(Serializer.activeData.gearCount + 5);
-            StartCoroutine(Refrence.shopUI.SetGearText());
+            Reference.shopUI.SetGearText();
         });
+    }
+
+    public void ClaimDailyReward()
+    {
+        if (Functions.DaysSinceUnixFromMillis(Functions.CurrentMillisInTimeZone()) - Functions.DaysSinceUnixFromMillis(Serializer.activeData.lastRewardTime) > 0)
+        {
+            Serializer.activeData.SetGearCount(Serializer.activeData.gearCount + Serializer.activeData.lastReward);
+            Serializer.activeData.SetLastRewardTime(Functions.CurrentMillisInTimeZone());
+            Serializer.activeData.SetLastReward(Serializer.activeData.lastReward + 1);
+            SetGearText();
+            UpdateDailyReward();
+            Serializer.SaveData();
+        }
+    }
+
+    private void UpdateDailyReward()
+    {
+        if (Functions.DaysSinceUnixFromMillis(Functions.CurrentMillisInTimeZone()) - Functions.DaysSinceUnixFromMillis(Serializer.activeData.lastRewardTime) > 0)
+        {
+            dailyRewardText.text = "+" + Serializer.activeData.lastReward.ToString();
+            dailyGearImage.SetActive(true);
+        }
+        else
+        {
+            dailyRewardText.text = "Available Tomorrow";
+            dailyRewardText.fontSize = 70;
+            dailyGearImage.SetActive(false);
+        }
     }
 }

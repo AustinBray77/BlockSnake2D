@@ -38,8 +38,10 @@ public class Game_UI : UI
     Vector2[] buttonBounds = null;
 
     //Called when the scene is loaded
-    private void Start()
+    private IEnumerator Start()
     {
+        yield return new WaitUntil(() => Serializer.activeData != null);
+
         if (Serializer.activeData.settings.leftHandedControls)
         {
             controls = controlsLeft;
@@ -109,17 +111,21 @@ public class Game_UI : UI
     }
 
     //Used to enable the slowdown UI object
-    public void EnableSlowDown(bool state, bool useFade = true)
+    public void EnableSlowDown(bool state, bool useFade = true, bool ignoreCurrent = false)
     {
+        Debug.Log("Slowdown UI?");
+
         //Fade in if state is true and current acitivty is false
-        if (state && slowDownImage.color == new Color(1, 1, 1, 0))
+        if (state && (slowDownImage.color == new Color(1, 1, 1, 0) || ignoreCurrent))
         {
+            Debug.Log("Enabling Slowdown UI...");
             if (useFade) StartCoroutine(AnimationPlus.FadeToColor(slowDownImage, new Color(1, 1, 1, 1), fadeTime));
             else slowDownImage.color = new Color(1, 1, 1, 1);
         }
         //Fade out if state is false and current activity is true
-        else if (!state && slowDownImage.color == new Color(1, 1, 1, 1))
+        else if (!state && (slowDownImage.color == new Color(1, 1, 1, 1) || ignoreCurrent))
         {
+            Debug.Log("Disabling Slowdown UI...");
             if (useFade) StartCoroutine(AnimationPlus.FadeToColor(slowDownImage, new Color(1, 1, 1, 0), fadeTime));
             else slowDownImage.color = new Color(1, 1, 1, 0);
         }

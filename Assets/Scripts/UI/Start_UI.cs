@@ -8,34 +8,65 @@ using TMPro;
 //Class to contorl the start UI
 public class Start_UI : UI
 {
-    [SerializeField] private GameObject loadingText;
+    [SerializeField] private GameObject loadingText, animatedSnake;
 
-    //Called on object instation, before start
-    public void Awake()
+    //Called on scene load
+    private IEnumerator Start()
     {
+        bool firstLogin = !System.IO.File.Exists(Serializer.fileName);
+
+        loadingText.SetActive(true);
+        yield return StartCoroutine(Functions.UpdateCurrentTime());
+        loadingText.SetActive(false);
+
+        if (Functions.currentTime == new System.DateTimeOffset().DateTime)
+        {
+            Prompt p = Instantiate(Reference.smallPrompt, transform.parent).GetComponent<Prompt>();
+            p.SetTitleText("Connection Error");
+            p.SetImages(new List<Sprite> { skinBaseImg });
+            p.SetDescriptions(new string[] { "Check Wifi Connection" });
+            p.AddButtonListener(new UnityEngine.Events.UnityAction(() => Application.Quit()));
+            p.ForceInteraction();
+            yield break;
+        }
+
         //Loads the data if no save data is currently present
         if (Serializer.activeData == null)
         {
-            //Shows then hides the loading text
-            loadingText.SetActive(true);
             Serializer.LoadData();
-            loadingText.SetActive(false);
 
             for (int i = 0; i < Serializer.activeData.activatedLevelTriggers.Length; i++)
             {
-                if (!Serializer.activeData.activatedLevelTriggers[i] && Refrence.levelUpTriggers[i].levelTrigger <= Serializer.activeData.level.level)
+                if (!Serializer.activeData.activatedLevelTriggers[i] && Reference.levelUpTriggers[i].levelTrigger <= Serializer.activeData.level.level)
                 {
                     TriggerLevelPrompt(i);
                 }
             }
+        }
 
-            Serializer.SaveData();
+        long dayDiff = Functions.DaysSinceUnixFromMillis(Functions.CurrentMillisInTimeZone()) - Functions.DaysSinceUnixFromMillis(Serializer.activeData.lastRewardTime);
+
+        if (dayDiff > 0 || firstLogin)
+        {
+            Prompt p = Instantiate(Reference.smallPrompt, transform.parent).GetComponent<Prompt>();
+            p.SetTitleText("Daily Reward");
+            p.SetImages(new List<Sprite> { gearImg });
+            p.SetDescriptions(new string[] { "Check The Shop To Collect" }, new int[] { 48 });
+            p.ToCloseOnClick();
+
+            if (dayDiff >= 2)
+            {
+                Serializer.activeData.SetLastReward(5);
+            }
         }
 
         //Fades in
         fadePanel.gameObject.SetActive(true);
         fadePanel.color = new Color(0, 0, 0, 1);
         StartCoroutine(AnimationPlus.FadeToColor(fadePanel, new Color(0, 0, 0, 0), fadeTime, false));
+
+        //Saves the data every time the user goes to the main menu
+        Serializer.SaveData();
     }
 
     //Functions which are called on botton clicks
@@ -47,7 +78,7 @@ public class Start_UI : UI
         StartCoroutine(ClickWithFade(
             () =>
             {
-                Refrence.modeSelectUI.Show();
+                Reference.modeSelectUI.Show();
                 Hide();
             }, fadeTime));
     }
@@ -59,7 +90,7 @@ public class Start_UI : UI
         StartCoroutine(ClickWithFade(
             () =>
             {
-                Refrence.shopUI.Show();
+                Reference.shopUI.Show();
                 Hide();
             }, fadeTime));
     }
@@ -82,7 +113,7 @@ public class Start_UI : UI
         StartCoroutine(ClickWithFade(
             () =>
             {
-                Refrence.settingsUI.Show();
+                Reference.settingsUI.Show();
                 Hide();
             }, fadeTime));
     }
@@ -94,7 +125,7 @@ public class Start_UI : UI
         StartCoroutine(ClickWithFade(
             () =>
             {
-                Refrence.creditsUI.Show();
+                Reference.creditsUI.Show();
                 Hide();
             }, fadeTime));
     }
@@ -105,5 +136,19 @@ public class Start_UI : UI
         //Saves the data and exits the application
         Serializer.SaveData();
         Application.Quit();
+    }
+
+    //Overidable method called to show the UI object
+    public override void Show()
+    {
+        animatedSnake.SetActive(true);
+        base.Show();
+    }
+
+    //Method called to hide the UI object
+    public override void Hide()
+    {
+        animatedSnake.SetActive(false);
+        base.Hide();
     }
 }

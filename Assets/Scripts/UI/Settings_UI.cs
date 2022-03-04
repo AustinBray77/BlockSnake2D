@@ -17,8 +17,10 @@ public class Settings_UI : UI
     private int currentPageIndex;
 
     //Method called on object instatiation
-    private void Start()
+    private IEnumerator Start()
     {
+        yield return new WaitUntil(() => Serializer.activeData != null);
+
         //If on mobile, give warning about graphics setting, else do not
         if (Gamemode.platform == Gamemode.Platform.Android || Gamemode.platform == Gamemode.Platform.IOS || Gamemode.platform == Gamemode.Platform.Debug)
         {
@@ -80,7 +82,7 @@ public class Settings_UI : UI
             pageButtons[i].image.color = new Color(0.2196079f, 0.2196079f, 0.2196079f, 0);
         }
         //Activates the UI
-        UIContainer.SetActive(true);
+        base.Show();
     }
 
     //Method called when the user changes the value in quality select
@@ -131,7 +133,7 @@ public class Settings_UI : UI
         StartCoroutine(ClickWithFade(
             () =>
             {
-                Refrence.startUI.Show();
+                Reference.startUI.Show();
                 Hide();
             }, fadeTime));
     }

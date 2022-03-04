@@ -39,15 +39,15 @@ public class Death_UI : UI
             //Prompt ad
             multiplier = 0f;
 
-            Prompt prompt = Instantiate(Refrence.smallPrompt, Refrence.canvas).GetComponent<Prompt>();
+            Prompt prompt = Instantiate(Reference.smallPrompt, Reference.canvas).GetComponent<Prompt>();
             prompt.SetTitleText("Watch an Ad for 4x Rewards", 48);
             prompt.SetImages(new List<Sprite>() { adImg });
 
             prompt.AddButtonListener(new UnityEngine.Events.UnityAction(() =>
             {
-                Refrence.adManager.ShowRewardedAdThenCall(new System.Action(() =>
+                Reference.adManager.ShowRewardedAdThenCall(new System.Action(() =>
                 {
-                    Refrence.deathUI.multiplier = 3f;
+                    Reference.deathUI.multiplier = 3f;
                     prompt.OnClickClose();
                 }));
             }));
@@ -66,6 +66,8 @@ public class Death_UI : UI
     private IEnumerator AnimateLevelBar(GameObject prompt)
     {
         yield return new WaitUntil(() => prompt == null);
+
+        Debug.Log((Player.level.xp - Serializer.activeData.level.xp));
 
         levelBarAnimationFinished = false;
         Player.level.AddXP((Player.level.xp - Serializer.activeData.level.xp) * multiplier);
@@ -97,7 +99,7 @@ public class Death_UI : UI
         //Shows an ad if the user is on phone, respawns if the game is in debug mode
         if ((Gamemode.platform != Gamemode.Platform.Windows) && !Gamemode.inLevel("Tutorial"))
         {
-            Refrence.adManager.ShowRewardedAdThenCall(() => Refrence.deathUI.OnRespawn());
+            Reference.adManager.ShowRewardedAdThenCall(() => Reference.deathUI.OnRespawn());
         }
         else if (Gamemode.inLevel("Tutorial"))
         {
@@ -137,7 +139,7 @@ public class Death_UI : UI
     public void OnRespawn()
     {
         //If the player never hit a check point reload the scene
-        if (Refrence.gen.lastFinish == null)
+        if (Reference.gen.lastFinish == null)
         {
             Click_Restart();
             return;
@@ -146,8 +148,8 @@ public class Death_UI : UI
         StartCoroutine(ClickWithFade(() =>
         {
             //Tells the Player and Generator that the player is respawning
-            Refrence.player.Respawn();
-            Refrence.gen.Respawn();
+            Reference.player.Respawn();
+            Reference.gen.Respawn();
             //Hides the UI
             Hide();
         }, fadeTime, false));

@@ -17,7 +17,7 @@ public abstract class UI : MonoBehaviour
     [SerializeField] protected GameObject UIContainer;
 
     //Refrence to some images
-    [SerializeField] private Sprite gearImg, skinBaseImg;
+    [SerializeField] protected Sprite gearImg, skinBaseImg;
 
     //Serializable class to store a refrence to a level bar
     [System.Serializable]
@@ -39,8 +39,8 @@ public abstract class UI : MonoBehaviour
         UIContainer.SetActive(false);
     }
 
-    //Internal method called to invoke an action with a screen fade
-    internal IEnumerator ClickWithFade(System.Action action, float seconds, bool changesScenes = false)
+    //Method called to invoke an action with a screen fade
+    protected IEnumerator ClickWithFade(System.Action action, float seconds, bool changesScenes = false)
     {
         //Fades the screen and waits until the screen has finished fading 
         fadePanel.gameObject.SetActive(true);
@@ -77,20 +77,21 @@ public abstract class UI : MonoBehaviour
 
     public void TriggerLevelPrompt(int index)
     {
-        var trigger = Refrence.levelUpTriggers[index];
+        var trigger = Reference.levelUpTriggers[index];
         Serializer.activeData.TriggerActivated(index);
+        Serializer.SaveData();
 
         Prompt p;
 
         if (!trigger.reward.unlocksSkin)
         {
-            p = Instantiate(Refrence.smallPrompt, Refrence.canvas).GetComponent<Prompt>();
+            p = Instantiate(Reference.smallPrompt, Reference.canvas).GetComponent<Prompt>();
             p.SetDescriptions(new string[] { "+" + trigger.reward.gearReward.ToString() + " Gears" });
             p.SetImages(new List<Sprite>() { gearImg });
         }
         else
         {
-            p = Instantiate(Refrence.mediumPrompt, Refrence.canvas).GetComponent<Prompt>();
+            p = Instantiate(Reference.mediumPrompt, Reference.canvas).GetComponent<Prompt>();
             p.SetDescriptions(new string[] { "+" + trigger.reward.gearReward.ToString() + " Gears", "New skin unlocked!" });
             p.SetImages(new List<Sprite>() { gearImg, skinBaseImg });
         }

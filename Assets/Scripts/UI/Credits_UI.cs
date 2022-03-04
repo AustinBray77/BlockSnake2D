@@ -11,7 +11,7 @@ public class Credits_UI : UI
         StartCoroutine(ClickWithFade(
             () =>
             {
-                Refrence.startUI.Show();
+                Reference.startUI.Show();
                 Hide();
             }, fadeTime));
     }
