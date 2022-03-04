@@ -13,8 +13,8 @@ public class Generator : MonoBehaviour
     [SerializeField] private ScoreObject[] scorePrefabs;
     [SerializeField] private DamageObject[] damagePrefabs;
     //[SerializeField] private GearObject gearPrefab;
-    [SerializeField] private GameObject finishPrefab;
-    [SerializeField] private GameObject frontStarPrefab, middleStarPrefab, backStarPrefab;
+    [SerializeField] private GameObject finishPrefab, parallaxPrefab;
+    [SerializeField] private Sprite[] smallParallaxSprites, mediumParallaxSprites, largeParallaxSprites;
 
     //Stores the amount of eacch object to be spawned, what they were at the last finish, and the counter at the last finish
     private int[] scoreCounts, damageCounts;
@@ -22,7 +22,7 @@ public class Generator : MonoBehaviour
     private int counterAtLastFinishEnter;
 
     //Stores the spawn speed and the data of the last finish the player hit (used for respawning)
-    public float spawnSpeed;
+    private float spawnDelay;
     private float speedAtLastFinish;
     private float spawnSpeedAtLastFinish;
     public Finish_Data lastFinish;
@@ -36,9 +36,7 @@ public class Generator : MonoBehaviour
 
     //Stores each object on screen
     private List<Object> objects;
-    private List<Parallax_Object> parallax_Objects;
-
-    [SerializeField] private GameObject startingParallax;
+    private List<GameObject> smallPO, mediumPO, largePO;
 
     Vector3 constantPosition;
     float destroyerPosition;
@@ -47,7 +45,9 @@ public class Generator : MonoBehaviour
     private void Start()
     {
         objects = new List<Object>();
-        parallax_Objects = new List<Parallax_Object>();
+        smallPO = new List<GameObject>();
+        mediumPO = new List<GameObject>();
+        largePO = new List<GameObject>();
 
         //Returns if currently in the tutorial
         if (Gamemode.inLevel("Tutorial"))
@@ -64,7 +64,7 @@ public class Generator : MonoBehaviour
         if (Gamemode.inLevel("Tutorial"))
         {
             Object.speed = 5f;
-            spawnSpeed = 2f;
+            spawnDelay = 2f;
         }
         else
         {
@@ -72,11 +72,11 @@ public class Generator : MonoBehaviour
             {
                 case Gamemode.Mode.Normal:
                     Object.speed = 6f;
-                    spawnSpeed = 1.7f;
+                    spawnDelay = 1.7f;
                     break;
                 case Gamemode.Mode.Fast:
                     Object.speed = 8f;
-                    spawnSpeed = 1.4f;
+                    spawnDelay = 1.4f;
                     break;
             }
         }
@@ -92,11 +92,6 @@ public class Generator : MonoBehaviour
         destroyerPosition = -transform.position.x;
 
         UpdateConstantPosition();
-
-        if (startingParallax != null)
-        {
-            parallax_Objects = startingParallax.GetComponentsInChildren<Parallax_Object>().ToList();
-        }
 
         //Starts the object generation and parallax generation
         StartCoroutine(Generate(false));
@@ -127,23 +122,63 @@ public class Generator : MonoBehaviour
                 }
             }
 
-            if (parallax_Objects.Count >= 1)
+            if (smallPO.Count >= 1)
             {
-                while (parallax_Objects[0].transform.position.x <= destroyerPosition)
+                while (smallPO[0].transform.position.x <= destroyerPosition)
                 {
-                    Destroy(parallax_Objects[0].gameObject);
+                    Destroy(smallPO[0].gameObject);
 
-                    if (parallax_Objects[0].gameObject.name.Contains("Finish"))
-                    {
-                        OnFinishDestroyed();
-                    }
+                    smallPO.RemoveAt(0);
 
-                    parallax_Objects.RemoveAt(0);
-
-                    if (parallax_Objects.Count <= 0)
+                    if (smallPO.Count <= 0)
                     {
                         break;
                     }
+                }
+
+                for (int i = 0; i < smallPO.Count; i++)
+                {
+                    smallPO[i].transform.position += new Vector3(Object.speed * 0.6f * Time.deltaTime * relativeSpeed, 0);
+                }
+            }
+
+            if (mediumPO.Count >= 1)
+            {
+                while (mediumPO[0].transform.position.x <= destroyerPosition)
+                {
+                    Destroy(mediumPO[0].gameObject);
+
+                    mediumPO.RemoveAt(0);
+
+                    if (mediumPO.Count <= 0)
+                    {
+                        break;
+                    }
+                }
+
+                for (int i = 0; i < mediumPO.Count; i++)
+                {
+                    mediumPO[i].transform.position += new Vector3(Object.speed * 0.75f * Time.deltaTime * relativeSpeed, 0);
+                }
+            }
+
+            if (largePO.Count >= 1)
+            {
+                while (largePO[0].transform.position.x <= destroyerPosition)
+                {
+                    Destroy(largePO[0].gameObject);
+
+                    largePO.RemoveAt(0);
+
+                    if (largePO.Count <= 0)
+                    {
+                        break;
+                    }
+                }
+
+                for (int i = 0; i < largePO.Count; i++)
+                {
+                    largePO[i].transform.position += new Vector3(Object.speed * 0.85f * Time.deltaTime * relativeSpeed, 0);
                 }
             }
 
@@ -163,10 +198,12 @@ public class Generator : MonoBehaviour
         scoreCounts = (int[])scoreCountsAtLastFinish.Clone();
         damageCounts = (int[])damageCountsAtLastFinish.Clone();
         objects = new List<Object>();
-        parallax_Objects = new List<Parallax_Object>();
+        smallPO = new List<GameObject>();
+        mediumPO = new List<GameObject>();
+        largePO = new List<GameObject>();
         finishesOnScreen = new List<FinishObject>();
         Object.speed = speedAtLastFinish;
-        spawnSpeed = spawnSpeedAtLastFinish;
+        spawnDelay = spawnSpeedAtLastFinish;
 
         //Creates the new finish for the player to spawn into
         GameObject nextFinish = Instantiate(finishPrefab, new Vector3(transform.position.x, 0), transform.rotation);
@@ -193,15 +230,15 @@ public class Generator : MonoBehaviour
     public void OnSegmentChange(int amount)
     {
         //Changes the position and bounds so the generator is just of to the right
-        transform.position += new Vector3(Player.increaseFactor * Refrence.cam.aspect * amount, 0);
-        destroyerPosition -= Player.increaseFactor * Refrence.cam.aspect * amount;
+        transform.position += new Vector3(Player.increaseFactor * Reference.cam.aspect * amount, 0);
+        destroyerPosition -= Player.increaseFactor * Reference.cam.aspect * amount;
         UpdateConstantPosition();
         bounds += Player.increaseFactor * amount;
 
         //Decreases the delay between spawns
         for (int i = 0; i < amount; i++)
         {
-            spawnSpeed /= 1.01f;
+            spawnDelay /= 1.01f;
         }
 
         //Triggers if there is a finish on screen
@@ -212,6 +249,24 @@ public class Generator : MonoBehaviour
             {
                 finish.Generate(false, amount);
             }
+        }
+
+        Vector3 increaseAmount = new Vector3(Player.increaseFactor * amount, Player.increaseFactor * amount);
+        float calculatedTime = UI.fadeTime * amount;
+
+        foreach (GameObject obj in smallPO)
+        {
+            obj.transform.LeanScale(obj.transform.localScale + increaseAmount / 10, calculatedTime);
+        }
+
+        foreach (GameObject obj in mediumPO)
+        {
+            obj.transform.LeanScale(obj.transform.localScale + increaseAmount / 2, calculatedTime);
+        }
+
+        foreach (GameObject obj in largePO)
+        {
+            obj.transform.LeanScale(obj.transform.localScale + increaseAmount, calculatedTime);
         }
     }
 
@@ -224,7 +279,7 @@ public class Generator : MonoBehaviour
         counterAtLastFinishEnter = obj.spawnIndex + 1;
         lastFinish = obj.ToData();
         speedAtLastFinish = Object.speed;
-        spawnSpeedAtLastFinish = spawnSpeed;
+        spawnSpeedAtLastFinish = spawnDelay;
 
         //Debugging
         //Debug.Log(counterAtLastFinishEnter);
@@ -252,7 +307,7 @@ public class Generator : MonoBehaviour
         float time = 0;
 
         //Loops if the generator should wait before spawning, waits for the current time
-        while (time < spawnSpeed && waitFirst)
+        while (time < spawnDelay && waitFirst)
         {
             //Adds a set amount of time to time and waits the time
             time += Time.deltaTime;
@@ -339,7 +394,7 @@ public class Generator : MonoBehaviour
             time = 0;
 
             //Waits for the current wait time
-            while (time < spawnSpeed)
+            while (time < spawnDelay)
             {
                 //Adds a set amount of time to time and waits the time
                 time += Time.deltaTime * relativeSpeed;
@@ -358,7 +413,7 @@ public class Generator : MonoBehaviour
         while (true)
         {
             //Variables for counting the time waited and the total time to wait
-            float time = 0, wait = Random.Range(1f, 2f);
+            float time = 0, wait = Random.Range(8f / Object.speed, 40f / Object.speed);
 
             //Waits for the current wait time
             while (time < wait)
@@ -372,7 +427,7 @@ public class Generator : MonoBehaviour
             }
 
             //Spawns the front parallax object
-            SpawnParallax(frontStarPrefab, GenPosition(new List<Vector3Int>()));
+            SpawnParallax(Functions.RandomArrItem<Sprite>(smallParallaxSprites), GenPosition(new List<Vector3Int>()), 2);
         }
     }
 
@@ -383,7 +438,7 @@ public class Generator : MonoBehaviour
         while (true)
         {
             //Variables for counting the time waited and the total time to wait
-            float time = 0, wait = Random.Range(2f, 3f);
+            float time = 0, wait = Random.Range(160f / Object.speed, 240f / Object.speed);
 
             //Waits for the current wait time
             while (time < wait)
@@ -397,7 +452,7 @@ public class Generator : MonoBehaviour
             }
 
             //Spawns the middle parallax object
-            SpawnParallax(middleStarPrefab, GenPosition(new List<Vector3Int>()));
+            SpawnParallax(Functions.RandomArrItem<Sprite>(mediumParallaxSprites), GenPosition(new List<Vector3Int>()), 1);
         }
     }
 
@@ -408,7 +463,7 @@ public class Generator : MonoBehaviour
         while (true)
         {
             //Variables for counting the time waited and the total time to wait
-            float time = 0, wait = Random.Range(3f, 5f);
+            float time = 0, wait = Random.Range(400f / Object.speed, 480f / Object.speed);
 
             //Waits for the current wait time
             while (time < wait)
@@ -422,7 +477,7 @@ public class Generator : MonoBehaviour
             }
 
             //Spawns the back parallax object
-            SpawnParallax(backStarPrefab, GenPosition(new List<Vector3Int>()));
+            SpawnParallax(Functions.RandomArrItem<Sprite>(largeParallaxSprites), GenPosition(new List<Vector3Int>()), 0);
         }
     }
 
@@ -453,6 +508,15 @@ public class Generator : MonoBehaviour
         {
             Destroy(obj);
         }
+
+        //Finds all of the parallax objects
+        GameObject[] paraObjs = GameObject.FindGameObjectsWithTag("Parallax");
+
+        //Destroys all of the objectss
+        foreach (GameObject obj in paraObjs)
+        {
+            Destroy(obj);
+        }
     }
 
     //Method called to spawn an object at a given position
@@ -468,16 +532,36 @@ public class Generator : MonoBehaviour
         objects.RemoveAt(0);
     }
 
-    public GameObject SpawnParallax(GameObject obj, Vector3 position)
+    public GameObject SpawnParallax(Sprite sprite, Vector3 position, int type)
     {
-        GameObject gameObj = Instantiate(obj, position, obj.transform.rotation);
-        parallax_Objects.Add(gameObj.GetComponent<Parallax_Object>());
-        return gameObj;
-    }
+        GameObject gameObj = Instantiate(parallaxPrefab, position, parallaxPrefab.transform.rotation);
 
-    public void RemoveFrontParallax()
-    {
-        parallax_Objects.RemoveAt(0);
+        float scale = 1;
+
+        switch (type)
+        {
+            case 0:
+                largePO.Add(gameObj);
+                scale = bounds + 2.5f;
+                break;
+            case 1:
+                mediumPO.Add(gameObj);
+                scale = (bounds - 10) / 2 + 5;
+                break;
+            case 2:
+                smallPO.Add(gameObj);
+                scale = (bounds - 10) / 10 + 1;
+                break;
+        }
+
+        gameObj.transform.position += new Vector3(scale / 2, 0f);
+        gameObj.transform.localScale = new Vector3(scale, scale);
+
+        SpriteRenderer sr = gameObj.GetComponent<SpriteRenderer>();
+        sr.sprite = sprite;
+        sr.sortingOrder = type;
+
+        return gameObj;
     }
 
     //Method called to get the bounds distance of the generator
@@ -501,4 +585,9 @@ public class Generator : MonoBehaviour
     public void SetDestroyerPosition(float x) =>
         destroyerPosition = x;
 
+    public void IncreaseSpawnDelay(float value, int cardIndex = 0) =>
+        spawnDelay *= value;
+
+    public void DecreaseSpawnDelay(float value, int cardIndex = 0) =>
+        spawnDelay /= value;
 }
