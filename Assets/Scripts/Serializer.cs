@@ -14,7 +14,7 @@ static class Serializer
     public static Save_Data activeData = null;
 
     //Property to calculate the data path to save to
-    static string fileName =>
+    public static string fileName =>
         Application.persistentDataPath + "/blcksnk.bin";
 
     //Method called to save the data to the hardware

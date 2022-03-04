@@ -42,10 +42,13 @@ public class Segment : MonoBehaviour
 
     private void Update()
     {
-        if (Mathf.Abs(constantPosition.y) >= Refrence.wallTop.transform.position.y)
+        if (!Gamemode.inLevel("Start"))
         {
-            Refrence.player.shieldCount = 0;
-            Refrence.player.KillPlayer();
+            if (Mathf.Abs(constantPosition.y) >= Reference.wallTop.transform.position.y)
+            {
+                Reference.player.shieldCount = 0;
+                Reference.player.KillPlayer();
+            }
         }
 
         if (!Player.isAtFinish && !Player.isDead)

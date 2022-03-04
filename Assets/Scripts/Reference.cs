@@ -4,7 +4,7 @@ using System;
 using UnityEngine;
 
 //Class to save static refrences to multiple frequently accessed objects.
-public class Refrence : MonoBehaviour
+public class Reference : MonoBehaviour
 {
     //Instance refrences to the objects
     [SerializeField] private Player _player;
@@ -20,9 +20,10 @@ public class Refrence : MonoBehaviour
     [SerializeField] private Credits_UI _creditsUI;
     [SerializeField] private ModeSelect_UI _modeSelectUI;
     [SerializeField] private AdManager _adManager;
+    [SerializeField] private Tutorial _tutorial;
     [SerializeField] private Card[] _cardTypes;
     [SerializeField] private Skin _baseSkin;
-    [SerializeField] private GameObject _smallPrompt, _mediumPrompt, _largePrompt;
+    [SerializeField] private GameObject _smallPrompt, _mediumPrompt, _largePrompt, _infoObject;
     [SerializeField] private RectTransform _canvas;
 
     //Static refrences
@@ -40,9 +41,10 @@ public class Refrence : MonoBehaviour
     public static Credits_UI creditsUI;
     public static ModeSelect_UI modeSelectUI;
     public static AdManager adManager;
+    public static Tutorial tutorial;
     public static Card[] cardTypes;
     public static List<Level.LevelUpTrigger> levelUpTriggers;
-    public static GameObject smallPrompt, mediumPrompt, largePrompt;
+    public static GameObject smallPrompt, mediumPrompt, largePrompt, infoObject;
     public static RectTransform canvas;
 
     //Method called on scene load
@@ -64,18 +66,20 @@ public class Refrence : MonoBehaviour
         creditsUI = _creditsUI;
         modeSelectUI = _modeSelectUI;
         adManager = _adManager;
+        tutorial = _tutorial;
         cardTypes = _cardTypes;
+
+        for (int i = 0; i < cardTypes.Length; i++)
+        {
+            int x = i;
+            cardTypes[i].SetIndex(x);
+        }
+
         smallPrompt = _smallPrompt;
         mediumPrompt = _mediumPrompt;
         largePrompt = _largePrompt;
+        infoObject = _infoObject;
         canvas = _canvas;
-
-        if (cardTypes.Length > 0 && (Gamemode.platform == Gamemode.Platform.Android || Gamemode.platform == Gamemode.Platform.IOS))
-        {
-            Card[] newCardTypes = new Card[cardTypes.Length - 1];
-            Array.Copy(cardTypes, newCardTypes, cardTypes.Length - 1);
-            cardTypes = newCardTypes;
-        }
 
         //Generates the level triggers
         if (levelUpTriggers == null)

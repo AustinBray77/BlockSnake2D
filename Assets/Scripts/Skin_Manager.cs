@@ -80,7 +80,7 @@ public class Skin_Manager : MonoBehaviour
                 {
                     //Equips the skin and updates all of the other skin cards
                     Serializer.activeData.SetActiveSkin(index);
-                    Refrence.shopUI.UpdateAllCards();
+                    Reference.shopUI.UpdateAllCards();
                 }
             }
         }
