@@ -40,11 +40,19 @@ public class Prompt : MonoBehaviour
         }
     }
 
-    public void SetDescriptions(string[] texts)
+    public void SetDescriptions(string[] texts, int[] sizes = null)
     {
         for (int i = 0; i < descs.Count && i < texts.Length; i++)
         {
             descs[i].text = texts[i];
+
+            if (sizes != null)
+            {
+                if (sizes.Length > i)
+                {
+                    descs[i].fontSize = sizes[i];
+                }
+            }
         }
     }
 
@@ -65,5 +73,10 @@ public class Prompt : MonoBehaviour
         yield return new WaitForSeconds(UI.fadeTime);
 
         Destroy(gameObject);
+    }
+
+    public void ForceInteraction()
+    {
+        exitBtn.gameObject.SetActive(false);
     }
 }
