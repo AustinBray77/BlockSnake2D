@@ -1,12 +1,14 @@
 ﻿using System;
+using System.Linq;
+using System.Collections.Generic;
 
 //Wrapper class for saving users data to the System
-[System.Serializable]
+[Serializable]
 class Save_Data
 {
     //Properties to store the active skin, purchased skins, level, gearcount, highscore, and settings
     public int activeSkin { get; private set; }
-    public bool[] purchasedSkins { get; private set; }
+    public HashSet<string> purchasedSkins { get; private set; }
     public Level level { get; private set; }
     public int gearCount { get; private set; }
     public int highScore { get; private set; }
@@ -16,7 +18,7 @@ class Save_Data
     public int lastReward { get; private set; }
 
     //Default constructor
-    public Save_Data(int _activeSkin, bool[] _purchasedSkins, Level _level, int _gearCount, int _highScore, Settings_Data _settings, bool[] _activatedLevelTriggers,
+    public Save_Data(int _activeSkin, HashSet<string> _purchasedSkins, Level _level, int _gearCount, int _highScore, Settings_Data _settings, bool[] _activatedLevelTriggers,
         long _lastRewardTime, int _lastReward)
     {
         activeSkin = _activeSkin;
@@ -30,53 +32,64 @@ class Save_Data
         lastReward = _lastReward;
     }
 
-    //Constructor with string data for parsin
+    //Constructor with string data for parsing
     public Save_Data(string data)
+    {
+        ParseData(data);
+    }
+
+    //Constructor with string array data for parsing
+    public Save_Data(string[] data)
+    {
+        ParseData(data);
+    }
+
+    public T ParseParameter<T>(string[] vals, int index)
+    {
+        if (index < vals.Length)
+        {
+            return Functions.TryGenericConversion<string, T>(vals[index]);
+        }
+
+        return default(T);
+    }
+
+    public void ParseData(string data)
     {
         //Splits data
         string[] vals = data.Split('\n');
 
         //If statements are to prevent index out of bounds error, if the data is too short the data is set to a defualt value
-        if (vals.Length >= 0)
-        {
-            //Converts Active Skin
-            int.TryParse(vals[0], out int _activeSkin);
-            activeSkin = _activeSkin;
-        }
-        else
-        {
-            //Sets active skin to base value
-            activeSkin = 0;
-        }
+        activeSkin = ParseParameter<int>(vals, 0);
 
         //Sets purchased skins to base value
-        purchasedSkins = new bool[Shop_UI.skinCount];
+        bool[] bpurchasedSkins = new bool[Shop_UI.skinCount];
 
         if (vals.Length >= 2)
         {
             //Converts purchased skins
             string[] purchasedSkinsStrs = vals[1].Split(' ');
 
-            for (int i = 0; i < purchasedSkinsStrs.Length && i < purchasedSkins.Length; i++)
+            for (int i = 0; i < purchasedSkinsStrs.Length && i < Shop_UI.skinCount; i++)
             {
-                purchasedSkins[i] = purchasedSkinsStrs[i].ToLower() == "true";
+                bpurchasedSkins[i] = purchasedSkinsStrs[i].ToLower() == "true";
             }
 
-            for (int i = purchasedSkinsStrs.Length; i < purchasedSkins.Length; i++)
+            for (int i = purchasedSkinsStrs.Length; i < Shop_UI.skinCount; i++)
             {
-                purchasedSkins[i] = false;
+                bpurchasedSkins[i] = false;
             }
         }
         else
         {
             //Only the first skin is purchased
-            purchasedSkins[0] = true;
+            bpurchasedSkins[0] = true;
         }
 
         if (vals.Length >= 3)
         {
             //Converts level
-            level = new Level(vals[2]);
+            level = vals[2];
         }
         else
         {
@@ -84,29 +97,9 @@ class Save_Data
             level = new Level(0);
         }
 
-        if (vals.Length >= 4)
-        {
-            //Converts gear count
-            int.TryParse(vals[3], out int _gearCount);
-            gearCount = _gearCount;
-        }
-        else
-        {
-            //Sets gear count to base value
-            gearCount = 0;
-        }
+        gearCount = ParseParameter<int>(vals, 3);
 
-        if (vals.Length >= 5)
-        {
-            //Converts high score
-            int.TryParse(vals[4], out int _highScore);
-            highScore = _highScore;
-        }
-        else
-        {
-            //Sets highscore to base value
-            highScore = 0;
-        }
+        highScore = ParseParameter<int>(vals, 4);
 
         if (vals.Length >= 6)
         {
@@ -138,25 +131,86 @@ class Save_Data
             }
         }
 
-        if (vals.Length >= 8)
-        {
-            long.TryParse(vals[7], out long _lastLoginTime);
-            lastRewardTime = _lastLoginTime == 0 ? Functions.CurrentTimeInMillis() : _lastLoginTime;
-        }
-        else
+        lastRewardTime = ParseParameter<long>(vals, 7);
+
+        if (lastRewardTime == 0)
         {
             lastRewardTime = Functions.CurrentTimeInMillis() + (3600000 * Functions.TimezoneOffset());
         }
 
-        if (vals.Length >= 9)
+        lastReward = ParseParameter<int>(vals, 8);
+    }
+
+    private void ParseData(string[] data)
+    {
+        //If statements are to prevent index out of bounds error, if the data is too short the data is set to a defualt value
+        activeSkin = ParseParameter<int>(data, 0);
+
+        //Sets purchased skins to base value
+        bool[] bpurchasedSkins = new bool[Shop_UI.skinCount];
+
+        if (data.Length >= 2)
         {
-            int.TryParse(vals[8], out int _lastReward);
-            lastReward = _lastReward;
+            purchasedSkins = new HashSet<string>(data[1].Split(' '));
         }
         else
         {
-            lastReward = 5;
+            purchasedSkins = new HashSet<string>(new string[] { "White" });
         }
+
+        if (data.Length >= 3)
+        {
+            //Converts level
+            level = data[2];
+        }
+        else
+        {
+            //Sets level to base value, level with 0 xp
+            level = new Level(0);
+        }
+
+        gearCount = ParseParameter<int>(data, 3);
+
+        highScore = ParseParameter<int>(data, 4);
+
+        if (data.Length >= 6)
+        {
+            //Converts settings
+            settings = new Settings_Data(data[5]);
+        }
+        else
+        {
+            //Sets settings to base value
+            settings = new Settings_Data("");
+        }
+
+        activatedLevelTriggers = new bool[Reference.levelUpTriggers.Count];
+
+        if (data.Length >= 7)
+        {
+            string[] activatedTriggerStrings = data[6].Split(' ');
+
+            //The string values to bools
+            for (int i = 0; i < activatedLevelTriggers.Length && i < activatedTriggerStrings.Length; i++)
+            {
+                activatedLevelTriggers[i] = activatedTriggerStrings[i].ToLower() == "true";
+            }
+
+            //Sets unknowns to false
+            for (int i = activatedTriggerStrings.Length; i < activatedLevelTriggers.Length; i++)
+            {
+                activatedLevelTriggers[i] = false;
+            }
+        }
+
+        lastRewardTime = ParseParameter<long>(data, 7);
+
+        if (lastRewardTime == 0)
+        {
+            lastRewardTime = Functions.CurrentTimeInMillis() + (3600000 * Functions.TimezoneOffset());
+        }
+
+        lastReward = ParseParameter<int>(data, 8);
     }
 
     //Public setters for instance variables
@@ -176,12 +230,12 @@ class Save_Data
     public void PurchaseSkin(int index, int gearPrice)
     {
         //If the skin is already purchased or the price is too expensive the method returns
-        if (purchasedSkins[index] || gearCount < gearPrice)
+        if (purchasedSkins.Contains(Shop_UI.skins[index].title) || gearCount < gearPrice)
             return;
 
         //Removes the gears that the skin costs and saves that the user purchased the skin
         gearCount -= gearPrice;
-        purchasedSkins[index] = true;
+        purchasedSkins.Add(Shop_UI.skins[index].title);
     }
 
     public void TriggerActivated(int index)
@@ -206,7 +260,7 @@ class Save_Data
     public override string ToString()
     {
         return activeSkin + "\n" +
-        Functions.ArrayToString<bool>(purchasedSkins) + "\n" +
+        Functions.ArrayToString<string>(purchasedSkins.ToArray()) + "\n" +
         level + "\n" +
         gearCount + "\n" +
         highScore + "\n" +

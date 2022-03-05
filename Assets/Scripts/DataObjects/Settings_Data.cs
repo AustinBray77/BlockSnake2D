@@ -127,4 +127,6 @@ public class Settings_Data
     {
         return (int)qualityLevel + " " + vsyncEnabled + " " + soundEnabled + " " + (int)movementType + " " + leftHandedControls;
     }
+
+    public static implicit operator Settings_Data(string s) => new Settings_Data(s);
 }

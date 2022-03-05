@@ -76,4 +76,6 @@ public class Level
     {
         return xp.ToString();
     }
+
+    public static implicit operator Level(string s) => new Level(s);
 }

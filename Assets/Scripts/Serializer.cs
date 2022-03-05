@@ -1,9 +1,8 @@
-using System;
 using System.IO;
 using System.Text;
-using System.Runtime.Serialization.Formatters.Binary;
 using UnityEngine;
 using EncryptorLIB;
+using Newtonsoft.Json;
 
 //Class to contorl the serilization and saving of the gane data
 static class Serializer

@@ -18,5 +18,5 @@ public class Skin
         index == Serializer.activeData.activeSkin;
 
     public bool purchased =>
-        Serializer.activeData.purchasedSkins[index];
+        Serializer.activeData.purchasedSkins.Contains(title);
 }
