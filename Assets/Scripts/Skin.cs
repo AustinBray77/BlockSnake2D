@@ -12,11 +12,11 @@ public class Skin
     public int levelRequirement, price, index;
 
     public bool locked =>
-        levelRequirement > Serializer.activeData.level.level;
+        levelRequirement > Serializer.Instance.activeData.level.level;
 
     public bool equipped =>
-        index == Serializer.activeData.activeSkin;
+        index == Serializer.Instance.activeData.activeSkin;
 
     public bool purchased =>
-        Serializer.activeData.purchasedSkins.Contains(title);
+        Serializer.Instance.activeData.purchasedSkins.Contains(title);
 }

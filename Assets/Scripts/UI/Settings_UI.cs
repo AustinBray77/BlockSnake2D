@@ -19,7 +19,7 @@ public class Settings_UI : UI
     //Method called on object instatiation
     private IEnumerator Start()
     {
-        yield return new WaitUntil(() => Serializer.activeData != null);
+        yield return new WaitUntil(() => Serializer.Instance.activeData != null);
 
         //If on mobile, give warning about graphics setting, else do not
         if (Gamemode.platform == Gamemode.Platform.Android || Gamemode.platform == Gamemode.Platform.IOS || Gamemode.platform == Gamemode.Platform.Debug)
@@ -45,11 +45,11 @@ public class Settings_UI : UI
         leftHandedControlsToggle.onValueChanged.AddListener(new UnityEngine.Events.UnityAction<bool>(OnLeftHandedChanged));
 
         //Sets values to default values
-        qualitySelect.value = (int)Serializer.activeData.settings.qualityLevel;
-        movementSelect.value = (int)Serializer.activeData.settings.movementType;
-        soundEffectsToggle.isOn = Serializer.activeData.settings.soundEnabled;
-        vsyncToggle.isOn = Serializer.activeData.settings.vsyncEnabled;
-        leftHandedControlsToggle.isOn = Serializer.activeData.settings.leftHandedControls;
+        qualitySelect.value = (int)Serializer.Instance.activeData.settings.qualityLevel;
+        movementSelect.value = (int)Serializer.Instance.activeData.settings.movementType;
+        soundEffectsToggle.isOn = Serializer.Instance.activeData.settings.soundEnabled;
+        vsyncToggle.isOn = Serializer.Instance.activeData.settings.vsyncEnabled;
+        leftHandedControlsToggle.isOn = Serializer.Instance.activeData.settings.leftHandedControls;
         currentPageIndex = 0;
 
         pageButtons[currentPageIndex].image.color = new Color(0.2196079f, 0.2196079f, 0.2196079f, 1);
@@ -66,11 +66,11 @@ public class Settings_UI : UI
     public override void Show()
     {
         //Sets the base values for the UI elements
-        qualitySelect.value = (int)Serializer.activeData.settings.qualityLevel;
-        movementSelect.value = (int)Serializer.activeData.settings.movementType;
-        soundEffectsToggle.isOn = Serializer.activeData.settings.soundEnabled;
-        vsyncToggle.isOn = Serializer.activeData.settings.vsyncEnabled;
-        leftHandedControlsToggle.isOn = Serializer.activeData.settings.leftHandedControls;
+        qualitySelect.value = (int)Serializer.Instance.activeData.settings.qualityLevel;
+        movementSelect.value = (int)Serializer.Instance.activeData.settings.movementType;
+        soundEffectsToggle.isOn = Serializer.Instance.activeData.settings.soundEnabled;
+        vsyncToggle.isOn = Serializer.Instance.activeData.settings.vsyncEnabled;
+        leftHandedControlsToggle.isOn = Serializer.Instance.activeData.settings.leftHandedControls;
         currentPageIndex = 0;
 
         pageButtons[currentPageIndex].image.color = new Color(0.2196079f, 0.2196079f, 0.2196079f, 1);
@@ -89,28 +89,28 @@ public class Settings_UI : UI
     private void OnQualitySelectChanged(int index)
     {
         //Sets the quality level from the associated place in the dropdown menu
-        Serializer.activeData.settings.SetQualityLevel((QualityController.QualityLevel)index);
+        Serializer.Instance.activeData.settings.SetQualityLevel((QualityController.QualityLevel)index);
     }
 
     //Method called when the user changes the value in the sound effects toggle
     private void OnSoundEffectToggleChanged(bool value)
     {
         //Sets the sound effects
-        Serializer.activeData.settings.EnableSound(value);
+        Serializer.Instance.activeData.settings.EnableSound(value);
     }
 
     //Method called when the user changes the value in the vsync toggle
     private void OnVsyncChanged(bool value)
     {
         //Sets the vsync
-        Serializer.activeData.settings.EnableVsync(value);
+        Serializer.Instance.activeData.settings.EnableVsync(value);
     }
 
     //Method called when the user changes the value in the left handed controls toggle
     private void OnLeftHandedChanged(bool value)
     {
         //Sets the controls to left or right
-        Serializer.activeData.settings.EnableLeftHanded(value);
+        Serializer.Instance.activeData.settings.EnableLeftHanded(value);
     }
 
     //Method called when the user changes the value in the movement select
@@ -123,7 +123,7 @@ public class Settings_UI : UI
         }
 
         //Sets the quality level form the associated place in the dropdown menu
-        Serializer.activeData.settings.SetMovementType((Player.MovementType)index);
+        Serializer.Instance.activeData.settings.SetMovementType((Player.MovementType)index);
     }
 
     //Method called when the user clicks to go back

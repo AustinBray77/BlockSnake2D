@@ -4,7 +4,7 @@ using UnityEngine;
 using UnityEngine.Rendering.PostProcessing;
 
 //Class to control the graphics quality of the game
-public class QualityController : MonoBehaviour
+public class QualityController : BaseBehaviour
 {
     //Enum to store levels of quality
     [System.Serializable]
@@ -23,10 +23,10 @@ public class QualityController : MonoBehaviour
     //Method called on scene load
     private IEnumerator Start()
     {
-        yield return new WaitUntil(() => Serializer.activeData != null);
+        yield return new WaitUntil(() => Serializer.Instance.activeData != null);
 
         //Else Set the quality to the saved quality
-        SetQuality(Serializer.activeData.settings.qualityLevel);
+        SetQuality(Serializer.Instance.activeData.settings.qualityLevel);
     }
 
     //Method called to change the graphics quality level
@@ -87,8 +87,8 @@ public class QualityController : MonoBehaviour
 
     private IEnumerator WaitToAssignQuality(QualityLevel level)
     {
-        yield return new WaitUntil(() => { return Serializer.activeData != null; });
-        Serializer.activeData.settings.SetQualityLevel(level);
+        yield return new WaitUntil(() => { return Serializer.Instance.activeData != null; });
+        Serializer.Instance.activeData.settings.SetQualityLevel(level);
     }
 
     public static QualityLevel DefaultQualityLevel(Gamemode.Platform platform) =>

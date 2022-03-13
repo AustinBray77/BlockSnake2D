@@ -31,20 +31,20 @@ public class Start_UI : UI
         }
 
         //Loads the data if no save data is currently present
-        if (Serializer.activeData == null)
+        if (Serializer.Instance.activeData == null)
         {
-            Serializer.LoadData();
+            Serializer.Instance.LoadData();
 
-            for (int i = 0; i < Serializer.activeData.activatedLevelTriggers.Length; i++)
+            for (int i = 0; i < Serializer.Instance.activeData.activatedLevelTriggers.Length; i++)
             {
-                if (!Serializer.activeData.activatedLevelTriggers[i] && Reference.levelUpTriggers[i].levelTrigger <= Serializer.activeData.level.level)
+                if (!Serializer.Instance.activeData.activatedLevelTriggers[i] && Reference.levelUpTriggers[i].levelTrigger <= Serializer.Instance.activeData.level.level)
                 {
                     TriggerLevelPrompt(i);
                 }
             }
         }
 
-        long dayDiff = Functions.DaysSinceUnixFromMillis(Functions.CurrentMillisInTimeZone()) - Functions.DaysSinceUnixFromMillis(Serializer.activeData.lastRewardTime);
+        long dayDiff = Functions.DaysSinceUnixFromMillis(Functions.CurrentMillisInTimeZone()) - Functions.DaysSinceUnixFromMillis(Serializer.Instance.activeData.lastRewardTime);
 
         if (dayDiff > 0 || firstLogin)
         {
@@ -56,7 +56,7 @@ public class Start_UI : UI
 
             if (dayDiff >= 2)
             {
-                Serializer.activeData.SetLastReward(5);
+                Serializer.Instance.activeData.SetLastReward(5);
             }
         }
 
@@ -66,7 +66,7 @@ public class Start_UI : UI
         StartCoroutine(AnimationPlus.FadeToColor(fadePanel, new Color(0, 0, 0, 0), fadeTime, false));
 
         //Saves the data every time the user goes to the main menu
-        Serializer.SaveData();
+        Serializer.Instance.SaveData();
     }
 
     //Functions which are called on botton clicks
@@ -134,7 +134,7 @@ public class Start_UI : UI
     public void Click_Quit()
     {
         //Saves the data and exits the application
-        Serializer.SaveData();
+        Serializer.Instance.SaveData();
         Application.Quit();
     }
 

@@ -4,7 +4,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 
-public class Prompt : MonoBehaviour
+public class Prompt : BaseBehaviour
 {
     [SerializeField] private TextMeshProUGUI title;
     [SerializeField] private Button actionBtn, exitBtn;

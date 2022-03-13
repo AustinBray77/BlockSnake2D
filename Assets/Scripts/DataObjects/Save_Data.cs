@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 //Wrapper class for saving users data to the System
 [Serializable]
-class Save_Data
+public class Save_Data
 {
     //Properties to store the active skin, purchased skins, level, gearcount, highscore, and settings
     public int activeSkin { get; private set; }
@@ -16,6 +16,7 @@ class Save_Data
     public bool[] activatedLevelTriggers { get; private set; }
     public long lastRewardTime { get; private set; }
     public int lastReward { get; private set; }
+    public int daysSinceLastReward { get; private set; }
 
     //Default constructor
     public Save_Data(int _activeSkin, HashSet<string> _purchasedSkins, Level _level, int _gearCount, int _highScore, Settings_Data _settings, bool[] _activatedLevelTriggers,
@@ -255,6 +256,10 @@ class Save_Data
     //Method to set the last reward
     public void SetLastReward(int _lastReward) =>
         lastReward = _lastReward;
+
+    //Method to set the last reward date
+    public void SetLastRewardDay(int days) =>
+        daysSinceLastReward = days;
 
     //ToString Method
     public override string ToString()

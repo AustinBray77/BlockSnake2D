@@ -20,7 +20,7 @@ public class ScoreObject : Object
         //Adds score to the player if the object hit the player
         if (collision.gameObject.tag == "Player")
         {
-            if (Serializer.activeData.settings.soundEnabled)
+            if (Serializer.Instance.activeData.settings.soundEnabled)
             {
                 AudioSource audioSource = GetComponent<AudioSource>();
                 audioSource.pitch = Mathf.Pow(2, Player.score / 12f);

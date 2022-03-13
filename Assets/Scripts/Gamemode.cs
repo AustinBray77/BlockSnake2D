@@ -4,7 +4,7 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 
 //Class to control the gamemode of the game
-public class Gamemode : MonoBehaviour
+public class Gamemode : BaseBehaviour
 {
     //Enum to store the different the platforms
     [System.Serializable]

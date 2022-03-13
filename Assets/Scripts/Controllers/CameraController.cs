@@ -4,7 +4,7 @@ using UnityEngine;
 
 [RequireComponent(typeof(Camera))]
 //Class to control the camera
-public class CameraController : MonoBehaviour
+public class CameraController : BaseBehaviour
 {
     //Variables for animation
     private float targetSize;

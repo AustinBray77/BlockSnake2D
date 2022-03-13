@@ -46,7 +46,7 @@ public class Player : Segmentable
 
     //Property to get the active skin
     public static Skin activeSkin =>
-        Shop_UI.skins[Serializer.activeData.activeSkin];
+        Shop_UI.skins[Serializer.Instance.activeData.activeSkin];
 
     //Variable to store the amount of shields the player has left
     public int shieldCount;
@@ -88,7 +88,7 @@ public class Player : Segmentable
         xSpeed = Object.speed;
         rotSpeed = 10;
         shieldCount = 0;
-        level = new Level(Serializer.activeData.level.xp);
+        level = new Level(Serializer.Instance.activeData.level.xp);
 
         GetComponent<SpriteRenderer>().sprite = activeSkin.frontSprite;
         segmentPrefab.GetComponent<SpriteRenderer>().sprite = activeSkin.segmentSprite;
@@ -99,7 +99,7 @@ public class Player : Segmentable
         canUseSlowDown = true;
         slowDownCover.gameObject.SetActive(false);
 
-        movementType = Serializer.activeData.settings.movementType;
+        movementType = Serializer.Instance.activeData.settings.movementType;
 
         lastFinishHit = null;
         lastUpgraded = null;
@@ -260,9 +260,9 @@ public class Player : Segmentable
         if (!Gamemode.inLevel("Tutorial"))
         {
             //If the players achieved a new highscore, the highscore is set to the score
-            if (Serializer.activeData.highScore < score)
+            if (Serializer.Instance.activeData.highScore < score)
             {
-                Serializer.activeData.SetHighScore(score);
+                Serializer.Instance.activeData.SetHighScore(score);
             }
 
             //Sets the gear count in the serializer
@@ -289,7 +289,7 @@ public class Player : Segmentable
             {
                 Reference.adManager.ShowIntersertialAdThenCall(() =>
                 {
-                    Debug.Log("Ad was completed");
+                    Log("Ad was completed");
                 });
                 adCounter = 0;
             }
@@ -307,7 +307,7 @@ public class Player : Segmentable
         if (lastUpgraded != null)
         {
             lastUpgraded.RemoveLevel();
-            Debug.Log(lastUpgraded.title);
+            Log(lastUpgraded.title);
             lastUpgraded = null;
         }
 
@@ -334,16 +334,16 @@ public class Player : Segmentable
         Reference.gen.SetDestroyerPosition(positionAtLastFinish.x - xBoundAtLastFinish);
         Generator.SetBounds(yBoundAtLastFinish - 2);
         backup = backupAtLastFinish;
-        level = new Level(Serializer.activeData.level.xp);
+        level = new Level(Serializer.Instance.activeData.level.xp);
 
         //Shows the game UI, sets the score text, and sets is dead to false
         Reference.gameUI.Show();
         Reference.gameUI.UpdateScore(score);
-        Reference.gameUI.UpdateGearCount(Serializer.activeData.gearCount);
+        Reference.gameUI.UpdateGearCount(Serializer.Instance.activeData.gearCount);
         isDead = false;
         //Allows the player to use the slowdown (if they have it) and resets the movement type and last finish hit
         canUseSlowDown = true;
-        movementType = Serializer.activeData.settings.movementType;
+        movementType = Serializer.Instance.activeData.settings.movementType;
         lastFinishHit = null;
         positions = new List<Vector3>();
         rotations = new List<Vector3>();
@@ -417,7 +417,7 @@ public class Player : Segmentable
         shieldCount--;
         Reference.gameUI.UpdateShieldCount(shieldCount);
 
-        if (Serializer.activeData.settings.soundEnabled)
+        if (Serializer.Instance.activeData.settings.soundEnabled)
         {
             audioSource.PlayOneShot(shieldSound);
         }
@@ -443,7 +443,7 @@ public class Player : Segmentable
         slowDownCover.gameObject.SetActive(true);
         slowDownCover.offsetMax = new Vector2(0, 0);
 
-        if (Serializer.activeData.settings.soundEnabled)
+        if (Serializer.Instance.activeData.settings.soundEnabled)
         {
             audioSource.clip = slowdownTheme;
             audioSource.loop = true;
@@ -453,7 +453,7 @@ public class Player : Segmentable
         while (time < slowdownUseTime)
         {
             time += Time.deltaTime;
-            Debug.Log(Time.deltaTime / slowdownUseTime);
+            Log(Time.deltaTime / slowdownUseTime);
             slowDownCover.offsetMax -= new Vector2(0, 100 * Time.deltaTime / slowdownUseTime);
             yield return new WaitForEndOfFrame();
 
@@ -546,14 +546,14 @@ public class Player : Segmentable
     {
         if (Reference.cardTypes[cardIndex].level == 0)
         {
-            Debug.Log("Level is 0, disabling UI...");
+            Log("Level is 0, disabling UI...");
             //Fully disable the slowdown powerup
             slowdownPercentage = 0;
             Reference.gameUI.EnableSlowDown(false, false, true);
         }
         else
         {
-            Debug.Log("Level is not 0, dividing...");
+            Log("Level is not 0, dividing...");
             //Divide the slow down percentage if it was above 0
             slowdownPercentage = 1 - ((1 - slowdownPercentage) * (1 - (1 / percentage)));
         }

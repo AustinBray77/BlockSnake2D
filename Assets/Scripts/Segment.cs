@@ -4,7 +4,7 @@ using UnityEngine;
 
 //Class to handle the segments which spawn behind the player
 //[RequireComponent(typeof(Rigidbody2D))]
-public class Segment : MonoBehaviour
+public class Segment : BaseBehaviour
 {
     //Refrence to the segment after the current segment
     [HideInInspector] public Segment segmentAfter;

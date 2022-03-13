@@ -1,9 +1,10 @@
 using UnityEngine;
 using UnityEngine.Networking;
 using System;
+using System.Reflection;
 using System.Collections;
 
-public static class Functions
+public class Functions : Singleton<Functions>
 {
     public static DateTime currentTime { get; private set; }
     public static bool fetchingDateTime { get; private set; }
@@ -103,4 +104,7 @@ public static class Functions
 
     public static float RoundToPlaces(float f, int places) =>
         Mathf.Round(f * Mathf.Pow(10, places)) / Mathf.Pow(10, places);
+
+    public static PropertyInfo[] GetProperties(string type) =>
+        Type.GetType(type).GetProperties();
 }

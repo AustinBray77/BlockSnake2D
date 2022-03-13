@@ -27,14 +27,14 @@ public class Death_UI : UI
         if (!Gamemode.inLevel("Tutorial"))
         {
             //Displays the players final score and highscore
-            scoreText.text = $"FINAL SCORE: {Player.score}\nHIGHSCORE: {Serializer.activeData.highScore}";
+            scoreText.text = $"FINAL SCORE: {Player.score}\nHIGHSCORE: {Serializer.Instance.activeData.highScore}";
 
             //Sets the values for the level bar
-            levelBar.lowerLevel.text = Serializer.activeData.level.level.ToString();
-            levelBar.higherLevel.text = (Serializer.activeData.level.level + 1).ToString();
-            levelBar.levelBar.minValue = Level.LevelToXP(Serializer.activeData.level.level);
-            levelBar.levelBar.maxValue = Level.LevelToXP(Serializer.activeData.level.level + 1);
-            levelBar.levelBar.value = Serializer.activeData.level.xp;
+            levelBar.lowerLevel.text = Serializer.Instance.activeData.level.level.ToString();
+            levelBar.higherLevel.text = (Serializer.Instance.activeData.level.level + 1).ToString();
+            levelBar.levelBar.minValue = Level.LevelToXP(Serializer.Instance.activeData.level.level);
+            levelBar.levelBar.maxValue = Level.LevelToXP(Serializer.Instance.activeData.level.level + 1);
+            levelBar.levelBar.value = Serializer.Instance.activeData.level.xp;
 
             //Prompt ad
             multiplier = 0f;
@@ -67,21 +67,21 @@ public class Death_UI : UI
     {
         yield return new WaitUntil(() => prompt == null);
 
-        Debug.Log((Player.level.xp - Serializer.activeData.level.xp));
+        Log((Player.level.xp - Serializer.Instance.activeData.level.xp));
 
         levelBarAnimationFinished = false;
-        Player.level.AddXP((Player.level.xp - Serializer.activeData.level.xp) * multiplier);
+        Player.level.AddXP((Player.level.xp - Serializer.Instance.activeData.level.xp) * multiplier);
 
         //Calculates the length of the animation
-        float time = Level.XPToLevel(Player.level.xp) - Serializer.activeData.level.level > 0 ?
-            Level.XPToLevel(Player.level.xp) - Serializer.activeData.level.level : Serializer.activeData.level.xp / Player.level.xp;
+        float time = Level.XPToLevel(Player.level.xp) - Serializer.Instance.activeData.level.level > 0 ?
+            Level.XPToLevel(Player.level.xp) - Serializer.Instance.activeData.level.level : Serializer.Instance.activeData.level.xp / Player.level.xp;
 
         //Animates the level bar
-        yield return StartCoroutine(AnimationPlus.AnimateLevelBar(levelBar, Serializer.activeData.level.level, Player.level.xp, time));
+        yield return StartCoroutine(AnimationPlus.AnimateLevelBar(levelBar, Serializer.Instance.activeData.level.level, Player.level.xp, time));
 
         //Saves the players level
-        Serializer.activeData.SetLevel(Player.level);
-        Serializer.SaveData();
+        Serializer.Instance.activeData.SetLevel(Player.level);
+        Serializer.Instance.SaveData();
 
         //Flags that the level bar animation has finished
         levelBarAnimationFinished = true;

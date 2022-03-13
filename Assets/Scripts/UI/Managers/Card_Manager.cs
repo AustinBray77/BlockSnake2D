@@ -7,7 +7,7 @@ using TMPro;
 
 //Class to manage the UI elements associated with a card
 [RequireComponent(typeof(Button))]
-public class Card_Manager : MonoBehaviour
+public class Card_Manager : BaseBehaviour
 {
     //Refrences to UI elements of the cards
     [SerializeField] private TMP_Text title;

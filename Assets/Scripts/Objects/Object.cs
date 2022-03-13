@@ -5,7 +5,7 @@ using UnityEngine;
 //Inherited class to control all objects which move across the screen
 //Requires a 2D collider for collision, and a sprite renderer for renderering the objects sprite
 [RequireComponent(typeof(SpriteRenderer), typeof(Collider2D))]
-public abstract class Object : MonoBehaviour
+public abstract class Object : BaseBehaviour
 {
     public static float speed = 7.5f;
     public static int objectLayer = 3;

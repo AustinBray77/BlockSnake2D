@@ -5,7 +5,7 @@ using UnityEngine.UI;
 using TMPro;
 
 //Class to control the tutorial scene
-public class Tutorial : MonoBehaviour
+public class Tutorial : BaseBehaviour
 {
     //List to store the keys the user should press during the tutorial and the associated text elements
     [SerializeField] private List<KeyCode> nextKey;
@@ -32,12 +32,12 @@ public class Tutorial : MonoBehaviour
         LeanTween.init(1600);
 
         //Changes the tutorial text based on the platform
-        if (Serializer.activeData.settings.movementType == Player.MovementType.Keyboard)
+        if (Serializer.Instance.activeData.settings.movementType == Player.MovementType.Keyboard)
         {
             nextText[0].text = "Press W to Move Upward";
             nextText[1].text = "Press S to Move Downward";
         }
-        else if (Serializer.activeData.settings.movementType == Player.MovementType.Buttons)
+        else if (Serializer.Instance.activeData.settings.movementType == Player.MovementType.Buttons)
         {
             nextText[0].text = "Press the Up Arrow to Move Upward";
             nextText[1].text = "Press the Down Arrow to Move Downward";

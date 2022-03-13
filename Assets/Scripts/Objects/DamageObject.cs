@@ -21,7 +21,7 @@ public class DamageObject : Object
 
             if (destroy)
             {
-                if (Serializer.activeData.settings.soundEnabled)
+                if (Serializer.Instance.activeData.settings.soundEnabled)
                 {
                     //audioSource.PlayOneShot(audioSource.clip);
                 }

@@ -5,7 +5,7 @@ using UnityEngine.UI;
 using TMPro;
 
 //Class to control the UI of each skin
-public class Skin_Manager : MonoBehaviour
+public class Skin_Manager : BaseBehaviour
 {
     //Refrences to UI elements
     [SerializeField] private TextMeshProUGUI title, desc;
@@ -69,17 +69,17 @@ public class Skin_Manager : MonoBehaviour
             if (!skin.locked)
             {
                 //Triggers if the skin hasn't been purchased and is purchasable
-                if (Serializer.activeData.gearCount >= skin.price && !skin.purchased)
+                if (Serializer.Instance.activeData.gearCount >= skin.price && !skin.purchased)
                 {
                     //Purchases the skin
-                    Serializer.activeData.PurchaseSkin(index, skin.price);
+                    Serializer.Instance.activeData.PurchaseSkin(index, skin.price);
                 }
 
                 //Triggers if the user has purchased the skin
                 if (skin.purchased)
                 {
                     //Equips the skin and updates all of the other skin cards
-                    Serializer.activeData.SetActiveSkin(index);
+                    Serializer.Instance.activeData.SetActiveSkin(index);
                     Reference.shopUI.UpdateAllCards();
                 }
             }

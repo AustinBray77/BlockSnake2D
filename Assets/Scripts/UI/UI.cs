@@ -5,7 +5,7 @@ using UnityEngine.UI;
 using TMPro;
 
 //Class inherited by UI objects
-public abstract class UI : MonoBehaviour
+public abstract class UI : BaseBehaviour
 {
     //Stores the normal fade time between screens
     public static float fadeTime = 0.2f;
@@ -78,8 +78,8 @@ public abstract class UI : MonoBehaviour
     public void TriggerLevelPrompt(int index)
     {
         var trigger = Reference.levelUpTriggers[index];
-        Serializer.activeData.TriggerActivated(index);
-        Serializer.SaveData();
+        Serializer.Instance.activeData.TriggerActivated(index);
+        Serializer.Instance.SaveData();
 
         Prompt p;
 

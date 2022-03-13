@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 //Class to control the Top and Bottom border walls
-public class BorderWall : MonoBehaviour
+public class BorderWall : BaseBehaviour
 {
     //Variables for animation
     private Vector3 targetPosition;

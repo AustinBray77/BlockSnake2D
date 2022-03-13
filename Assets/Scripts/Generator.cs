@@ -4,7 +4,7 @@ using System.Linq;
 using UnityEngine;
 
 //Class to control the generator obejct which generates objects
-public class Generator : MonoBehaviour
+public class Generator : BaseBehaviour
 {
     //Refrence to the top and bottom wall
     [SerializeField] private GameObject topWall, bottomWall;
@@ -282,7 +282,7 @@ public class Generator : MonoBehaviour
         spawnSpeedAtLastFinish = spawnDelay;
 
         //Debugging
-        //Debug.Log(counterAtLastFinishEnter);
+        //Log(counterAtLastFinishEnter);
     }
 
     //Method called when the player dies

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 //Class used for debugging
-public class DebugExtras : MonoBehaviour
+public class DebugExtras : BaseBehaviour
 {
     //Method called on each frame
     void FixedUpdate()
@@ -19,28 +19,28 @@ public class DebugExtras : MonoBehaviour
             if (Input.GetKeyDown(KeyCode.J))
             {
                 Reference.player.RemoveSegments(1);
-                Debug.Log("1 Segment Removed");
+                Log("1 Segment Removed");
             }
 
             //If the k key is hit, 5 segments are removed from the player
             if (Input.GetKeyDown(KeyCode.K))
             {
                 Reference.player.RemoveSegments(5);
-                Debug.Log("5 Segment Removed");
+                Log("5 Segment Removed");
             }
 
             //If the l key is hit, 1000 xp is added to the player
             if (Input.GetKeyDown(KeyCode.L))
             {
                 Player.level.AddXP(1000);
-                Debug.Log("1000 XP Added");
+                Log("1000 XP Added");
             }
 
             //If the g key is hit, 10 gears are added to the player
             /*if (Input.GetKeyDown(KeyCode.G))
             {
                 Player.gearCount += 10;
-                Debug.Log("10 Gears Added");
+                Log("10 Gears Added");
             }*/
 
             if (Input.GetKeyDown(KeyCode.B))
@@ -52,14 +52,14 @@ public class DebugExtras : MonoBehaviour
             if (Input.GetKeyDown(KeyCode.H))
             {
                 Reference.player.AddShields(1);
-                Debug.Log("1 Shield Added");
+                Log("1 Shield Added");
             }
 
             //If the v key is hit, 1 shield is used
             if (Input.GetKeyDown(KeyCode.V))
             {
                 Reference.player.UseShield();
-                Debug.Log("1 Shield Used");
+                Log("1 Shield Used");
             }
 
             //if the ; key is hit level up the slowdown powerup
@@ -72,9 +72,9 @@ public class DebugExtras : MonoBehaviour
         //If the R key is hit, the save game is reset
         if (Input.GetKeyDown(KeyCode.R))
         {
-            Serializer.ResetData();
-            Serializer.SaveData();
-            Debug.Log("Save Reset");
+            Serializer.Instance.ResetData();
+            Serializer.Instance.SaveData();
+            Log("Save Reset");
         }
     }
 }

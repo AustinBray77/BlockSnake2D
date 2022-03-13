@@ -3,7 +3,10 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Advertisements;
 
-public class AdManager : MonoBehaviour, IUnityAdsLoadListener, IUnityAdsShowListener
+public class UnityAdsService : Singleton<UnityAdsService>,
+                               IUnityAdsLoadListener,
+                               IUnityAdsShowListener,
+                               IUnityService
 {
     //Instance variables
     private bool testMode;
@@ -21,8 +24,14 @@ public class AdManager : MonoBehaviour, IUnityAdsLoadListener, IUnityAdsShowList
     private string intersertial_AD = "Interstitial_IOS";
 #endif
 
+    //Initializes the service
+    public void InitializeUnityService()
+    {
+        Advertisement.Initialize(gameID, false);
+    }
+
     //Method called on scene load
-    private void Start()
+    /*private void Start()
     {
         //Deactivates the object if the platform is windows
         if (Gamemode.platform == Gamemode.Platform.Windows)
@@ -33,20 +42,20 @@ public class AdManager : MonoBehaviour, IUnityAdsLoadListener, IUnityAdsShowList
 
         //Initializes the advertisment
         Advertisement.Initialize(gameID, false);
-    }
+    }*/
 
     // Load content to the Ad Unit:
     public void LoadAd()
     {
         // IMPORTANT! Only load content AFTER initialization (in this example, initialization is handled in a different script).
-        Debug.Log("Loading Ad: " + adID);
+        Log("Loading Ad: " + adID);
         Advertisement.Load(adID, this);
     }
 
     // If the ad successfully loads, add a listener to the button and enable it:
     public void OnUnityAdsAdLoaded(string adUnitId)
     {
-        Debug.Log("Ad Loaded: " + adUnitId);
+        Log("Ad Loaded: " + adUnitId);
     }
 
     // Implement a method to execute when the user clicks the button.
@@ -76,12 +85,12 @@ public class AdManager : MonoBehaviour, IUnityAdsLoadListener, IUnityAdsShowList
     // Implement Load and Show Listener error callbacks:
     public void OnUnityAdsFailedToLoad(string adUnitId, UnityAdsLoadError error, string message)
     {
-        Debug.Log($"Error loading Ad Unit {adUnitId}: {error} - {message}");
+        Log($"Error loading Ad Unit {adUnitId}: {error} - {message}");
     }
 
     public void OnUnityAdsShowFailure(string adUnitId, UnityAdsShowError error, string message)
     {
-        Debug.Log($"Error showing Ad Unit {adUnitId}: {error} - {message}");
+        Log($"Error showing Ad Unit {adUnitId}: {error} - {message}");
     }
 
     public void OnUnityAdsShowStart(string adUnitId) { }

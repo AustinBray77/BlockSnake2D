@@ -40,9 +40,9 @@ public class Game_UI : UI
     //Called when the scene is loaded
     private IEnumerator Start()
     {
-        yield return new WaitUntil(() => Serializer.activeData != null);
+        yield return new WaitUntil(() => Serializer.Instance.activeData != null);
 
-        if (Serializer.activeData.settings.leftHandedControls)
+        if (Serializer.Instance.activeData.settings.leftHandedControls)
         {
             controls = controlsLeft;
             controlsRight.SetActive(false);
@@ -54,10 +54,10 @@ public class Game_UI : UI
         }
 
         //Deactivates the on screen controls if the user is playing with button or all controls
-        controls.SetActive(/*Serializer.activeData.settings.movementType == Player.MovementType.All ||*/ Serializer.activeData.settings.movementType == Player.MovementType.Buttons);
+        controls.SetActive(/*Serializer.activeData.settings.movementType == Player.MovementType.All ||*/ Serializer.Instance.activeData.settings.movementType == Player.MovementType.Buttons);
 
         //Sets the gear text
-        gearText.text = Serializer.activeData.gearCount.ToString();
+        gearText.text = Serializer.Instance.activeData.gearCount.ToString();
 
         //Hides shield UI
         shieldImage.gameObject.SetActive(false);
@@ -113,19 +113,19 @@ public class Game_UI : UI
     //Used to enable the slowdown UI object
     public void EnableSlowDown(bool state, bool useFade = true, bool ignoreCurrent = false)
     {
-        Debug.Log("Slowdown UI?");
+        Log("Slowdown UI?");
 
         //Fade in if state is true and current acitivty is false
         if (state && (slowDownImage.color == new Color(1, 1, 1, 0) || ignoreCurrent))
         {
-            Debug.Log("Enabling Slowdown UI...");
+            Log("Enabling Slowdown UI...");
             if (useFade) StartCoroutine(AnimationPlus.FadeToColor(slowDownImage, new Color(1, 1, 1, 1), fadeTime));
             else slowDownImage.color = new Color(1, 1, 1, 1);
         }
         //Fade out if state is false and current activity is true
         else if (!state && (slowDownImage.color == new Color(1, 1, 1, 1) || ignoreCurrent))
         {
-            Debug.Log("Disabling Slowdown UI...");
+            Log("Disabling Slowdown UI...");
             if (useFade) StartCoroutine(AnimationPlus.FadeToColor(slowDownImage, new Color(1, 1, 1, 0), fadeTime));
             else slowDownImage.color = new Color(1, 1, 1, 0);
         }

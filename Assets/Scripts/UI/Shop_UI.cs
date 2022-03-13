@@ -27,7 +27,7 @@ public class Shop_UI : UI
     //Method called after the scene loads
     public IEnumerator Start()
     {
-        yield return new WaitUntil(() => Serializer.activeData != null);
+        yield return new WaitUntil(() => Serializer.Instance.activeData != null);
 
         //Assigns the static refrence for skins and sets the gear text to the current gear count
         skins = _skins;
@@ -37,7 +37,7 @@ public class Shop_UI : UI
     //Sets the text after the serializer is assigned
     public void SetGearText()
     {
-        gearText.text = Serializer.activeData.gearCount.ToString();
+        gearText.text = Serializer.Instance.activeData.gearCount.ToString();
     }
 
     //Method called when the UI is to show
@@ -79,7 +79,7 @@ public class Shop_UI : UI
     public void UpdateAllCards()
     {
         //Updates gear text
-        gearText.text = Serializer.activeData.gearCount.ToString();
+        gearText.text = Serializer.Instance.activeData.gearCount.ToString();
 
         //Updates each skin card
         foreach (Skin_Manager sm in skin_Managers)
@@ -124,29 +124,30 @@ public class Shop_UI : UI
     {
         Reference.adManager.ShowRewardedAdThenCall(() =>
         {
-            Serializer.activeData.SetGearCount(Serializer.activeData.gearCount + 5);
+            Serializer.Instance.activeData.SetGearCount(Serializer.Instance.activeData.gearCount + 5);
             Reference.shopUI.SetGearText();
         });
     }
 
     public void ClaimDailyReward()
     {
-        if (Functions.DaysSinceUnixFromMillis(Functions.CurrentMillisInTimeZone()) - Functions.DaysSinceUnixFromMillis(Serializer.activeData.lastRewardTime) > 0)
+        if (Functions.DaysSinceUnixFromMillis(Functions.CurrentMillisInTimeZone()) - Functions.DaysSinceUnixFromMillis(Serializer.Instance.activeData.lastRewardTime) > 0)
         {
-            Serializer.activeData.SetGearCount(Serializer.activeData.gearCount + Serializer.activeData.lastReward);
-            Serializer.activeData.SetLastRewardTime(Functions.CurrentMillisInTimeZone());
-            Serializer.activeData.SetLastReward(Serializer.activeData.lastReward + 1);
+            Serializer.Instance.activeData.SetGearCount(Serializer.Instance.activeData.gearCount + Serializer.Instance.activeData.lastReward);
+            Serializer.Instance.activeData.SetLastRewardTime(Functions.CurrentMillisInTimeZone());
+            Serializer.Instance.activeData.SetLastReward(Serializer.Instance.activeData.lastReward + 1);
             SetGearText();
             UpdateDailyReward();
-            Serializer.SaveData();
+            Serializer.Instance.SaveData();
         }
     }
 
     private void UpdateDailyReward()
     {
-        if (Functions.DaysSinceUnixFromMillis(Functions.CurrentMillisInTimeZone()) - Functions.DaysSinceUnixFromMillis(Serializer.activeData.lastRewardTime) > 0)
+        if (Functions.DaysSinceUnixFromMillis(Functions.CurrentMillisInTimeZone()) -
+            Functions.DaysSinceUnixFromMillis(Serializer.Instance.activeData.lastRewardTime) > 0)
         {
-            dailyRewardText.text = "+" + Serializer.activeData.lastReward.ToString();
+            dailyRewardText.text = "+" + Serializer.Instance.activeData.lastReward.ToString();
             dailyGearImage.SetActive(true);
         }
         else

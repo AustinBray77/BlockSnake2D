@@ -4,7 +4,7 @@ using System;
 using UnityEngine;
 
 //Class to save static refrences to multiple frequently accessed objects.
-public class Reference : MonoBehaviour
+public class Reference : BaseBehaviour
 {
     //Instance refrences to the objects
     [SerializeField] private Player _player;
@@ -19,7 +19,7 @@ public class Reference : MonoBehaviour
     [SerializeField] private Settings_UI _settingsUI;
     [SerializeField] private Credits_UI _creditsUI;
     [SerializeField] private ModeSelect_UI _modeSelectUI;
-    [SerializeField] private AdManager _adManager;
+    [SerializeField] private UnityAdsService _adManager;
     [SerializeField] private Tutorial _tutorial;
     [SerializeField] private Card[] _cardTypes;
     [SerializeField] private Skin _baseSkin;
@@ -40,7 +40,7 @@ public class Reference : MonoBehaviour
     public static Settings_UI settingsUI;
     public static Credits_UI creditsUI;
     public static ModeSelect_UI modeSelectUI;
-    public static AdManager adManager;
+    public static UnityAdsService adManager;
     public static Tutorial tutorial;
     public static Card[] cardTypes;
     public static List<Level.LevelUpTrigger> levelUpTriggers;
