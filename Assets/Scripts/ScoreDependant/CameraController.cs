@@ -4,7 +4,7 @@ using UnityEngine;
 
 [RequireComponent(typeof(Camera))]
 //Class to control the camera
-public class CameraController : BaseBehaviour
+public class CameraController : ScoreDependent
 {
     //Variables for animation
     private float targetSize;
@@ -41,7 +41,7 @@ public class CameraController : BaseBehaviour
     }
 
     //Method called when a segment is added to the player
-    public void OnSegmentChange(int amount, bool useAnimation)
+    public override void OnSegmentChange(int amount, bool useAnimation)
     {
         //Changes the screen size of the camera, uses animation if requested
         if (useAnimation)

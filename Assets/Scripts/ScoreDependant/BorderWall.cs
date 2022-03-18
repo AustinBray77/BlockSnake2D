@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 //Class to control the Top and Bottom border walls
-public class BorderWall : BaseBehaviour
+public class BorderWall : ScoreDependent
 {
     //Variables for animation
     private Vector3 targetPosition;
@@ -49,7 +49,7 @@ public class BorderWall : BaseBehaviour
     }
 
     //Method called when the 
-    public void OnSegmentChange(int amount, bool useAnimation)
+    public override void OnSegmentChange(int amount, bool useAnimation)
     {
 
         //Changes the position and size so the wall is just on the border of the screen, uses animation if requested

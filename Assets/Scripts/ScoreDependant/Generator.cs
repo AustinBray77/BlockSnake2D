@@ -4,8 +4,10 @@ using System.Linq;
 using UnityEngine;
 
 //Class to control the generator obejct which generates objects
-public class Generator : BaseBehaviour
+public class Generator : ScoreDependent
 {
+    private const int _objectLayer = 5;
+
     //Refrence to the top and bottom wall
     [SerializeField] private GameObject topWall, bottomWall;
 
@@ -44,13 +46,15 @@ public class Generator : BaseBehaviour
     //Method called on scene load
     private void Start()
     {
+        Log("Rest of start called");
+
         objects = new List<Object>();
         smallPO = new List<GameObject>();
         mediumPO = new List<GameObject>();
         largePO = new List<GameObject>();
 
         //Returns if currently in the tutorial
-        if (Gamemode.inLevel("Tutorial"))
+        if (Gamemanager.inLevel("Tutorial"))
             return;
 
         //Initializes the generator
@@ -61,20 +65,20 @@ public class Generator : BaseBehaviour
     public void Initialize()
     {
         //Assigns the base data for all of the properties
-        if (Gamemode.inLevel("Tutorial"))
+        if (Gamemanager.inLevel("Tutorial"))
         {
             Object.speed = 5f;
             spawnDelay = 2f;
         }
         else
         {
-            switch (Gamemode.mode)
+            switch (Gamemanager.mode)
             {
-                case Gamemode.Mode.Normal:
+                case Gamemanager.Mode.Normal:
                     Object.speed = 6f;
                     spawnDelay = 1.7f;
                     break;
-                case Gamemode.Mode.Fast:
+                case Gamemanager.Mode.Fast:
                     Object.speed = 8f;
                     spawnDelay = 1.4f;
                     break;
@@ -227,7 +231,7 @@ public class Generator : BaseBehaviour
     }
 
     //Method called when segments are added or removed from the player, used for controling the scene scale
-    public void OnSegmentChange(int amount)
+    public override void OnSegmentChange(int amount, bool useAnimation)
     {
         //Changes the position and bounds so the generator is just of to the right
         transform.position += new Vector3(Player.increaseFactor * Reference.cam.aspect * amount, 0);
@@ -413,7 +417,7 @@ public class Generator : BaseBehaviour
         while (true)
         {
             //Variables for counting the time waited and the total time to wait
-            float time = 0, wait = Random.Range(8f / Object.speed, 40f / Object.speed);
+            float time = 0, wait = Random.Range(16f / Object.speed, 80f / Object.speed);
 
             //Waits for the current wait time
             while (time < wait)
@@ -438,7 +442,7 @@ public class Generator : BaseBehaviour
         while (true)
         {
             //Variables for counting the time waited and the total time to wait
-            float time = 0, wait = Random.Range(160f / Object.speed, 240f / Object.speed);
+            float time = 0, wait = Random.Range(320f / Object.speed, 480f / Object.speed);
 
             //Waits for the current wait time
             while (time < wait)
@@ -463,7 +467,7 @@ public class Generator : BaseBehaviour
         while (true)
         {
             //Variables for counting the time waited and the total time to wait
-            float time = 0, wait = Random.Range(400f / Object.speed, 480f / Object.speed);
+            float time = 0, wait = Random.Range(800f / Object.speed, 960f / Object.speed);
 
             //Waits for the current wait time
             while (time < wait)
@@ -523,6 +527,7 @@ public class Generator : BaseBehaviour
     public GameObject SpawnObject(Object obj, Vector3 position)
     {
         GameObject gameObj = Instantiate(obj.gameObject, position, obj.transform.rotation);
+        gameObj.GetComponent<SpriteRenderer>().sortingOrder = _objectLayer;
         objects.Add(gameObj.GetComponent<Object>());
         return gameObj;
     }
