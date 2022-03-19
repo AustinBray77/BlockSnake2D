@@ -13,13 +13,18 @@ public class Start_UI : UI
     //Called on scene load
     private IEnumerator Start()
     {
-        bool firstLogin = !System.IO.File.Exists(Serializer.fileName);
+        yield return new WaitUntil(() => Serializer.Instance != null && PlayGamesService.Instance != null);
+        yield return StartCoroutine(PlayGamesService.Instance.SignIn(false));
+
+        bool firstLogin = !System.IO.File.Exists(Serializer.FileName);
+
+        Log($"First Login?:{firstLogin}, File at:{Serializer.FileName}");
 
         loadingText.SetActive(true);
         yield return StartCoroutine(Functions.UpdateCurrentTime());
         loadingText.SetActive(false);
 
-        if (Functions.currentTime == new System.DateTimeOffset().DateTime)
+        if (Functions.CurrentTime == new System.DateTimeOffset().DateTime)
         {
             Prompt p = Instantiate(Reference.smallPrompt, transform.parent).GetComponent<Prompt>();
             p.SetTitleText("Connection Error");
@@ -33,7 +38,9 @@ public class Start_UI : UI
         //Loads the data if no save data is currently present
         if (Serializer.Instance.activeData == null)
         {
-            Serializer.Instance.LoadData();
+            Log("Data is null");
+
+            yield return StartCoroutine(Serializer.Instance.LoadData());
 
             for (int i = 0; i < Serializer.Instance.activeData.activatedLevelTriggers.Length; i++)
             {
@@ -42,6 +49,12 @@ public class Start_UI : UI
                     TriggerLevelPrompt(i);
                 }
             }
+        }
+        else
+        {
+            Log("Data is not null.");
+            Log($"Active Data:{Serializer.Instance.activeData == null}");
+            Log($"Settings:{Serializer.Instance.activeData.settings == null}");
         }
 
         long dayDiff = Functions.DaysSinceUnixFromMillis(Functions.CurrentMillisInTimeZone()) - Functions.DaysSinceUnixFromMillis(Serializer.Instance.activeData.lastRewardTime);
@@ -136,6 +149,12 @@ public class Start_UI : UI
         //Saves the data and exits the application
         Serializer.Instance.SaveData();
         Application.Quit();
+    }
+
+    //Called when the user clicks to show the leaderboard
+    public void ClickLeaderboard()
+    {
+        PlayGamesService.Instance.ShowLeaderboard(PlayGamesService.HighScoreID);
     }
 
     //Overidable method called to show the UI object

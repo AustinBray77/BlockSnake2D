@@ -44,7 +44,7 @@ public class Finish_UI : UI
             cardObjects[i].GetComponent<Button>().interactable = false;
         }
 
-        if (Gamemode.inLevel("Tutorial") && !tipWasShown)
+        if (Gamemanager.InLevel("Tutorial") && !tipWasShown)
         {
             StartCoroutine(ActiveCardsFirst());
             tipWasShown = true;

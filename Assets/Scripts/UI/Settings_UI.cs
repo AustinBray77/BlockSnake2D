@@ -19,10 +19,17 @@ public class Settings_UI : UI
     //Method called on object instatiation
     private IEnumerator Start()
     {
+        yield return new WaitUntil(() => Serializer.Instance != null);
         yield return new WaitUntil(() => Serializer.Instance.activeData != null);
+        yield return new WaitUntil(() => Serializer.Instance.activeData.settings != null);
+
+        Log(Serializer.Instance.activeData == null);
+        Log(Serializer.Instance.activeData.settings == null);
+
+        Gamemanager.Platform platform = Gamemanager.Instance.CurrentPlatform;
 
         //If on mobile, give warning about graphics setting, else do not
-        if (Gamemode.platform == Gamemode.Platform.Android || Gamemode.platform == Gamemode.Platform.IOS || Gamemode.platform == Gamemode.Platform.Debug)
+        if (platform == Gamemanager.Platform.Android || platform == Gamemanager.Platform.IOS || platform == Gamemanager.Platform.Debug)
         {
             warning.text = "Warning! Turning the quality above Fast could result in performance issues!";
         }
@@ -34,7 +41,7 @@ public class Settings_UI : UI
         //Fills the dropdowns from the associated enums
         FillDropFromEnum<QualityController.QualityLevel>(qualitySelect);
         FillDropFromEnum<Player.MovementType>(movementSelect,
-            (Gamemode.platform == Gamemode.Platform.Android || Gamemode.platform == Gamemode.Platform.IOS) ?
+            (platform == Gamemanager.Platform.Android || platform == Gamemanager.Platform.IOS) ?
                 new int[] { (int)Player.MovementType.Keyboard } : null);
 
         //Adds the associated actions
@@ -117,7 +124,8 @@ public class Settings_UI : UI
     private void OnMovementSelectChanged(int index)
     {
         //If user is on mobile and selects keyboard, return
-        if ((Gamemode.platform == Gamemode.Platform.Android || Gamemode.platform == Gamemode.Platform.IOS) && (Player.MovementType)index == Player.MovementType.Keyboard)
+        if ((Gamemanager.Instance.CurrentPlatform == Gamemanager.Platform.Android || Gamemanager.Instance.CurrentPlatform == Gamemanager.Platform.IOS)
+            && (Player.MovementType)index == Player.MovementType.Keyboard)
         {
             return;
         }

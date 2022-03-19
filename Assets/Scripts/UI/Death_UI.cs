@@ -24,7 +24,7 @@ public class Death_UI : UI
         UIContainer.SetActive(true);
 
         //Triggers if not in the tutorial
-        if (!Gamemode.inLevel("Tutorial"))
+        if (!Gamemanager.InLevel("Tutorial"))
         {
             //Displays the players final score and highscore
             scoreText.text = $"FINAL SCORE: {Player.score}\nHIGHSCORE: {Serializer.Instance.activeData.highScore}";
@@ -97,11 +97,11 @@ public class Death_UI : UI
             return;
 
         //Shows an ad if the user is on phone, respawns if the game is in debug mode
-        if ((Gamemode.platform != Gamemode.Platform.Windows) && !Gamemode.inLevel("Tutorial"))
+        if ((Gamemanager.Instance.CurrentPlatform != Gamemanager.Platform.Windows) && !Gamemanager.InLevel("Tutorial"))
         {
             Reference.adManager.ShowRewardedAdThenCall(() => Reference.deathUI.OnRespawn());
         }
-        else if (Gamemode.inLevel("Tutorial"))
+        else if (Gamemanager.InLevel("Tutorial"))
         {
             OnRespawn();
         }

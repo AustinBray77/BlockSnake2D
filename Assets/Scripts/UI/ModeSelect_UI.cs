@@ -7,7 +7,7 @@ public class ModeSelect_UI : UI
 {
     public void SetMode(int index)
     {
-        Gamemode.mode = (Gamemode.Mode)index;
+        Gamemanager.Instance.CurrentMode = (Gamemanager.Mode)index;
 
         StartCoroutine(ClickWithFade(
             () =>
