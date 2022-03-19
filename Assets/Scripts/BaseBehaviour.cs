@@ -3,20 +3,20 @@ using UnityEditor;
 
 public class BaseBehaviour : MonoBehaviour, ILoggerService
 {
-    public bool shouldLogData;
+    public bool LogData;
 
-    public void Log(object data)
+    public void Log(object data, bool forceLog = false)
     {
-        if (shouldLogData) Debug.Log(data);
+        if (LogData || forceLog) Debug.Log(data);
     }
 
-    public void LogWarning(object data)
+    public void LogWarning(object data, bool forceLog = false)
     {
-        if (shouldLogData) Debug.LogWarning(data);
+        if (LogData || forceLog) Debug.LogWarning(data);
     }
 
-    public void LogError(object data)
+    public void LogError(object data, bool forceLog = false)
     {
-        if (shouldLogData) Debug.LogError(data);
+        if (LogData || forceLog) Debug.LogError(data);
     }
 }

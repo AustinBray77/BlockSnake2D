@@ -2,20 +2,20 @@ using UnityEngine;
 
 public class LoggerService : ILoggerService
 {
-    private bool shouldLogData = true;
+    private bool _logData = true;
 
-    public void Log(object data)
+    public void Log(object data, bool forceLog = false)
     {
-        if (shouldLogData) Debug.Log(data);
+        if (_logData || forceLog) Debug.Log(data);
     }
 
-    public void LogWarning(object data)
+    public void LogWarning(object data, bool forceLog = false)
     {
-        if (shouldLogData) Debug.LogWarning(data);
+        if (_logData) Debug.LogWarning(data);
     }
 
-    public void LogError(object data)
+    public void LogError(object data, bool forceLog = false)
     {
-        if (shouldLogData) Debug.LogError(data);
+        if (_logData) Debug.LogError(data);
     }
 }

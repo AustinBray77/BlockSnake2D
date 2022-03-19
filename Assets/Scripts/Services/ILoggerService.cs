@@ -1,6 +1,6 @@
 public interface ILoggerService
 {
-    public void Log(object data);
-    public void LogWarning(object data);
-    public void LogError(object data);
+    public void Log(object data, bool forceLog = false);
+    public void LogWarning(object data, bool forceLog = false);
+    public void LogError(object data, bool forceLog = false);
 }
