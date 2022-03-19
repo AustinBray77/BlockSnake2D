@@ -4,7 +4,7 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 
 //Class to control the gamemode of the game
-public class Gamemode : BaseBehaviour
+public class Gamemanager : SingletonDD<Gamemanager>
 {
     //Enum to store the different the platforms
     [System.Serializable]
@@ -24,30 +24,27 @@ public class Gamemode : BaseBehaviour
     }
 
     //Properties to store the current mode
-    [SerializeField] private Mode _mode;
+    public Mode CurrentMode;
 
 #if UNITY_EDITOR
-    public static Platform platform = Platform.Debug;
+    public Platform CurrentPlatform = Platform.Debug;
 #elif UNITY_STANDALONE_WIN
-    public static Platform platform = Platform.Windows;
+    public Platform CurrentPlatform = Platform.Windows;
 #elif UNITY_IOS
-    public static Platform platform = Platform.IOS;
+    public Platform CurrentPlatform = Platform.IOS;
 #else
-    public static Platform platform = Platform.Android;
+    public Platform CurrentPlatform = Platform.Android;
 #endif
 
-    public static Mode mode;
-
-    //Method called on scene load
-    private void Start()
-    {
-        //Assigns default values
-        mode = _mode;
-    }
-
     //Returns if in the specified level
-    public static bool inLevel(string levelName) =>
+    public static bool InLevel(string levelName) =>
         SceneManager.GetActiveScene().name == levelName;
+
+    //Returns the multiplier for the current mode
+    public float ModeMultiplier()
+    {
+        return ModeMultiplier(CurrentMode);
+    }
 
     //Returns the multiplier for each mode
     public static float ModeMultiplier(Mode mode)

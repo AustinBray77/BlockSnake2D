@@ -1,13 +1,36 @@
 using UnityEngine;
+using System;
+using System.Collections.Generic;
 
 public class Singleton<T> : BaseBehaviour where T : Component
 {
-    public static T Instance { get; private set; }
+    private static Dictionary<Type, object> s_singletons = new Dictionary<Type, object>();
 
-    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
-    private static void InitializeType()
+    public static T Instance
     {
-        Instance = new GameObject($"#{nameof(T)}").AddComponent<T>();
-        DontDestroyOnLoad(Instance);
+        get
+        {
+            return (T)s_singletons[typeof(T)];
+        }
+    }
+
+    private void Awake()
+    {
+        if (s_singletons.ContainsKey(typeof(T)))
+        {
+            Destroy(this);
+        }
+        else
+        {
+            s_singletons.Add(typeof(T), this);
+        }
+    }
+
+    private void OnDestroy()
+    {
+        if (s_singletons.ContainsKey(typeof(T)))
+        {
+            s_singletons.Remove(typeof(T));
+        }
     }
 }

@@ -7,23 +7,24 @@ using UnityEngine;
 using EncryptorLIB;
 
 //Class to contorl the serilization and saving of the gane data
-public class Serializer : Singleton<Serializer>
+public class Serializer : SingletonDD<Serializer>
 {
     //Key for encryption
-    public static string key => SystemInfo.deviceUniqueIdentifier;
+    public static string Key => SystemInfo.deviceUniqueIdentifier;
     //Variable to store the game's data
-    public Save_Data activeData = null;
+    public Save_Data activeData { get; private set; } = null;
 
     //Property to calculate the data path to save to
-    public static string fileName =>
+    public static string FileName =>
         Application.persistentDataPath + "/blcksnk.bin";
 
     //Method called to save the data to the hardware
     public IEnumerator SaveData()
     {
-        //Try to sign in to google play services
-        yield return Instance.StartCoroutine(PlayGamesService.Instance.SignIn(false));
+        Log("Saving Data...");
 
+        //Try to sign in to google play services
+        yield return StartCoroutine(PlayGamesService.Instance.SignIn(false));
 
         //Gets all properties of save data
         PropertyInfo[] properties = Functions.GetProperties("Save_Data");
@@ -49,13 +50,13 @@ public class Serializer : Singleton<Serializer>
                 data = value.ToString();
             }
 
-            data = info.Name + ":" + data + "\n";
+            data = /*info.Name + ":" +*/ data + "\n";
 
             //Creates file at persistent data path
             FileStream file = File.Create(Application.persistentDataPath + x + ".bin");
 
             //Encrypts the data
-            data = Encryptor.EncryptWithKey(data, key);
+            data = Encryptor.EncryptWithKey(data, Key);
             totalData += data;
 
             x++;
@@ -63,27 +64,30 @@ public class Serializer : Singleton<Serializer>
 
         byte[] bytes = Encoding.UTF8.GetBytes(totalData);
 
+        GameMetadata metadata = new GameMetadata(true, FileName, "Lastest Save", "", new TimeSpan(0, 0, 0), Functions.CurrentTime);
+        PlayGamesService.Instance.SaveGame(metadata, bytes);
 
-
-        if (File.Exists(fileName)) File.Delete(fileName);
+        if (File.Exists(FileName)) File.Delete(FileName);
     }
 
     //Method called to load the data from the hardware
-    public void LoadData()
+    public IEnumerator LoadData()
     {
-        //Triggers if the file exists at the persistent data path
-        if (File.Exists(fileName))
-        {
-            //Reads all bytes in the file
-            byte[] bytes = File.ReadAllBytes(fileName);
+        Log("Loading Data...", true);
 
-            Debug.Log("Save exists at " + fileName);
+        yield return StartCoroutine(PlayGamesService.Instance.LoadGame(FileName));
+        byte[] bytes = PlayGamesService.Instance.LastSave;
+
+        //Triggers if the file exists at the persistent data path
+        if (bytes != null)
+        {
+            Log("File Exists.");
 
             //Converts the bytes into a string
             string data = Encoding.UTF8.GetString(bytes);
 
             //Decrypts the string
-            data = Encryptor.DecryptWithKey(data, key);
+            data = Encryptor.DecryptWithKey(data, Key);
 
             //Sets the active data to the data from the file
             activeData = new Save_Data(data);
@@ -91,7 +95,7 @@ public class Serializer : Singleton<Serializer>
         //Else no save file was found
         else
         {
-            Debug.LogWarning("File does not exist at " + fileName + " - Loading base save data");
+            LogWarning("File does not exist at " + FileName + " - Loading base save data");
 
             //Sets the save data to the default value
             ResetData();
@@ -101,6 +105,8 @@ public class Serializer : Singleton<Serializer>
     //Method called to reset the save data to its default value
     public void ResetData()
     {
+        LogWarning("Resetting data...", true);
+
         //Creates new save data with default values and sets active data to it
         activeData = new Save_Data("");
     }

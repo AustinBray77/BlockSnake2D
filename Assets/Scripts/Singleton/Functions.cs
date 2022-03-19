@@ -4,10 +4,10 @@ using System;
 using System.Reflection;
 using System.Collections;
 
-public class Functions : Singleton<Functions>
+public class Functions : SingletonDD<Functions>
 {
-    public static DateTime currentTime { get; private set; }
-    public static bool fetchingDateTime { get; private set; }
+    public static DateTime CurrentTime { get; private set; }
+    public static bool FetchingDateTime { get; private set; }
 
     public static U TryGenericConversion<T, U>(T val)
     {
@@ -61,7 +61,7 @@ public class Functions : Singleton<Functions>
 
     public static IEnumerator UpdateCurrentTime()
     {
-        fetchingDateTime = true;
+        FetchingDateTime = true;
 
         string url = "https://blcksnktime.000webhostapp.com/servertime.php";
 
@@ -73,7 +73,7 @@ public class Functions : Singleton<Functions>
 
         if (UnityWebRequest.Result.ConnectionError == webReq.result)
         {
-            currentTime = new DateTimeOffset().DateTime;
+            CurrentTime = new DateTimeOffset().DateTime;
         }
         else
         {
@@ -81,15 +81,15 @@ public class Functions : Singleton<Functions>
 
             if (DateTime.TryParse(time, out DateTime serverTime))
             {
-                currentTime = serverTime;
+                CurrentTime = serverTime;
             }
         }
 
-        fetchingDateTime = false;
+        FetchingDateTime = false;
     }
 
     public static long CurrentTimeInMillis() =>
-        new DateTimeOffset(currentTime).ToUnixTimeMilliseconds();
+        new DateTimeOffset(CurrentTime).ToUnixTimeMilliseconds();
 
     public static long TimezoneOffset()
     {
