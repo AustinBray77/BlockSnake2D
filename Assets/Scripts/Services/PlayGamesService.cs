@@ -5,32 +5,35 @@ using GooglePlayGames.BasicApi.SavedGame;
 using UnityEngine;
 using UnityEngine.SocialPlatforms;
 
-public class PlayGamesService : Singleton<PlayGamesService>, IUnityService
+public class PlayGamesService : SingletonDD<PlayGamesService>
 {
-    private PlayGamesClientConfiguration config;
-    private bool isSignedIn = false;
+    public static string HighScoreID = "CgkIiJOyzo0MEAIQAQ";
+    public byte[] LastSave { get; private set; } = null;
+    private ISavedGameClient _client => PlayGamesPlatform.Instance.SavedGame;
+    private static PlayGamesClientConfiguration s_config;
+    private bool _isSignedIn = false;
 
-    public void InitializeUnityService()
+    private void OnEnable()
     {
-        config = new PlayGamesClientConfiguration.Builder()
+        s_config = new PlayGamesClientConfiguration.Builder()
             .EnableSavedGames()
             .Build();
 
-        PlayGamesPlatform.InitializeInstance(config);
+        PlayGamesPlatform.InitializeInstance(s_config);
         PlayGamesPlatform.DebugLogEnabled = true;
         PlayGamesPlatform.Activate();
     }
 
     public IEnumerator SignIn(bool forcePrompt)
     {
-        if (isSignedIn) yield break;
+        if (_isSignedIn) yield break;
 
-        isSignedIn = false;
+        _isSignedIn = false;
         bool completed = false;
 
         PlayGamesPlatform.Instance.Authenticate(forcePrompt ? SignInInteractivity.CanPromptAlways : SignInInteractivity.CanPromptOnce, (result) =>
         {
-            isSignedIn = result == SignInStatus.Success;
+            _isSignedIn = result == SignInStatus.Success;
             completed = true;
         });
 
@@ -39,7 +42,7 @@ public class PlayGamesService : Singleton<PlayGamesService>, IUnityService
 
     public IEnumerator UpdateLastCollectionTime()
     {
-        if (!isSignedIn)
+        if (!_isSignedIn)
         {
             Serializer.Instance.activeData.SetLastRewardDay(0);
             yield break;
@@ -66,14 +69,63 @@ public class PlayGamesService : Singleton<PlayGamesService>, IUnityService
 
     public void SaveGame(ISavedGameMetadata game, byte[] savedData)
     {
-        ISavedGameClient client = PlayGamesPlatform.Instance.SavedGame;
         SavedGameMetadataUpdate.Builder builder = new SavedGameMetadataUpdate.Builder();
         SavedGameMetadataUpdate updatedMetadata = builder.Build();
-        client.CommitUpdate(game, updatedMetadata, savedData, OnSavedGameWritten);
+        _client.CommitUpdate(
+            game,
+            updatedMetadata,
+            savedData,
+            (status, game) =>
+            {
+                if (status != SavedGameRequestStatus.Success)
+                    LogWarning("Unable to save game data");
+            }
+        );
     }
 
-    private void OnSavedGameWritten(SavedGameRequestStatus status, ISavedGameMetadata game)
+    public IEnumerator LoadGame(string fileName)
     {
-        if (status != SavedGameRequestStatus.Success) Log("Unable to save game data");
+        LastSave = null;
+        bool completed = false;
+
+        _client.OpenWithAutomaticConflictResolution(
+            fileName,
+            DataSource.ReadCacheOrNetwork,
+            ConflictResolutionStrategy.UseMostRecentlySaved,
+            (status, game) =>
+            {
+                if (status != SavedGameRequestStatus.Success)
+                {
+                    completed = true;
+                }
+                else
+                {
+                    _client.ReadBinaryData(game,
+                    (status, data) =>
+                    {
+                        if (status == SavedGameRequestStatus.Success)
+                        {
+                            LastSave = data;
+                        }
+
+                        completed = true;
+                    });
+                }
+            });
+
+        yield return new WaitUntil(() => completed);
+    }
+
+    public void ShowLeaderboard(string id)
+    {
+        PlayGamesPlatform.Instance.ShowLeaderboardUI(id);
+    }
+
+    public void AddLeaderboardScore(int score, string id)
+    {
+        Social.ReportScore(score, id, (success) =>
+        {
+            if (!success) Log($"Adding to leaderboard:{id}, failed");
+        });
     }
 }

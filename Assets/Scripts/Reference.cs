@@ -4,7 +4,7 @@ using System;
 using UnityEngine;
 
 //Class to save static refrences to multiple frequently accessed objects.
-public class Reference : BaseBehaviour
+public class Reference : Singleton<Reference>
 {
     //Instance refrences to the objects
     [SerializeField] private Player _player;

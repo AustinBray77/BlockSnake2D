@@ -3,31 +3,31 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Advertisements;
 
-public class UnityAdsService : Singleton<UnityAdsService>,
+public class UnityAdsService : SingletonDD<UnityAdsService>,
                                IUnityAdsLoadListener,
-                               IUnityAdsShowListener,
-                               IUnityService
+                               IUnityAdsShowListener
 {
     //Instance variables
-    private bool testMode;
-    private bool isValid = true;
-    private System.Action actionAfterAd;
-    private string adID;
+    private bool _testMode;
+    private bool _isValid = true;
+    private System.Action _actionAfterAd;
+    private string _adID;
 
 #if UNITY_ANDROID
-    private string gameID = "4271826";
-    private string rewarded_AD = "Rewarded_Android";
-    private string intersertial_AD = "Interstitial_Android";
+    private static string s_gameID = "4271826";
+    private static string s_rewarded_AD = "Rewarded_Android";
+    private static string s_intersertial_AD = "Interstitial_Android";
 #elif UNITY_IOS
-    private string gameID = "4271827";
-    private string rewarded_AD = "Rewarded_IOS";
-    private string intersertial_AD = "Interstitial_IOS";
+    private static string s_gameID = "4271827";
+    private static string s_rewarded_AD = "Rewarded_IOS";
+    private static string s_intersertial_AD = "Interstitial_IOS";
 #endif
 
     //Initializes the service
-    public void InitializeUnityService()
+    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
+    static void InitializeUnityService()
     {
-        Advertisement.Initialize(gameID, false);
+        Advertisement.Initialize(s_gameID, false);
     }
 
     //Method called on scene load
@@ -48,8 +48,8 @@ public class UnityAdsService : Singleton<UnityAdsService>,
     public void LoadAd()
     {
         // IMPORTANT! Only load content AFTER initialization (in this example, initialization is handled in a different script).
-        Log("Loading Ad: " + adID);
-        Advertisement.Load(adID, this);
+        Log("Loading Ad: " + _adID);
+        Advertisement.Load(_adID, this);
     }
 
     // If the ad successfully loads, add a listener to the button and enable it:
@@ -62,23 +62,23 @@ public class UnityAdsService : Singleton<UnityAdsService>,
     private void ShowAd()
     {
         // Then show the ad:
-        Advertisement.Show(adID, this);
+        Advertisement.Show(_adID, this);
     }
 
     // Implement the Show Listener's OnUnityAdsShowComplete callback method to determine if the user gets a reward:
     public void OnUnityAdsShowComplete(string adUnitId, UnityAdsShowCompletionState showCompletionState)
     {
-        if (adUnitId.Equals(adID) && showCompletionState.Equals(UnityAdsShowCompletionState.COMPLETED))
+        if (adUnitId.Equals(_adID) && showCompletionState.Equals(UnityAdsShowCompletionState.COMPLETED))
         {
-            actionAfterAd.Invoke();
-            actionAfterAd = null;
-            adID = "";
+            _actionAfterAd.Invoke();
+            _actionAfterAd = null;
+            _adID = "";
         }
-        else if (adID == intersertial_AD && showCompletionState.Equals(UnityAdsCompletionState.SKIPPED))
+        else if (_adID == s_intersertial_AD && showCompletionState.Equals(UnityAdsCompletionState.SKIPPED))
         {
-            actionAfterAd.Invoke();
-            actionAfterAd = null;
-            adID = "";
+            _actionAfterAd.Invoke();
+            _actionAfterAd = null;
+            _adID = "";
         }
     }
 
@@ -104,15 +104,15 @@ public class UnityAdsService : Singleton<UnityAdsService>,
 
     public void ShowRewardedAdThenCall(System.Action action)
     {
-        actionAfterAd = action;
-        adID = rewarded_AD;
+        _actionAfterAd = action;
+        _adID = s_rewarded_AD;
         ShowAd();
     }
 
     public void ShowIntersertialAdThenCall(System.Action action)
     {
-        actionAfterAd = action;
-        adID = intersertial_AD;
+        _actionAfterAd = action;
+        _adID = s_intersertial_AD;
         ShowAd();
     }
 }

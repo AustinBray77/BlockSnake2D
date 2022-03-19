@@ -158,7 +158,7 @@ public class Segmentable : Moveable
 
 
     //Method called to add segments to the player
-    public void AddSegments(int add, bool useAnimation = true)
+    public void AddSegments(int add, bool useScoreDependance, bool useAnimation = true)
     {
         //Loops to add each segment
         for (int i = 0; i < add; i++)
@@ -195,10 +195,8 @@ public class Segmentable : Moveable
         if (add > 0)
         {
             //Calls on segment change in the other objects
-            Reference.camController.OnSegmentChange(add, useAnimation);
-            Reference.gen.OnSegmentChange(add);
-            Reference.wallTop.OnSegmentChange(add, useAnimation);
-            Reference.wallBottom.OnSegmentChange(add, useAnimation);
+
+            if (useScoreDependance) ScoreDependent.OnScoreChange(add, useAnimation);
             backup = 0;
         }
 
