@@ -57,6 +57,8 @@ public class Save_Data
 
     public void ParseData(string data)
     {
+        UnityEngine.Debug.Log("Parsing Data");
+
         //Splits data
         string[] vals = data.Split('\n');
 

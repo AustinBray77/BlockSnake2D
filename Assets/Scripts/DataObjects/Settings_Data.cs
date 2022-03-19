@@ -7,13 +7,13 @@ public class Settings_Data
     //Variables to store the users settings
     public QualityController.QualityLevel qualityLevel { get; private set; }
     public Player.MovementType movementType { get; private set; }
-    public Gamemode.Mode gamemode { get; private set; }
+    public Gamemanager.Mode gamemode { get; private set; }
     public bool vsyncEnabled { get; private set; }
     public bool soundEnabled { get; private set; }
     public bool leftHandedControls { get; private set; }
 
     //Default contructor
-    public Settings_Data(QualityController.QualityLevel _qualityLevel, Player.MovementType _movementType, bool _vsyncEnabled, bool _soundEnabled, bool _leftHandedControls, Gamemode.Mode _gamemode)
+    public Settings_Data(QualityController.QualityLevel _qualityLevel, Player.MovementType _movementType, bool _vsyncEnabled, bool _soundEnabled, bool _leftHandedControls, Gamemanager.Mode _gamemode)
     {
         //Assigns the instance values
         qualityLevel = _qualityLevel;
@@ -41,7 +41,7 @@ public class Settings_Data
         else
         {
             //Set quality level to default value
-            qualityLevel = QualityController.DefaultQualityLevel(Gamemode.platform);
+            qualityLevel = QualityController.DefaultQualityLevel(Gamemanager.Instance.CurrentPlatform);
         }
 
         if (vals.Length >= 2)
@@ -75,7 +75,7 @@ public class Settings_Data
         else
         {
             //Set movement type to base movement type
-            movementType = Player.DefaultMovementType(Gamemode.platform);
+            movementType = Player.DefaultMovementType(Gamemanager.Instance.CurrentPlatform);
         }
 
         if (vals.Length >= 5)
@@ -93,12 +93,12 @@ public class Settings_Data
         {
             //Converts movement type
             int.TryParse(vals[5], out int _gamemode);
-            gamemode = (Gamemode.Mode)_gamemode;
+            gamemode = (Gamemanager.Mode)_gamemode;
         }
         else
         {
             //Set movement type to base movement type
-            gamemode = Gamemode.Mode.Normal;
+            gamemode = Gamemanager.Mode.Normal;
         }
     }
 

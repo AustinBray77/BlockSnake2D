@@ -257,7 +257,7 @@ public class Player : Segmentable
         StopAllMovement();
 
         //Triggers if not in the tutorial
-        if (!Gamemode.inLevel("Tutorial"))
+        if (!Gamemanager.InLevel("Tutorial"))
         {
             //If the players achieved a new highscore, the highscore is set to the score
             if (Serializer.Instance.activeData.highScore < score)
@@ -283,8 +283,10 @@ public class Player : Segmentable
         Reference.gameUI.Hide();
         Reference.deathUI.Show();
 
-        if (!Gamemode.inLevel("Tutorial"))
+        if (!Gamemanager.InLevel("Tutorial"))
         {
+            PlayGamesService.Instance.AddLeaderboardScore(score, PlayGamesService.HighScoreID);
+
             if (adCounter >= 2)
             {
                 Reference.adManager.ShowIntersertialAdThenCall(() =>
@@ -321,7 +323,7 @@ public class Player : Segmentable
         }
         else if (CountSegments() - segmentCountAtLastFinish < 0)
         {
-            AddSegments((CountSegments() - segmentCountAtLastFinish) * -1, false);
+            AddSegments((CountSegments() - segmentCountAtLastFinish) * -1, true, false);
         }
 
         //Sets the properties to there values at last finish
@@ -381,14 +383,14 @@ public class Player : Segmentable
         Reference.gameUI.UpdateScore(score);
 
         //Triggers if not in the tutorial
-        if (!Gamemode.inLevel("Tutorial"))
+        if (!Gamemanager.InLevel("Tutorial"))
         {
             //Adds XP
-            level.AddXP(add * Gamemode.ModeMultiplier(Gamemode.mode));
+            level.AddXP(add * Gamemanager.Instance.ModeMultiplier());
         }
 
         //Adds Segments
-        AddSegments(add);
+        AddSegments(add, true);
     }
 
     //Method called to get which of the current control buttons are being pressed down
@@ -486,8 +488,8 @@ public class Player : Segmentable
     }
 
     //Returns the default movement type for the platform
-    public static Player.MovementType DefaultMovementType(Gamemode.Platform platform) =>
-        (platform == Gamemode.Platform.Windows) ?
+    public static Player.MovementType DefaultMovementType(Gamemanager.Platform platform) =>
+        (platform == Gamemanager.Platform.Windows) ?
             MovementType.Keyboard : MovementType.Buttons;
 
     #region Power Up Increase / Decrease
@@ -499,7 +501,7 @@ public class Player : Segmentable
 
     //Method called to add segments from card
     public void AddSegments(float value, int cardIndex) =>
-        AddSegments((int)value);
+        AddSegments((int)value, true);
 
     //Method called to increase y speed from card
     public void IncreaseYSpeed(float value, int cardIndex) =>

@@ -24,6 +24,7 @@ public class QualityController : BaseBehaviour
     private IEnumerator Start()
     {
         yield return new WaitUntil(() => Serializer.Instance.activeData != null);
+        yield return new WaitUntil(() => Serializer.Instance.activeData.settings != null);
 
         //Else Set the quality to the saved quality
         SetQuality(Serializer.Instance.activeData.settings.qualityLevel);
@@ -91,7 +92,7 @@ public class QualityController : BaseBehaviour
         Serializer.Instance.activeData.settings.SetQualityLevel(level);
     }
 
-    public static QualityLevel DefaultQualityLevel(Gamemode.Platform platform) =>
-        (platform == Gamemode.Platform.Windows || platform == Gamemode.Platform.Debug) ?
+    public static QualityLevel DefaultQualityLevel(Gamemanager.Platform platform) =>
+        (platform == Gamemanager.Platform.Windows || platform == Gamemanager.Platform.Debug) ?
             QualityLevel.Ultra : QualityLevel.Fast;
 }

@@ -54,7 +54,7 @@ public class Generator : ScoreDependent
         largePO = new List<GameObject>();
 
         //Returns if currently in the tutorial
-        if (Gamemanager.inLevel("Tutorial"))
+        if (Gamemanager.InLevel("Tutorial"))
             return;
 
         //Initializes the generator
@@ -65,14 +65,14 @@ public class Generator : ScoreDependent
     public void Initialize()
     {
         //Assigns the base data for all of the properties
-        if (Gamemanager.inLevel("Tutorial"))
+        if (Gamemanager.InLevel("Tutorial"))
         {
             Object.speed = 5f;
             spawnDelay = 2f;
         }
         else
         {
-            switch (Gamemanager.mode)
+            switch (Gamemanager.Instance.CurrentMode)
             {
                 case Gamemanager.Mode.Normal:
                     Object.speed = 6f;

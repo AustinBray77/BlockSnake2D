@@ -42,7 +42,7 @@ public class Segment : BaseBehaviour
 
     private void Update()
     {
-        if (!Gamemode.inLevel("Start"))
+        if (!Gamemanager.InLevel("Start"))
         {
             if (Mathf.Abs(constantPosition.y) >= Reference.wallTop.transform.position.y)
             {
