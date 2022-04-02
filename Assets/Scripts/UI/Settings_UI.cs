@@ -5,7 +5,7 @@ using UnityEngine.UI;
 using TMPro;
 
 //Class to control the settings screen
-public class Settings_UI : UI
+public class Settings_UI : UI<Settings_UI>
 {
     //Stores refrences to the UI
     [SerializeField] private TMP_Dropdown qualitySelect, movementSelect;
@@ -141,7 +141,7 @@ public class Settings_UI : UI
         StartCoroutine(ClickWithFade(
             () =>
             {
-                Reference.startUI.Show();
+                Start_UI.Instance.Show();
                 Hide();
             }, fadeTime));
     }

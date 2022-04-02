@@ -114,7 +114,7 @@ public class Card
         method.Invoke(value, cardIndex);
 
         //Hides the Finish UI and sets the last upgraded card to the selected card
-        Reference.finishUI.GetComponent<Finish_UI>().Hide();
+        Finish_UI.Instance.GetComponent<Finish_UI>().Hide();
         Reference.player.lastUpgraded = Reference.cardTypes[cardIndex];
     }
 }

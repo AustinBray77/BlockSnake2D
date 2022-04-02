@@ -6,7 +6,7 @@ using UnityEngine.SceneManagement;
 using TMPro;
 
 //Class to handle the Death Screen UI
-public class Death_UI : UI
+public class Death_UI : UI<Death_UI>
 {
     //Properties to store refrences to the aspects of the UI
     [SerializeField] private TMP_Text scoreText;
@@ -45,9 +45,9 @@ public class Death_UI : UI
 
             prompt.AddButtonListener(new UnityEngine.Events.UnityAction(() =>
             {
-                Reference.adManager.ShowRewardedAdThenCall(new System.Action(() =>
+                UnityAdsService.Instance.ShowRewardedAdThenCall(new System.Action(() =>
                 {
-                    Reference.deathUI.multiplier = 3f;
+                    Death_UI.Instance.multiplier = 3f;
                     prompt.OnClickClose();
                 }));
             }));
@@ -99,7 +99,7 @@ public class Death_UI : UI
         //Shows an ad if the user is on phone, respawns if the game is in debug mode
         if ((Gamemanager.Instance.CurrentPlatform != Gamemanager.Platform.Windows) && !Gamemanager.InLevel("Tutorial"))
         {
-            Reference.adManager.ShowRewardedAdThenCall(() => Reference.deathUI.OnRespawn());
+            UnityAdsService.Instance.ShowRewardedAdThenCall(() => Death_UI.Instance.OnRespawn());
         }
         else if (Gamemanager.InLevel("Tutorial"))
         {

@@ -89,6 +89,16 @@ public class Save_Data
             bpurchasedSkins[0] = true;
         }
 
+        purchasedSkins = new HashSet<string>();
+
+        for (int i = 0; i < bpurchasedSkins.Length; i++)
+        {
+            if (bpurchasedSkins[i])
+            {
+                purchasedSkins.Add(Gamemanager.Instance.Skins[i].title);
+            }
+        }
+
         if (vals.Length >= 3)
         {
             //Converts level
@@ -115,7 +125,7 @@ public class Save_Data
             settings = new Settings_Data("");
         }
 
-        activatedLevelTriggers = new bool[Reference.levelUpTriggers.Count];
+        activatedLevelTriggers = new bool[Gamemanager.Instance.LevelUpTriggers.Count];
 
         if (vals.Length >= 7)
         {
@@ -187,7 +197,7 @@ public class Save_Data
             settings = new Settings_Data("");
         }
 
-        activatedLevelTriggers = new bool[Reference.levelUpTriggers.Count];
+        activatedLevelTriggers = new bool[Gamemanager.Instance.LevelUpTriggers.Count];
 
         if (data.Length >= 7)
         {
@@ -233,18 +243,18 @@ public class Save_Data
     public void PurchaseSkin(int index, int gearPrice)
     {
         //If the skin is already purchased or the price is too expensive the method returns
-        if (purchasedSkins.Contains(Shop_UI.skins[index].title) || gearCount < gearPrice)
+        if (purchasedSkins.Contains(Gamemanager.Instance.Skins[index].title) || gearCount < gearPrice)
             return;
 
         //Removes the gears that the skin costs and saves that the user purchased the skin
         gearCount -= gearPrice;
-        purchasedSkins.Add(Shop_UI.skins[index].title);
+        purchasedSkins.Add(Gamemanager.Instance.Skins[index].title);
     }
 
     public void TriggerActivated(int index)
     {
         activatedLevelTriggers[index] = true;
-        gearCount += Reference.levelUpTriggers[index].reward.gearReward;
+        gearCount += Gamemanager.Instance.LevelUpTriggers[index].reward.gearReward;
     }
 
     //Method to set the settings

@@ -3,12 +3,14 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.Events;
 using TMPro;
 
 //Class to contorl the player
 [RequireComponent(typeof(AudioSource), typeof(SpriteRenderer))]
 public class Player : Segmentable
 {
+    #region Enums & Structs
     //Enum for movement types
     public enum MovementType
     {
@@ -16,6 +18,75 @@ public class Player : Segmentable
         Touch,
         Keyboard
     }
+
+    private struct PowerUpData
+    {
+        //Variable to store the amount of shields the player has left
+        public int ShieldCount;
+
+        //Variable to store the slow down percentage of the slow down object
+        public float SlowdownPercentage;
+
+        //Variable to store the delay of the slow down power up
+        public const float SlowdownTime = 50f, SlowdownUseTime = 10f;
+        public bool CanUseSlowDown;
+
+        //Variable to store the amount of Shocks the player has
+        public int ShockCount;
+
+        public void AddShields(int amount)
+        {
+            ShieldCount += amount;
+            Game_UI.Instance.UpdateShieldCount(ShieldCount);
+        }
+
+        public void RemoveShields(int amount)
+        {
+            ShieldCount -= amount;
+            Game_UI.Instance.UpdateShieldCount(ShieldCount);
+        }
+
+        public void AddShocks(int amount)
+        {
+            ShockCount += amount;
+            Game_UI.Instance.UpdateShockCount(ShockCount);
+        }
+
+        public void RemoveShocks(int amount)
+        {
+            ShockCount -= amount;
+            Game_UI.Instance.UpdateShockCount(ShockCount);
+        }
+    }
+
+    private class SingleCallEvent
+    {
+        private bool called;
+        private UnityEvent _event;
+
+        public SingleCallEvent()
+        {
+            called = false;
+            _event = new UnityEvent();
+        }
+
+        public void Invoke()
+        {
+            if (!called)
+            {
+                _event.Invoke();
+            }
+
+            called = true;
+        }
+
+        public void Reset()
+            => called = false;
+
+        public void AddListener(UnityAction action)
+            => _event.AddListener(action);
+    }
+    #endregion
 
     //Refrence to the fade panel
     [SerializeField] private Image fadePanel;
@@ -46,20 +117,12 @@ public class Player : Segmentable
 
     //Property to get the active skin
     public static Skin activeSkin =>
-        Shop_UI.skins[Serializer.Instance.activeData.activeSkin];
+        Gamemanager.Instance.Skins[Serializer.Instance.activeData.activeSkin];
 
-    //Variable to store the amount of shields the player has left
-    public int shieldCount;
-
-    //Variable to store the slow down percentage of the slow down object
-    private static float slowdownPercentage;
-
-    //Variable to store the delay of the slow down power up
-    private const float slowdownTime = 50f, slowdownUseTime = 10f;
-    private static bool canUseSlowDown;
+    private PowerUpData _powerUpData;
 
     //Refrence to cover for the slowdown img
-    [SerializeField] private RectTransform slowDownCover;
+    //[SerializeField] private RectTransform slowDownCover;
 
     //Saves a refrence to the movement type the player using
     private MovementType movementType;
@@ -75,6 +138,9 @@ public class Player : Segmentable
     [SerializeField] private AudioClip scoreAddedSound, deathSound, shieldSound, slowdownTheme;
     private static int adCounter;
 
+    private SingleCallEvent _useShock, _useSlowdown;
+
+    #region Unity Methods
     //Method called on scene load
     private void Start()
     {
@@ -87,7 +153,7 @@ public class Player : Segmentable
         ySpeed = 50;
         xSpeed = Object.speed;
         rotSpeed = 10;
-        shieldCount = 0;
+        _powerUpData.ShieldCount = 0;
         level = new Level(Serializer.Instance.activeData.level.xp);
 
         GetComponent<SpriteRenderer>().sprite = activeSkin.frontSprite;
@@ -95,9 +161,14 @@ public class Player : Segmentable
 
         Segmentable_Init();
 
-        slowdownPercentage = 0;
-        canUseSlowDown = true;
-        slowDownCover.gameObject.SetActive(false);
+        _powerUpData.SlowdownPercentage = 0;
+        _powerUpData.CanUseSlowDown = true;
+
+        _useShock = new SingleCallEvent();
+        _useSlowdown = new SingleCallEvent();
+
+        _useShock.AddListener(UseShock);
+        _useSlowdown.AddListener(UseSlowdown);
 
         movementType = Serializer.Instance.activeData.settings.movementType;
 
@@ -120,8 +191,7 @@ public class Player : Segmentable
         //Checks if the player went out of bounds
         if (Mathf.Abs(transform.position.y) >= Reference.wallTop.transform.position.y && !Player.isDead)
         {
-            shieldCount = 0;
-            KillPlayer();
+            KillPlayer(true);
         }
 
         //Gets the direction the player is trying to move
@@ -149,10 +219,22 @@ public class Player : Segmentable
             MoveSegments();
         }
     }
+    #endregion
 
     //Method used to get the direction the player should be moving
     private void GetInput()
     {
+        //Gets the bounds for the buttons from the gameUI
+        Vector2[] bounds = Game_UI.Instance.ButtonBounds;
+
+        if (bounds == null)
+        {
+            return;
+        }
+
+        Log($"Bounds Counts:{bounds.Length}");
+
+
         //Reset moveArr before input checking
         moveArr[0] = false;
         moveArr[1] = false;
@@ -198,9 +280,6 @@ public class Player : Segmentable
         //Checks for keyboard based movement if that is what the user has selected
         if (movementType == MovementType.Buttons)
         {
-            //Gets the bounds for the buttons from the gameUI
-            Vector2[] bounds = Reference.gameUI.GetButtonBounds();
-
             if (bounds == null)
             {
                 return;
@@ -226,24 +305,36 @@ public class Player : Segmentable
             }
         }
 
-        if (Functions.UserIsClicking() || Input.touchCount > 0)
+        if (Functions.UserIsClicking())
         {
-            Vector2[] bounds = Reference.gameUI.GetButtonBounds();
             if (Functions.PositionIsInBounds2D(Input.mousePosition, bounds[4], bounds[5]))
             {
-                UseSlowDown();
+                _useSlowdown.Invoke();
             }
+            else if (Functions.PositionIsInBounds2D(Input.mousePosition, bounds[6], bounds[7]))
+            {
+                _useShock.Invoke();
+            }
+        }
+
+        if (!Functions.UserIsClicking())
+        {
+            _useShock.Reset();
+            _useSlowdown.Reset();
         }
     }
 
-    //Method called when the player is to be killed
-    public void KillPlayer()
+    //Method called when the player is to be killed, returns if the player was actually killed
+    public bool KillPlayer(bool ignoreShields)
     {
+        Log("Killing Player?");
+
         //Uses shield if the player has one
-        if (shieldCount >= 1)
+        if (_powerUpData.ShieldCount >= 1 && !ignoreShields)
         {
+            Log("Using Shield...");
             UseShield();
-            return;
+            return false;
         }
 
         //Stops any other sounds
@@ -275,21 +366,25 @@ public class Player : Segmentable
         //Tells the generator that the player is dead
         Reference.gen.OnPlayerDeath();
 
-        Reference.gameUI.transform.parent.GetComponent<GraphicRaycaster>().enabled = true;
+        Game_UI.Instance.transform.parent.GetComponent<GraphicRaycaster>().enabled = true;
 
         CleanMovementBuffers();
 
         //Hides the game UI and shows an ad then the death UI
-        Reference.gameUI.Hide();
-        Reference.deathUI.Show();
+        Game_UI.HideInstance();
+        Death_UI.ShowInstance();
 
         if (!Gamemanager.InLevel("Tutorial"))
         {
-            PlayGamesService.Instance.AddLeaderboardScore(score, PlayGamesService.HighScoreID);
+
+            if (Gamemanager.Instance.CurrentPlatform == Gamemanager.Platform.Android)
+            {
+                PlayGamesService.Instance.AddLeaderboardScore(score, PlayGamesService.HighScoreID);
+            }
 
             if (adCounter >= 2)
             {
-                Reference.adManager.ShowIntersertialAdThenCall(() =>
+                UnityAdsService.Instance.ShowIntersertialAdThenCall(() =>
                 {
                     Log("Ad was completed");
                 });
@@ -300,6 +395,8 @@ public class Player : Segmentable
                 adCounter++;
             }
         }
+
+        return true;
     }
 
     //Method called when the player is to respawn
@@ -339,12 +436,12 @@ public class Player : Segmentable
         level = new Level(Serializer.Instance.activeData.level.xp);
 
         //Shows the game UI, sets the score text, and sets is dead to false
-        Reference.gameUI.Show();
-        Reference.gameUI.UpdateScore(score);
-        Reference.gameUI.UpdateGearCount(Serializer.Instance.activeData.gearCount);
+        Game_UI.ShowInstance();
+        Game_UI.Instance.UpdateScore(score);
+        Game_UI.Instance.UpdateGearCount(Serializer.Instance.activeData.gearCount);
         isDead = false;
         //Allows the player to use the slowdown (if they have it) and resets the movement type and last finish hit
-        canUseSlowDown = true;
+        _powerUpData.CanUseSlowDown = true;
         movementType = Serializer.Instance.activeData.settings.movementType;
         lastFinishHit = null;
         positions = new List<Vector3>();
@@ -352,8 +449,8 @@ public class Player : Segmentable
         rotPosTimes = new List<float>();
         next = -1;
 
-        Reference.gameUI.UpdateShieldCount(shieldCount);
-        Reference.gameUI.transform.parent.GetComponent<GraphicRaycaster>().enabled = false;
+        Game_UI.Instance.UpdateShieldCount(_powerUpData.ShieldCount);
+        Game_UI.Instance.transform.parent.GetComponent<GraphicRaycaster>().enabled = false;
     }
 
     //Method called when the player enters a finish
@@ -380,7 +477,7 @@ public class Player : Segmentable
         score += add;
 
         //Sets the score text to the current score
-        Reference.gameUI.UpdateScore(score);
+        Game_UI.Instance.UpdateScore(score);
 
         //Triggers if not in the tutorial
         if (!Gamemanager.InLevel("Tutorial"))
@@ -397,27 +494,21 @@ public class Player : Segmentable
     public bool[] GetControls() =>
         moveArr;
 
-    //Method called to add shields to the player
-    public void AddShields(int count)
-    {
-        //Adds shields and updates the UI
-        shieldCount += count;
-        Reference.gameUI.UpdateShieldCount(shieldCount);
-    }
+    //Property to get the players current shield count
+    public int ShieldCount =>
+        _powerUpData.ShieldCount;
 
-    //Method called to remove shields from the player
-    public void RemoveShields(int count)
-    {
-        shieldCount -= count;
-        Reference.gameUI.UpdateShieldCount(shieldCount);
-    }
+    //Returns the default movement type for the platform
+    public static MovementType DefaultMovementType(Gamemanager.Platform platform) =>
+        (platform == Gamemanager.Platform.Windows) ?
+            MovementType.Keyboard : MovementType.Buttons;
 
+    #region Use / Control Powerup Methods
     //Method called when the player uses a shield instead of dying
     public void UseShield()
     {
         //Removes a shield, updates the UI, and plays the sound
-        shieldCount--;
-        Reference.gameUI.UpdateShieldCount(shieldCount);
+        _powerUpData.RemoveShields(1);
 
         if (Serializer.Instance.activeData.settings.soundEnabled)
         {
@@ -426,24 +517,24 @@ public class Player : Segmentable
     }
 
     //Method called to use the slowdown powerup
-    public void UseSlowDown()
+    public void UseSlowdown()
     {
-        if (canUseSlowDown && slowdownPercentage != 0)
+        if (_powerUpData.CanUseSlowDown && _powerUpData.SlowdownPercentage != 0)
         {
-            StartCoroutine(CountSlowDown());
+            StartCoroutine(CountSlowdown());
         }
     }
 
     //Coroutine used to wait call the powerup for a certain time and wait for reuse
-    private IEnumerator CountSlowDown()
+    private IEnumerator CountSlowdown()
     {
-        canUseSlowDown = false;
+        _powerUpData.CanUseSlowDown = false;
         float time = 0;
 
-        Generator.SetRelativeSpeed(slowdownPercentage > 1 ? 0.01f : 1 - slowdownPercentage);
+        Generator.SetRelativeSpeed(_powerUpData.SlowdownPercentage > 1 ? 0.01f : 1 - _powerUpData.SlowdownPercentage);
 
-        slowDownCover.gameObject.SetActive(true);
-        slowDownCover.offsetMax = new Vector2(0, 0);
+        Game_UI.Instance.SlowDownCover.gameObject.SetActive(true);
+        Game_UI.Instance.SlowDownCover.offsetMax = new Vector2(0, 0);
 
         if (Serializer.Instance.activeData.settings.soundEnabled)
         {
@@ -452,11 +543,11 @@ public class Player : Segmentable
             audioSource.Play();
         }
 
-        while (time < slowdownUseTime)
+        while (time < PowerUpData.SlowdownUseTime)
         {
             time += Time.deltaTime;
-            Log(Time.deltaTime / slowdownUseTime);
-            slowDownCover.offsetMax -= new Vector2(0, 100 * Time.deltaTime / slowdownUseTime);
+            Log(Time.deltaTime / PowerUpData.SlowdownUseTime);
+            Game_UI.Instance.SlowDownCover.offsetMax -= new Vector2(0, 100 * Time.deltaTime / PowerUpData.SlowdownUseTime);
             yield return new WaitForEndOfFrame();
 
             yield return new WaitUntil(() => !isAtFinish);
@@ -469,28 +560,37 @@ public class Player : Segmentable
         Generator.SetRelativeSpeed(1);
         time = 0;
 
-        slowDownCover.offsetMax = new Vector2(0, 0);
+        Game_UI.Instance.SlowDownCover.offsetMax = new Vector2(0, 0);
 
-        while (time < slowdownTime)
+        while (time < PowerUpData.SlowdownTime)
         {
             time += Time.deltaTime;
-            slowDownCover.offsetMax -= new Vector2(0, 100 * Time.deltaTime / slowdownTime);
+            Game_UI.Instance.SlowDownCover.offsetMax -= new Vector2(0, 100 * Time.deltaTime / PowerUpData.SlowdownTime);
             yield return new WaitForEndOfFrame();
 
             yield return new WaitUntil(() => !isAtFinish);
         }
 
-        slowDownCover.offsetMax = new Vector2(0, -100);
+        Game_UI.Instance.SlowDownCover.offsetMax = new Vector2(0, -100);
 
-        canUseSlowDown = true;
+        _powerUpData.CanUseSlowDown = true;
 
         yield return null;
     }
 
-    //Returns the default movement type for the platform
-    public static Player.MovementType DefaultMovementType(Gamemanager.Platform platform) =>
-        (platform == Gamemanager.Platform.Windows) ?
-            MovementType.Keyboard : MovementType.Buttons;
+    public void UseShock()
+    {
+        _powerUpData.RemoveShocks(1);
+
+        Reference.gen.DestoryDamageObjects();
+
+        if (Serializer.Instance.activeData.settings.soundEnabled)
+        {
+            //audioSource.PlayOneShot(shockSound);
+        }
+    }
+
+    #endregion
 
     #region Power Up Increase / Decrease
     /* Power Up Increase / Decrease Methods */
@@ -513,11 +613,11 @@ public class Player : Segmentable
 
     //Method called to add sheilds y speed from card
     public void AddShields(float value, int cardIndex) =>
-        AddShields((int)value);
+        _powerUpData.AddShields((int)value);
 
     //Method called to remove sheilds from card
     public void RemoveShields(float value, int cardIndex) =>
-        RemoveShields((int)value);
+        _powerUpData.RemoveShields((int)value);
 
     //Method called to increase the rotation speed from card
     public void IncreaseRotSpeed(float value, int cardIndex) =>
@@ -530,16 +630,16 @@ public class Player : Segmentable
     //Method called to increase the slowdown percentage of the slowdown powerup
     public void IncreaseSlowDownPercentage(float percentage, int cardIndex)
     {
-        if (slowdownPercentage == 0)
+        if (_powerUpData.SlowdownPercentage == 0)
         {
             //Increases the slow down percentage if it was at 0
-            slowdownPercentage += percentage;
-            Reference.gameUI.EnableSlowDown(true);
+            _powerUpData.SlowdownPercentage += percentage;
+            Game_UI.Instance.EnableSlowDown(true);
         }
         else
         {
             //Multiply the slow down percentage if it was above 0
-            slowdownPercentage = 1 - ((1 - slowdownPercentage) * (1 - percentage));
+            _powerUpData.SlowdownPercentage = 1 - ((1 - _powerUpData.SlowdownPercentage) * (1 - percentage));
         }
     }
 
@@ -550,15 +650,23 @@ public class Player : Segmentable
         {
             Log("Level is 0, disabling UI...");
             //Fully disable the slowdown powerup
-            slowdownPercentage = 0;
-            Reference.gameUI.EnableSlowDown(false, false, true);
+            _powerUpData.SlowdownPercentage = 0;
+            Game_UI.Instance.EnableSlowDown(false, false, true);
         }
         else
         {
             Log("Level is not 0, dividing...");
             //Divide the slow down percentage if it was above 0
-            slowdownPercentage = 1 - ((1 - slowdownPercentage) * (1 - (1 / percentage)));
+            _powerUpData.SlowdownPercentage = 1 - ((1 - _powerUpData.SlowdownPercentage) * (1 - (1 / percentage)));
         }
     }
+
+    //Method called by card to add shocks to the player
+    public void AddShocks(float value, int cardIndex) =>
+        _powerUpData.AddShocks((int)value);
+
+    //Method called by card to remove shocks from the player
+    public void RemoveShocks(float value, int cardIndex) =>
+        _powerUpData.RemoveShocks((int)value);
     #endregion
 }

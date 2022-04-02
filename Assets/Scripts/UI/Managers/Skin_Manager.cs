@@ -80,7 +80,7 @@ public class Skin_Manager : BaseBehaviour
                 {
                     //Equips the skin and updates all of the other skin cards
                     Serializer.Instance.activeData.SetActiveSkin(index);
-                    Reference.shopUI.UpdateAllCards();
+                    Shop_UI.Instance.UpdateAllCards();
                 }
             }
         }

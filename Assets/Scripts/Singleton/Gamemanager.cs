@@ -25,6 +25,8 @@ public class Gamemanager : SingletonDD<Gamemanager>
 
     //Properties to store the current mode
     public Mode CurrentMode;
+    public Skin[] Skins;
+    public List<Level.LevelUpTrigger> LevelUpTriggers = null;
 
 #if UNITY_EDITOR
     public Platform CurrentPlatform = Platform.Debug;
@@ -55,6 +57,50 @@ public class Gamemanager : SingletonDD<Gamemanager>
                 return 2f;
             default:
                 return 1f;
+        }
+    }
+
+    private new void Awake()
+    {
+        Log("Call Awake");
+        base.Awake();
+        Log("Finished Call");
+
+        if (LevelUpTriggers == null)
+        {
+            List<Level.LevelUpTrigger> LevelUpTriggers = new List<Level.LevelUpTrigger>();
+        }
+
+        //Generates the level triggers
+        if (LevelUpTriggers.Count != 100)
+        {
+            int gears = 3, skinIndex = 0;
+
+            for (int i = 1; i <= 100; i++)
+            {
+                if (i % 5 == 0)
+                {
+                    gears++;
+                }
+
+                bool unlocksSkin = false;
+
+                if (skinIndex < Skins.Length)
+                {
+                    while (Skins[skinIndex].levelRequirement <= i)
+                    {
+                        skinIndex++;
+                        unlocksSkin = true;
+
+                        if (skinIndex >= Skins.Length)
+                        {
+                            break;
+                        }
+                    }
+                }
+
+                LevelUpTriggers.Add(new Level.LevelUpTrigger(i, gears, unlocksSkin));
+            }
         }
     }
 }

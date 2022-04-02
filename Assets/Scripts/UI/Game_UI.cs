@@ -6,7 +6,7 @@ using TMPro;
 using System.Linq;
 
 //Class to control the game UI
-public class Game_UI : UI
+public class Game_UI : UI<Game_UI>
 {
     //Object refrence to the controls
     private GameObject controls;
@@ -24,7 +24,12 @@ public class Game_UI : UI
     [SerializeField] private TextMeshProUGUI shieldText;
 
     //Refrence to the slowdown image
-    [SerializeField] private Image slowDownImage;
+    private Image slowDownImage;
+    public RectTransform SlowDownCover;
+
+    //Refrence to the shock image and count
+    private Image shockImage;
+    private TextMeshProUGUI shockText;
 
     //Refrence to parent canvas
     [SerializeField] private Canvas canvas;
@@ -35,14 +40,35 @@ public class Game_UI : UI
     //Gets the buttons
     List<RectTransform> buttons;
 
-    Vector2[] buttonBounds = null;
+    private Vector2[] _buttonBounds = null;
+
+    float _screenWidth, _screenHeight;
+
+    public Vector2[] ButtonBounds
+    {
+        get
+        {
+            if (_screenHeight != Screen.height || _screenWidth != Screen.width)
+            {
+                _buttonBounds = GetButtonBounds();
+                _screenHeight = Screen.height;
+                _screenWidth = Screen.width;
+
+            }
+
+            return _buttonBounds;
+        }
+    }
 
     //Called when the scene is loaded
     private IEnumerator Start()
     {
         yield return new WaitUntil(() => Serializer.Instance.activeData != null);
 
-        if (Serializer.Instance.activeData.settings.leftHandedControls)
+        _screenHeight = Screen.height;
+        _screenWidth = Screen.width;
+
+        if (Serializer.Instance.activeData.settings.leftHandedControls || Serializer.Instance.activeData.settings.movementType != Player.MovementType.Buttons)
         {
             controls = controlsLeft;
             controlsRight.SetActive(false);
@@ -54,7 +80,7 @@ public class Game_UI : UI
         }
 
         //Deactivates the on screen controls if the user is playing with button or all controls
-        controls.SetActive(/*Serializer.activeData.settings.movementType == Player.MovementType.All ||*/ Serializer.Instance.activeData.settings.movementType == Player.MovementType.Buttons);
+        controls.transform.GetChild(0).gameObject.SetActive(/*Serializer.activeData.settings.movementType == Player.MovementType.All ||*/ Serializer.Instance.activeData.settings.movementType == Player.MovementType.Buttons);
 
         //Sets the gear text
         gearText.text = Serializer.Instance.activeData.gearCount.ToString();
@@ -63,12 +89,26 @@ public class Game_UI : UI
         shieldImage.gameObject.SetActive(false);
         shieldText.gameObject.SetActive(false);
 
-        buttons = controls.GetComponentsInChildren<RectTransform>().ToList();
+        buttons = controls.transform.GetChild(0).GetComponentsInChildren<RectTransform>().ToList();
         buttons.RemoveAt(0);
 
-        buttonBounds = CalculateButtonBounds();
+        Log($"Button Count: {buttons.Count}", true);
+        Log($"Names: {buttons[0].gameObject.name}, {buttons[1].gameObject.name})", true);
+
+        shockImage = controls.transform.GetChild(1).GetComponentInChildren<Image>();
+        shockText = controls.transform.GetChild(1).GetComponentInChildren<TextMeshProUGUI>();
+
+        shockImage.gameObject.SetActive(false);
+        shockText.gameObject.SetActive(false);
+
+        slowDownImage = controls.transform.GetChild(2).GetChild(0).GetComponentInChildren<Image>();
+        SlowDownCover = controls.transform.GetChild(2).GetChild(0).GetComponent<RectTransform>();
+
+
+        SlowDownCover.gameObject.SetActive(false);
 
         LeanTween.init();
+        _buttonBounds = CalculateButtonBounds();
     }
 
     //Method called to update the score in UI
@@ -110,6 +150,33 @@ public class Game_UI : UI
         shieldText.text = shieldCount.ToString();
     }
 
+    //Method called to update the shield count in UI
+    public void UpdateShockCount(int shockCount)
+    {
+        //Hides the shield UI if the player has none
+        if (shockCount == 0)
+        {
+            shockText.text = "0";
+
+            //Animates the dissapearance of the shield image and text
+            StartCoroutine(AnimationPlus.FadeToColor(shockImage, new Color(0, 0, 0, 0), fadeTime, false));
+            StartCoroutine(AnimationPlus.FadeText(shockText, fadeTime));
+            return;
+        }
+
+        //Animates the showing of the shield image and text if they are hidden
+        if (!shockImage.gameObject.activeInHierarchy)
+        {
+            shockImage.gameObject.SetActive(true);
+            shockText.gameObject.SetActive(true);
+
+            StartCoroutine(AnimationPlus.FadeToColor(shockImage, new Color(1, 1, 1, 1), fadeTime));
+            StartCoroutine(AnimationPlus.FadeText(shockText, fadeTime, false));
+        }
+
+        shockText.text = shockCount.ToString();
+    }
+
     //Used to enable the slowdown UI object
     public void EnableSlowDown(bool state, bool useFade = true, bool ignoreCurrent = false)
     {
@@ -135,7 +202,7 @@ public class Game_UI : UI
     public Vector2[] CalculateButtonBounds()
     {
         //Initializes return object
-        Vector2[] output = new Vector2[6];
+        Vector2[] output = new Vector2[8];
 
         float screenScalingFactor = transform.parent.localScale.x;
 
@@ -148,13 +215,17 @@ public class Game_UI : UI
         output[4] = (Vector2)slowDown.position + new Vector2(slowDown.rect.width, slowDown.rect.height) * screenScalingFactor / 2;
         output[5] = (Vector2)slowDown.position - new Vector2(slowDown.rect.width, slowDown.rect.height) * screenScalingFactor / 2;
 
+        RectTransform shock = shockImage.gameObject.GetComponent<RectTransform>();
+        output[6] = (Vector2)shock.position + new Vector2(shock.rect.width, shock.rect.height) * screenScalingFactor / 2;
+        output[7] = (Vector2)shock.position - new Vector2(shock.rect.width, shock.rect.height) * screenScalingFactor / 2;
+
         //Returns the bounds
         return output;
     }
 
     public Vector2[] GetButtonBounds()
     {
-        return buttonBounds;
+        return _buttonBounds;
     }
 
     //Method to fade in the UI elements
@@ -164,9 +235,9 @@ public class Game_UI : UI
         gearText.color -= new Color(0, 0, 0, 1);
         gearImage.color = new Color(1, 1, 1, 0);
 
-        StartCoroutine(AnimationPlus.FadeText(scoreText, UI.fadeTime, false));
-        StartCoroutine(AnimationPlus.FadeText(gearText, UI.fadeTime, false));
-        StartCoroutine(AnimationPlus.FadeToColor(gearImage, new Color(1, 1, 1, 1), UI.fadeTime));
+        StartCoroutine(AnimationPlus.FadeText(scoreText, fadeTime, false));
+        StartCoroutine(AnimationPlus.FadeText(gearText, fadeTime, false));
+        StartCoroutine(AnimationPlus.FadeToColor(gearImage, new Color(1, 1, 1, 1), fadeTime));
     }
 
     //Property to get scaling UI factor

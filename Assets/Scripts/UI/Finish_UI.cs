@@ -4,7 +4,7 @@ using UnityEngine;
 using UnityEngine.UI;
 
 //Class to control the UI for each finish object
-public class Finish_UI : UI
+public class Finish_UI : UI<Finish_UI>
 {
     //Property to store the prefab of the card
     [SerializeField] private GameObject cardPrefab;
@@ -68,7 +68,7 @@ public class Finish_UI : UI
 
         //Sets the player to not be at the finish and activates the Game UI
         Player.isAtFinish = false;
-        Reference.gameUI.gameObject.SetActive(true);
+        Game_UI.Instance.gameObject.SetActive(true);
 
         transform.parent.gameObject.GetComponent<GraphicRaycaster>().enabled = false;
 

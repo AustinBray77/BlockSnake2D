@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Credits_UI : UI
+public class Credits_UI : UI<Credits_UI>
 {
     //Called when the user clicks to go to the start menu
     public void Click_StartMenu()
@@ -11,7 +11,7 @@ public class Credits_UI : UI
         StartCoroutine(ClickWithFade(
             () =>
             {
-                Reference.startUI.Show();
+                Start_UI.Instance.Show();
                 Hide();
             }, fadeTime));
     }

@@ -13,8 +13,11 @@ public class PlayGamesService : SingletonDD<PlayGamesService>
     private static PlayGamesClientConfiguration s_config;
     private bool _isSignedIn = false;
 
-    private void OnEnable()
+    public void InitializeService()
     {
+        LogData = true;
+        Log("On Enable Called...");
+
         s_config = new PlayGamesClientConfiguration.Builder()
             .EnableSavedGames()
             .Build();

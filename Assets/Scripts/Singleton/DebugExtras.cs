@@ -51,7 +51,7 @@ public class DebugExtras : SingletonDD<DebugExtras>
             //If the h key is hit, 1 shield is added to the player
             if (Input.GetKeyDown(KeyCode.H))
             {
-                Reference.player.AddShields(1);
+                Reference.player.AddShields(1, 0);
                 Log("1 Shield Added");
             }
 

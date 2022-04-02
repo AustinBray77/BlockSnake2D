@@ -5,7 +5,7 @@ using UnityEngine.UI;
 using TMPro;
 
 //Class to contorl the shop UI
-public class Shop_UI : UI
+public class Shop_UI : UI<Shop_UI>
 {
     //Static variable storing the number of skins in the game, CHANGE EVERY TIME A SKIN IS ADDED
     public static int skinCount = 10;
@@ -15,13 +15,12 @@ public class Shop_UI : UI
     private List<Skin_Manager> skin_Managers;
 
     //Stores valid skins, skin card prefab, and gear amount text
-    public Skin[] _skins;
+    //public Skin[] Skins;
     [SerializeField] private GameObject skinCardPrefab, dailyGearImage;
     [SerializeField] private TMP_Text gearText, dailyRewardText;
     [SerializeField] private RectTransform contentGroup;
 
     //Stores a static refrence to valid skins and active skin card
-    public static Skin[] skins;
     public static int activeSkinCard = 0;
 
     //Method called after the scene loads
@@ -30,7 +29,6 @@ public class Shop_UI : UI
         yield return new WaitUntil(() => Serializer.Instance.activeData != null);
 
         //Assigns the static refrence for skins and sets the gear text to the current gear count
-        skins = _skins;
         SetGearText();
     }
 
@@ -52,9 +50,9 @@ public class Shop_UI : UI
         skin_Managers = new List<Skin_Manager>();
 
         //Instantiates each skin card ath the correct location and adds its manager
-        for (int i = 0; i < _skins.Length; i++)
+        for (int i = 0; i < Gamemanager.Instance.Skins.Length; i++)
         {
-            skinCards.Add(CreateSkinCard(new Vector2(i * 625, 0), new Vector3(0.9f, 0.9f), _skins[i]));
+            skinCards.Add(CreateSkinCard(new Vector2(i * 625, 0), new Vector3(0.9f, 0.9f), Gamemanager.Instance.Skins[i]));
             skin_Managers.Add(skinCards[i].GetComponent<Skin_Manager>());
         }
 
@@ -114,7 +112,7 @@ public class Shop_UI : UI
         StartCoroutine(ClickWithFade(
             () =>
             {
-                Reference.startUI.Show();
+                Start_UI.Instance.Show();
                 Hide();
             }, fadeTime));
     }
@@ -122,10 +120,10 @@ public class Shop_UI : UI
     //Method called when the user clicks to watch an ad for gears
     public void WatchAdForGears(int reward)
     {
-        Reference.adManager.ShowRewardedAdThenCall(() =>
+        UnityAdsService.Instance.ShowRewardedAdThenCall(() =>
         {
             Serializer.Instance.activeData.SetGearCount(Serializer.Instance.activeData.gearCount + 5);
-            Reference.shopUI.SetGearText();
+            Shop_UI.Instance.SetGearText();
         });
     }
 

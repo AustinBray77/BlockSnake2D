@@ -2,9 +2,14 @@ using UnityEngine;
 using System;
 using System.Collections.Generic;
 
-public class SingletonDD<T> : BaseBehaviour where T : Component
+public class SingletonDD : BaseBehaviour
 {
-    private static Dictionary<Type, object> s_singletons = new Dictionary<Type, object>();
+    protected static Dictionary<Type, object> s_singletons = new Dictionary<Type, object>();
+}
+
+public class SingletonDD<T> : SingletonDD where T : Component
+{
+    //private static Dictionary<Type, object> s_singletons = new Dictionary<Type, object>();
 
     public static T Instance
     {
@@ -14,24 +19,39 @@ public class SingletonDD<T> : BaseBehaviour where T : Component
         }
     }
 
-    private void Awake()
+    protected void Awake()
     {
         if (!s_singletons.ContainsKey(typeof(T)))
         {
             transform.SetParent(null);
-            s_singletons.Add(typeof(T), this);
             DontDestroyOnLoad(this.gameObject);
+            s_singletons.Add(typeof(T), this);
         }
-        else
+        else if ((T)s_singletons[typeof(T)] != this)
         {
+            Log(typeof(T) + " type already exists!");
             Destroy(this.gameObject);
         }
     }
 
+    /*
+    private void Update()
+    {
+        string output = "";
+
+        foreach (var key in s_singletons.Keys)
+        {
+            output += key.ToString() + " ";
+        }
+
+        Log(output, true);
+    }*/
+
     private void OnDestroy()
     {
-        if (s_singletons.ContainsKey(typeof(T)))
+        if ((T)s_singletons[typeof(T)] == this)
         {
+            Log(typeof(T) + " Destroyed...");
             s_singletons.Remove(typeof(T));
         }
     }

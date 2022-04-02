@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-public class ModeSelect_UI : UI
+public class ModeSelect_UI : UI<ModeSelect_UI>
 {
     public void SetMode(int index)
     {

@@ -2,10 +2,13 @@ using UnityEngine;
 using System;
 using System.Collections.Generic;
 
-public class Singleton<T> : BaseBehaviour where T : Component
+public class Singleton : BaseBehaviour
 {
-    private static Dictionary<Type, object> s_singletons = new Dictionary<Type, object>();
+    protected static Dictionary<Type, object> s_singletons = new Dictionary<Type, object>();
+}
 
+public class Singleton<T> : Singleton where T : Component
+{
     public static T Instance
     {
         get
@@ -14,21 +17,37 @@ public class Singleton<T> : BaseBehaviour where T : Component
         }
     }
 
-    private void Awake()
+    protected void Awake()
     {
-        if (s_singletons.ContainsKey(typeof(T)))
-        {
-            Destroy(this);
-        }
-        else
+        if (!s_singletons.ContainsKey(typeof(T)))
         {
             s_singletons.Add(typeof(T), this);
         }
+        else if ((T)s_singletons[typeof(T)] != this)
+        {
+            Destroy(this);
+        }
     }
+
+    /*
+    private void Update()
+    {
+        string output = "";
+
+        foreach (var key in s_singletons.Keys)
+        {
+            output += key.ToString() + " ";
+        }
+
+        Log(output, true);
+    }*/
 
     private void OnDestroy()
     {
-        if (s_singletons.ContainsKey(typeof(T)))
+        if (!s_singletons.ContainsKey(typeof(T)))
+            return;
+
+        if ((T)s_singletons[typeof(T)] == this)
         {
             s_singletons.Remove(typeof(T));
         }

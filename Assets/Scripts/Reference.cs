@@ -32,31 +32,32 @@ public class Reference : Singleton<Reference>
     public static Camera cam;
     public static CameraController camController;
     public static BorderWall wallTop, wallBottom;
-    public static Death_UI deathUI;
+    /*public static Death_UI deathUI;
     public static Game_UI gameUI;
     public static Finish_UI finishUI;
     public static Shop_UI shopUI;
     public static Start_UI startUI;
     public static Settings_UI settingsUI;
     public static Credits_UI creditsUI;
-    public static ModeSelect_UI modeSelectUI;
-    public static UnityAdsService adManager;
+    public static ModeSelect_UI modeSelectUI;*/
+    //public static UnityAdsService adManager;
     public static Tutorial tutorial;
     public static Card[] cardTypes;
-    public static List<Level.LevelUpTrigger> levelUpTriggers;
+    //public static List<Level.LevelUpTrigger> levelUpTriggers;
     public static GameObject smallPrompt, mediumPrompt, largePrompt, infoObject;
     public static RectTransform canvas;
 
     //Method called on scene load
-    private void Awake()
+    private new void Awake()
     {
+        base.Awake();
         //Assigns the instance refrences to the static refrences
         player = _player;
         gen = _gen;
         cam = _cam;
         camController = _cam.GetComponent<CameraController>();
         wallTop = _wallTop;
-        wallBottom = _wallBottom;
+        wallBottom = _wallBottom;/*
         deathUI = _deathUI;
         gameUI = _gameUI;
         finishUI = _finishUI;
@@ -64,8 +65,8 @@ public class Reference : Singleton<Reference>
         startUI = _startUI;
         settingsUI = _settingsUI;
         creditsUI = _creditsUI;
-        modeSelectUI = _modeSelectUI;
-        adManager = _adManager;
+        modeSelectUI = _modeSelectUI;*/
+        //adManager = _adManager;
         tutorial = _tutorial;
         cardTypes = _cardTypes;
 
@@ -80,38 +81,5 @@ public class Reference : Singleton<Reference>
         largePrompt = _largePrompt;
         infoObject = _infoObject;
         canvas = _canvas;
-
-        //Generates the level triggers
-        if (levelUpTriggers == null)
-        {
-            levelUpTriggers = new List<Level.LevelUpTrigger>();
-            int gears = 3, skinIndex = 0;
-
-            for (int i = 1; i <= 100; i++)
-            {
-                if (i % 5 == 0)
-                {
-                    gears++;
-                }
-
-                bool unlocksSkin = false;
-
-                if (skinIndex < shopUI._skins.Length)
-                {
-                    while (shopUI._skins[skinIndex].levelRequirement <= i)
-                    {
-                        skinIndex++;
-                        unlocksSkin = true;
-
-                        if (skinIndex >= shopUI._skins.Length)
-                        {
-                            break;
-                        }
-                    }
-                }
-
-                levelUpTriggers.Add(new Level.LevelUpTrigger(i, gears, unlocksSkin));
-            }
-        }
     }
 }

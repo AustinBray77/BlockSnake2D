@@ -23,8 +23,11 @@ public class Serializer : SingletonDD<Serializer>
     {
         Log("Saving Data...");
 
-        //Try to sign in to google play services
-        yield return StartCoroutine(PlayGamesService.Instance.SignIn(false));
+        if (Gamemanager.Instance.CurrentPlatform == Gamemanager.Platform.Android)
+        {
+            //Try to sign in to google play services
+            yield return StartCoroutine(PlayGamesService.Instance.SignIn(false));
+        }
 
         //Gets all properties of save data
         PropertyInfo[] properties = Functions.GetProperties("Save_Data");
@@ -65,7 +68,11 @@ public class Serializer : SingletonDD<Serializer>
         byte[] bytes = Encoding.UTF8.GetBytes(totalData);
 
         GameMetadata metadata = new GameMetadata(true, FileName, "Lastest Save", "", new TimeSpan(0, 0, 0), Functions.CurrentTime);
-        PlayGamesService.Instance.SaveGame(metadata, bytes);
+
+        if (Gamemanager.Instance.CurrentPlatform == Gamemanager.Platform.Android)
+        {
+            PlayGamesService.Instance.SaveGame(metadata, bytes);
+        }
 
         if (File.Exists(FileName)) File.Delete(FileName);
     }
@@ -75,8 +82,19 @@ public class Serializer : SingletonDD<Serializer>
     {
         Log("Loading Data...", true);
 
-        yield return StartCoroutine(PlayGamesService.Instance.LoadGame(FileName));
-        byte[] bytes = PlayGamesService.Instance.LastSave;
+        byte[] bytes = null;
+
+        if (Gamemanager.Instance.CurrentPlatform == Gamemanager.Platform.Android)
+        {
+            PlayGamesService.Instance.InitializeService();
+
+            yield return StartCoroutine(PlayGamesService.Instance.LoadGame(FileName));
+            bytes = PlayGamesService.Instance.LastSave;
+        }
+        else if (File.Exists(FileName))
+        {
+            bytes = File.ReadAllBytes(FileName);
+        }
 
         //Triggers if the file exists at the persistent data path
         if (bytes != null)

@@ -46,8 +46,7 @@ public class Segment : BaseBehaviour
         {
             if (Mathf.Abs(constantPosition.y) >= Reference.wallTop.transform.position.y)
             {
-                Reference.player.shieldCount = 0;
-                Reference.player.KillPlayer();
+                Reference.player.KillPlayer(true);
             }
         }
 

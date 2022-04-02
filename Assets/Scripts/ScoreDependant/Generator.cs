@@ -110,14 +110,7 @@ public class Generator : ScoreDependent
             {
                 while (objects[0].transform.position.x <= destroyerPosition)
                 {
-                    Destroy(objects[0].gameObject);
-
-                    if (objects[0].gameObject.name.Contains("Finish"))
-                    {
-                        OnFinishDestroyed();
-                    }
-
-                    objects.RemoveAt(0);
+                    DestroyObject(0);
 
                     if (objects.Count <= 0)
                     {
@@ -567,6 +560,32 @@ public class Generator : ScoreDependent
         sr.sortingOrder = type;
 
         return gameObj;
+    }
+
+    public void DestoryDamageObjects()
+    {
+        GameObject[] gameObjects = GameObject.FindGameObjectsWithTag("Damage");
+
+        foreach (GameObject obj in gameObjects)
+        {
+            objects.Remove(obj.GetComponent<Object>());
+            Destroy(obj);
+        }
+    }
+
+    public void DestroyObject(int index)
+    {
+        if (index < 0 || index >= objects.Count)
+            return;
+
+        Destroy(objects[index].gameObject);
+
+        if (objects[index].gameObject.name.Contains("Finish"))
+        {
+            OnFinishDestroyed();
+        }
+
+        objects.RemoveAt(index);
     }
 
     //Method called to get the bounds distance of the generator

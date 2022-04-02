@@ -38,7 +38,7 @@ public class AnimationPlus
     }
 
     //Method to animate a level bar object
-    public static IEnumerator AnimateLevelBar(UI.LevelBar levelBar, int lowerLevel, float endVal, float time)
+    public static IEnumerator AnimateLevelBar(LevelBar levelBar, int lowerLevel, float endVal, float time)
     {
         //Stores the amount which the levelBar should be changed by each frame
         float differencePerSecond = (endVal - levelBar.levelBar.value) / time;
@@ -66,7 +66,7 @@ public class AnimationPlus
                 levelBar.lowerLevel.text = lowerLevel.ToString();
                 levelBar.higherLevel.text = (lowerLevel + 1).ToString();
 
-                if (lowerLevel < 100) Reference.deathUI.TriggerLevelPrompt(lowerLevel - 1);
+                if (lowerLevel < 100) Death_UI.Instance.TriggerLevelPrompt(lowerLevel - 1);
             }
 
             //Increments the frame counter and waits the required amount of time

@@ -17,6 +17,15 @@ public class Skin
     public bool equipped =>
         index == Serializer.Instance.activeData.activeSkin;
 
-    public bool purchased =>
-        Serializer.Instance.activeData.purchasedSkins.Contains(title);
+    public bool purchased
+    {
+        get
+        {
+            Debug.Log($"Serializer Instance is null?{Serializer.Instance == null}");
+            Debug.Log($"Active Data is null?{Serializer.Instance.activeData == null}");
+            Debug.Log($"Purchased Skins is null?{Serializer.Instance.activeData.purchasedSkins == null}");
+            Debug.Log($"Title is null?{title == null}");
+            return Serializer.Instance.activeData.purchasedSkins.Contains(title);
+        }
+    }
 }

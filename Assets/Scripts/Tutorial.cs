@@ -82,7 +82,7 @@ public class Tutorial : BaseBehaviour
                     DropWalls();
 
                     //Animates the UI
-                    Reference.gameUI.FadeInElements();
+                    Game_UI.Instance.FadeInElements();
 
                     //Starts the generator
                     gen.Initialize();

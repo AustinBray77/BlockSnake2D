@@ -17,8 +17,9 @@ public class FinishObject : Object
     private BoxCollider2D _collider;
 
     //Overrides the ObjAwake function, called when the object spawns
-    internal override void ObjAwake()
+    private new void Awake()
     {
+        base.Awake();
         _collider = GetComponent<BoxCollider2D>();
         Generate(true);
     }
@@ -116,8 +117,8 @@ public class FinishObject : Object
             Reference.gen.OnPlayerEnterFinish(this);
 
             //Shows the cards
-            Reference.finishUI.Show();
-            Reference.finishUI.SetCardData(selectedCards);
+            Finish_UI.ShowInstance();
+            Finish_UI.Instance.SetCardData(selectedCards);
         }
     }
 

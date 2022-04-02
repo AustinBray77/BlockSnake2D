@@ -17,7 +17,7 @@ public abstract class Object : BaseBehaviour
     internal bool interactable;
 
     //Method called when the object is instantiated
-    private void Awake()
+    internal void Awake()
     {
         //Assigns the gameobjects tag and sorting layer to the appropriate values
         gameObject.tag = "Object";
@@ -25,7 +25,7 @@ public abstract class Object : BaseBehaviour
         interactable = true;
 
         //Allows for inherited classes to still call on instatiation
-        ObjAwake();
+        //ObjAwake();
     }
 
     /*

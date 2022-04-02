@@ -4,11 +4,23 @@ using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 
-//Class inherited by UI objects
-public abstract class UI : BaseBehaviour
+public static class UI
 {
     //Stores the normal fade time between screens
-    public static float fadeTime = 0.2f;
+    public const float fadeTime = 0.2f;
+}
+
+public interface IUI
+{
+    public void Show();
+    public void Hide();
+}
+
+//Class inherited by UI objects
+public abstract class UI<_T> : Singleton<_T>, IUI where _T : Component, IUI
+{
+    //Stores the normal fade time between screens
+    public const float fadeTime = UI.fadeTime;
 
     //Internal refrence to the screens fade panel
     [SerializeField] protected Image fadePanel;
@@ -19,24 +31,26 @@ public abstract class UI : BaseBehaviour
     //Refrence to some images
     [SerializeField] protected Sprite gearImg, skinBaseImg;
 
-    //Serializable class to store a refrence to a level bar
-    [System.Serializable]
-    public class LevelBar
-    {
-        public TMP_Text lowerLevel, higherLevel;
-        public Slider levelBar;
-    }
-
     //Overidable method called to show the UI object
     public virtual void Show()
     {
         UIContainer.SetActive(true);
     }
 
+    public static void ShowInstance()
+    {
+        Instance.Show();
+    }
+
     //Overidable method called to hide the UI object
     public virtual void Hide()
     {
         UIContainer.SetActive(false);
+    }
+
+    public static void HideInstance()
+    {
+        Instance.Hide();
     }
 
     //Method called to invoke an action with a screen fade
@@ -77,7 +91,13 @@ public abstract class UI : BaseBehaviour
 
     public void TriggerLevelPrompt(int index)
     {
-        var trigger = Reference.levelUpTriggers[index];
+        if (index >= Gamemanager.Instance.LevelUpTriggers.Count)
+        {
+            Log($"Player has unlocked all level achievements already={Gamemanager.Instance.LevelUpTriggers.Count}...", true);
+            return;
+        }
+
+        var trigger = Gamemanager.Instance.LevelUpTriggers[index];
         Serializer.Instance.activeData.TriggerActivated(index);
         Serializer.Instance.SaveData();
 

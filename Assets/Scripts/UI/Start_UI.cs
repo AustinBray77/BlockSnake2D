@@ -6,15 +6,22 @@ using UnityEngine.SceneManagement;
 using TMPro;
 
 //Class to contorl the start UI
-public class Start_UI : UI
+public class Start_UI : UI<Start_UI>
 {
     [SerializeField] private GameObject loadingText, animatedSnake;
 
     //Called on scene load
     private IEnumerator Start()
     {
-        yield return new WaitUntil(() => Serializer.Instance != null && PlayGamesService.Instance != null);
-        yield return StartCoroutine(PlayGamesService.Instance.SignIn(false));
+        if (Gamemanager.Instance.CurrentPlatform == Gamemanager.Platform.Android)
+        {
+            yield return new WaitUntil(() => Serializer.Instance != null && PlayGamesService.Instance != null);
+            yield return StartCoroutine(PlayGamesService.Instance.SignIn(false));
+        }
+        else
+        {
+            yield return new WaitUntil(() => Serializer.Instance != null);
+        }
 
         bool firstLogin = !System.IO.File.Exists(Serializer.FileName);
 
@@ -44,7 +51,7 @@ public class Start_UI : UI
 
             for (int i = 0; i < Serializer.Instance.activeData.activatedLevelTriggers.Length; i++)
             {
-                if (!Serializer.Instance.activeData.activatedLevelTriggers[i] && Reference.levelUpTriggers[i].levelTrigger <= Serializer.Instance.activeData.level.level)
+                if (!Serializer.Instance.activeData.activatedLevelTriggers[i] && Gamemanager.Instance.LevelUpTriggers[i].levelTrigger <= Serializer.Instance.activeData.level.level)
                 {
                     TriggerLevelPrompt(i);
                 }
@@ -91,7 +98,7 @@ public class Start_UI : UI
         StartCoroutine(ClickWithFade(
             () =>
             {
-                Reference.modeSelectUI.Show();
+                ModeSelect_UI.ShowInstance();
                 Hide();
             }, fadeTime));
     }
@@ -103,7 +110,7 @@ public class Start_UI : UI
         StartCoroutine(ClickWithFade(
             () =>
             {
-                Reference.shopUI.Show();
+                Shop_UI.ShowInstance();
                 Hide();
             }, fadeTime));
     }
@@ -126,7 +133,7 @@ public class Start_UI : UI
         StartCoroutine(ClickWithFade(
             () =>
             {
-                Reference.settingsUI.Show();
+                Settings_UI.ShowInstance();
                 Hide();
             }, fadeTime));
     }
@@ -138,7 +145,7 @@ public class Start_UI : UI
         StartCoroutine(ClickWithFade(
             () =>
             {
-                Reference.creditsUI.Show();
+                Credits_UI.ShowInstance();
                 Hide();
             }, fadeTime));
     }
@@ -154,7 +161,10 @@ public class Start_UI : UI
     //Called when the user clicks to show the leaderboard
     public void ClickLeaderboard()
     {
-        PlayGamesService.Instance.ShowLeaderboard(PlayGamesService.HighScoreID);
+        if (Gamemanager.Instance.CurrentPlatform == Gamemanager.Platform.Android)
+        {
+            PlayGamesService.Instance.ShowLeaderboard(PlayGamesService.HighScoreID);
+        }
     }
 
     //Overidable method called to show the UI object

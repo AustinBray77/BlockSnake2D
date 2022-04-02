@@ -3437,67 +3437,6 @@ MonoBehaviour:
   UIContainer: {fileID: 1246710857}
   gearImg: {fileID: 0}
   skinBaseImg: {fileID: 0}
-  _skins:
-  - title: WHITE
-    frontSprite: {fileID: 21300000, guid: 6b1cc2fe2a08fc74db880e81665a90b6, type: 3}
-    segmentSprite: {fileID: 21300000, guid: 35be9c9a85e7d7a439b9c15132ef6eb2, type: 3}
-    levelRequirement: 0
-    price: 0
-    index: 0
-  - title: RED
-    frontSprite: {fileID: 21300000, guid: 9936f99790cd77d43a2449b18eae7ac1, type: 3}
-    segmentSprite: {fileID: 21300000, guid: 3c5dc8979a4f81343a321aa9dfd7f4b5, type: 3}
-    levelRequirement: 2
-    price: 10
-    index: 1
-  - title: ORANGE
-    frontSprite: {fileID: 21300000, guid: 15c5a8cd3df95d149ab049e212da2293, type: 3}
-    segmentSprite: {fileID: 21300000, guid: 875868f273b8f3841a19a864fc6d3fbe, type: 3}
-    levelRequirement: 3
-    price: 10
-    index: 2
-  - title: YELLOW
-    frontSprite: {fileID: 21300000, guid: bb2d43995f6086e4aad4915e75b2e76a, type: 3}
-    segmentSprite: {fileID: 21300000, guid: 23a1ecb886a80ab43b4ac8f6958ed17f, type: 3}
-    levelRequirement: 4
-    price: 10
-    index: 3
-  - title: GREEN
-    frontSprite: {fileID: 21300000, guid: 10142843842b5234cbf12562fc5391c2, type: 3}
-    segmentSprite: {fileID: 21300000, guid: 0ba0e3e7bdee36f45b14d5818aa18810, type: 3}
-    levelRequirement: 5
-    price: 10
-    index: 4
-  - title: BLUE
-    frontSprite: {fileID: 21300000, guid: 8ddd5501e6b91d048830e801e23a49d9, type: 3}
-    segmentSprite: {fileID: 21300000, guid: d86265af06b7d474e836507c506beb0e, type: 3}
-    levelRequirement: 6
-    price: 10
-    index: 5
-  - title: PINK
-    frontSprite: {fileID: 21300000, guid: 02d58a0038bcb2347b133a899617afae, type: 3}
-    segmentSprite: {fileID: 21300000, guid: afb196203b8e1f54eb48c94997aa32a7, type: 3}
-    levelRequirement: 7
-    price: 10
-    index: 6
-  - title: ANGRY
-    frontSprite: {fileID: 21300000, guid: cf22ba2b1f4183446926e678f501183c, type: 3}
-    segmentSprite: {fileID: 21300000, guid: 3c5dc8979a4f81343a321aa9dfd7f4b5, type: 3}
-    levelRequirement: 10
-    price: 20
-    index: 7
-  - title: BUMBLEBEE
-    frontSprite: {fileID: 21300000, guid: a0a70639d8aec7b4e8177dc218aaa20c, type: 3}
-    segmentSprite: {fileID: 21300000, guid: 76566ca4df79e4848b3f6e62e0ad5e0d, type: 3}
-    levelRequirement: 15
-    price: 30
-    index: 8
-  - title: COLOURCUBE
-    frontSprite: {fileID: 21300000, guid: ef46a5850cb7d1149b57cd4171fdc6dd, type: 3}
-    segmentSprite: {fileID: 21300000, guid: e5e2f7587c7ba3946baf72dc53220e53, type: 3}
-    levelRequirement: 20
-    price: 40
-    index: 9
   skinCardPrefab: {fileID: 4605159466726807264, guid: c3d714642b75e5743b1f00e05ce11e57, type: 3}
   dailyGearImage: {fileID: 824232620}
   gearText: {fileID: 381959075}
@@ -4836,7 +4775,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 0, g: 0.6509804, b: 0.92941177, a: 0.60784316}
+  m_Color: {r: 0, g: 0.72156864, b: 0, a: 0.60784316}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -7300,7 +7239,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5cff74885d1b9bc419e4862031e3b28c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  LogData: 1
+  LogData: 0
   fadePanel: {fileID: 482933484}
   UIContainer: {fileID: 1675705423}
   gearImg: {fileID: 0}
@@ -11815,8 +11754,70 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 93e543f80861db64ab181f971151c1b7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  LogData: 0
+  LogData: 1
   CurrentMode: 0
+  Skins:
+  - title: WHITE
+    frontSprite: {fileID: 21300000, guid: 6b1cc2fe2a08fc74db880e81665a90b6, type: 3}
+    segmentSprite: {fileID: 21300000, guid: 35be9c9a85e7d7a439b9c15132ef6eb2, type: 3}
+    levelRequirement: 0
+    price: 0
+    index: 0
+  - title: RED
+    frontSprite: {fileID: 21300000, guid: 9936f99790cd77d43a2449b18eae7ac1, type: 3}
+    segmentSprite: {fileID: 21300000, guid: 3c5dc8979a4f81343a321aa9dfd7f4b5, type: 3}
+    levelRequirement: 2
+    price: 10
+    index: 1
+  - title: ORANGE
+    frontSprite: {fileID: 21300000, guid: 15c5a8cd3df95d149ab049e212da2293, type: 3}
+    segmentSprite: {fileID: 21300000, guid: 875868f273b8f3841a19a864fc6d3fbe, type: 3}
+    levelRequirement: 3
+    price: 10
+    index: 2
+  - title: YELLOW
+    frontSprite: {fileID: 21300000, guid: bb2d43995f6086e4aad4915e75b2e76a, type: 3}
+    segmentSprite: {fileID: 21300000, guid: 23a1ecb886a80ab43b4ac8f6958ed17f, type: 3}
+    levelRequirement: 4
+    price: 10
+    index: 3
+  - title: GREEN
+    frontSprite: {fileID: 21300000, guid: 10142843842b5234cbf12562fc5391c2, type: 3}
+    segmentSprite: {fileID: 21300000, guid: 0ba0e3e7bdee36f45b14d5818aa18810, type: 3}
+    levelRequirement: 5
+    price: 10
+    index: 4
+  - title: BLUE
+    frontSprite: {fileID: 21300000, guid: 8ddd5501e6b91d048830e801e23a49d9, type: 3}
+    segmentSprite: {fileID: 21300000, guid: d86265af06b7d474e836507c506beb0e, type: 3}
+    levelRequirement: 6
+    price: 10
+    index: 5
+  - title: PINK
+    frontSprite: {fileID: 21300000, guid: 02d58a0038bcb2347b133a899617afae, type: 3}
+    segmentSprite: {fileID: 21300000, guid: afb196203b8e1f54eb48c94997aa32a7, type: 3}
+    levelRequirement: 7
+    price: 10
+    index: 6
+  - title: ANGRY
+    frontSprite: {fileID: 21300000, guid: cf22ba2b1f4183446926e678f501183c, type: 3}
+    segmentSprite: {fileID: 21300000, guid: 3c5dc8979a4f81343a321aa9dfd7f4b5, type: 3}
+    levelRequirement: 10
+    price: 20
+    index: 7
+  - title: BUMBLEBEE
+    frontSprite: {fileID: 21300000, guid: a0a70639d8aec7b4e8177dc218aaa20c, type: 3}
+    segmentSprite: {fileID: 21300000, guid: 76566ca4df79e4848b3f6e62e0ad5e0d, type: 3}
+    levelRequirement: 15
+    price: 30
+    index: 8
+  - title: COLOURCUBE
+    frontSprite: {fileID: 21300000, guid: ef46a5850cb7d1149b57cd4171fdc6dd, type: 3}
+    segmentSprite: {fileID: 21300000, guid: e5e2f7587c7ba3946baf72dc53220e53, type: 3}
+    levelRequirement: 20
+    price: 40
+    index: 9
+  LevelUpTriggers: []
   CurrentPlatform: 0
 --- !u!1 &2062852260
 GameObject:
@@ -11829,13 +11830,14 @@ GameObject:
   - component: {fileID: 2062852263}
   - component: {fileID: 2062852262}
   - component: {fileID: 2062852261}
+  - component: {fileID: 2062852264}
   m_Layer: 0
   m_Name: EventSystem
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!114 &2062852261
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -11884,6 +11886,18 @@ Transform:
   m_Father: {fileID: 740990087}
   m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &2062852264
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2062852260}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1511ccae7919cfc46b603b9b337fdc94, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &2064447335
 GameObject:
   m_ObjectHideFlags: 0
@@ -12301,7 +12315,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 0, g: 0.6509804, b: 0.92941177, a: 0.60784316}
+  m_Color: {r: 0, g: 0.72156864, b: 0, a: 0.60784316}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
