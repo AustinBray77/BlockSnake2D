@@ -97,5 +97,5 @@ public class QualityController : BaseBehaviour
     //Method to return the default quality for a give platform, if windows set to ultra, if android set to medium
     public static QualityLevel DefaultQualityLevel(Gamemanager.Platform platform) =>
         (platform == Gamemanager.Platform.Windows || platform == Gamemanager.Platform.Debug) ?
-            QualityLevel.Ultra : QualityLevel.Medium;
+            QualityLevel.Ultra : QualityLevel.High;
 }
