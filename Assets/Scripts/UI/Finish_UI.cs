@@ -41,9 +41,12 @@ public class Finish_UI : UI<Finish_UI>
             //Instantiates the card prefab, sets the position of the card object, and sets its data to the current data 
             cardObjects[i] = Instantiate(cardPrefab, UIContainer.transform);
             cardObjects[i].GetComponent<RectTransform>().anchoredPosition = new Vector2(630 - (i * 630), 0);
+
+            //Makes the card object uninteractable
             cardObjects[i].GetComponent<Button>().interactable = false;
         }
 
+        //
         if (Gamemanager.InLevel("Tutorial") && !tipWasShown)
         {
             StartCoroutine(ActiveCardsFirst());

@@ -70,8 +70,10 @@ public class Reference : Singleton<Reference>
         tutorial = _tutorial;
         cardTypes = _cardTypes;
 
+        //Loops through each card type
         for (int i = 0; i < cardTypes.Length; i++)
         {
+            //Sets its index to its index in the list
             int x = i;
             cardTypes[i].SetIndex(x);
         }

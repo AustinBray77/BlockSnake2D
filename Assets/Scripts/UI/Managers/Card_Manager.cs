@@ -14,7 +14,10 @@ public class Card_Manager : BaseBehaviour
     [SerializeField] private TMP_Text description;
     [SerializeField] private Image image;
 
+    //Reference to the button on the card
     private Button btn;
+
+    //Stores the description the card will have
     private string desc;
 
     //Method called on instantiation
@@ -27,28 +30,38 @@ public class Card_Manager : BaseBehaviour
     //Method called to load a card data into UI
     public void DataFromCard(Card data)
     {
-        //Assigns the values for the UI elements
+        //Sets the title to the title of the card + its level
         title.text = data.title.ToUpper() + " - LEVEL " + (data.level + 1).ToString();
+
+        //Sets the card image from the card data
         description.text = data.GetDescription();
         image.sprite = data.image;
-        desc = data.desc;
 
-        //Assigns the listener to the button
+        //Sets the description variable from the card data
+        desc = data.GetDescription();
+
+        //Adds the card method to the button
         btn.onClick.RemoveAllListeners();
         btn.onClick.AddListener(new UnityAction(data.Call));
     }
 
+    //Method for when the user clicks to see the card info 
     public void ShowInfo_Click() => StartCoroutine(ShowInfo());
 
+    //Coroutine to show the info screen for the card
     private IEnumerator ShowInfo()
     {
+        //Instantiates the info object from the prefab
         GameObject infoObject = Instantiate(Reference.infoObject, Reference.canvas.transform);
 
+        //Gets the text on the info object and sets the text to the description of the card plus continue statement
         TextMeshProUGUI text = infoObject.GetComponentInChildren<TextMeshProUGUI>();
         text.text = desc + "\n(Press anywhere to continue)";
 
+        //Wait until the user clicks
         yield return new WaitUntil(() => Functions.UserIsClicking());
 
+        //Destroys the object after the user clicks
         Destroy(infoObject);
     }
 }

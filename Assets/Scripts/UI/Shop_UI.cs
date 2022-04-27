@@ -14,27 +14,32 @@ public class Shop_UI : UI<Shop_UI>
     private List<GameObject> skinCards;
     private List<Skin_Manager> skin_Managers;
 
-    //Stores valid skins, skin card prefab, and gear amount text
-    //public Skin[] Skins;
+    //Stores the prefab for skin cards and the daily gear image
     [SerializeField] private GameObject skinCardPrefab, dailyGearImage;
+
+    //Stores references to the gear text and daily reward text
     [SerializeField] private TMP_Text gearText, dailyRewardText;
+
+    //Stores a reference to the content group where the skin cards are put
     [SerializeField] private RectTransform contentGroup;
 
-    //Stores a static refrence to valid skins and active skin card
+    //Stores the index active skin card
     public static int activeSkinCard = 0;
 
     //Method called after the scene loads
     public IEnumerator Start()
     {
+        //Waits until the data is loaded from save
         yield return new WaitUntil(() => Serializer.Instance.activeData != null);
 
         //Assigns the static refrence for skins and sets the gear text to the current gear count
-        SetGearText();
+        UpdateGearText();
     }
 
-    //Sets the text after the serializer is assigned
-    public void SetGearText()
+    //Method called to update the gear text
+    public void UpdateGearText()
     {
+        //Sets gear text value to the gear count from the loaded save
         gearText.text = Serializer.Instance.activeData.gearCount.ToString();
     }
 
@@ -49,23 +54,30 @@ public class Shop_UI : UI<Shop_UI>
         skinCards = new List<GameObject>();
         skin_Managers = new List<Skin_Manager>();
 
-        //Instantiates each skin card ath the correct location and adds its manager
+        //Loops for each skin
         for (int i = 0; i < Gamemanager.Instance.Skins.Length; i++)
         {
+            //Creates a skin card with the associated skin
             skinCards.Add(CreateSkinCard(new Vector2(i * 625, 0), new Vector3(0.9f, 0.9f), Gamemanager.Instance.Skins[i]));
+
+            //Adds the skin card manager to the managers list
             skin_Managers.Add(skinCards[i].GetComponent<Skin_Manager>());
         }
 
+        //Updates the daily reward UI
         UpdateDailyReward();
     }
 
     //Method called when the UI is to hide
     public override void Hide()
     {
-        //Destroys all the skin cards
+        //Loops for each skin card
         while (skinCards.Count > 0)
         {
+            //Destroys the card
             Destroy(skinCards[0]);
+
+            //Removes it from the list
             skinCards.RemoveAt(0);
         }
 
@@ -77,11 +89,12 @@ public class Shop_UI : UI<Shop_UI>
     public void UpdateAllCards()
     {
         //Updates gear text
-        gearText.text = Serializer.Instance.activeData.gearCount.ToString();
+        UpdateGearText();
 
-        //Updates each skin card
+        //Loops for each skin card manager
         foreach (Skin_Manager sm in skin_Managers)
         {
+            //Updates the UI on the manager
             sm.UpdateData();
         }
     }
@@ -89,13 +102,19 @@ public class Shop_UI : UI<Shop_UI>
     //Method called to create a skin card
     private GameObject CreateSkinCard(Vector2 location, Vector3 scale, Skin skin)
     {
-        //Instantiates skincard prefab
+        //Instantiates skincard prefab with this as its parent
         GameObject skinCard = Instantiate(skinCardPrefab, transform);
+
+        //Gets the rect transfrom from the instantiation
         RectTransform rt = skinCard.GetComponent<RectTransform>();
 
         //Sets the location
         rt.anchoredPosition = location;
+
+        //Sets the scale
         rt.localScale = scale;
+
+        //Sets the parent to the content group
         rt.SetParent(contentGroup);
 
         //Sets the data
@@ -105,53 +124,83 @@ public class Shop_UI : UI<Shop_UI>
         return skinCard;
     }
 
-    //Called when the user clicks to go to the start menu
+    //Method alled when the user clicks to go to the start menu
     public void Click_StartMenu()
     {
-        //Switches to the Start UI with fade
+        //Activates the following method with a fade
         StartCoroutine(ClickWithFade(
             () =>
             {
+                //Shows the start UI
                 Start_UI.Instance.Show();
+
+                //Hides this UI
                 Hide();
-            }, fadeTime));
+            },
+            //Fades over fadetime time
+            fadeTime));
     }
 
     //Method called when the user clicks to watch an ad for gears
     public void WatchAdForGears(int reward)
     {
+        //Shows a rewarded ad then calls the callback method
         UnityAdsService.Instance.ShowRewardedAdThenCall(() =>
         {
+            //Adds five gears to the players gear count
             Serializer.Instance.activeData.SetGearCount(Serializer.Instance.activeData.gearCount + 5);
-            Shop_UI.Instance.SetGearText();
+
+            //Updates the gear text
+            Shop_UI.Instance.UpdateGearText();
         });
     }
 
+    //Method called when the user clicks to claim the daily reward
     public void ClaimDailyReward()
     {
+        //Trigger if a day has passed since the reward was last claimed
         if (Functions.DaysSinceUnixFromMillis(Functions.CurrentMillisInTimeZone()) - Functions.DaysSinceUnixFromMillis(Serializer.Instance.activeData.lastRewardTime) > 0)
         {
+            //Add rewarded gears to the player
             Serializer.Instance.activeData.SetGearCount(Serializer.Instance.activeData.gearCount + Serializer.Instance.activeData.lastReward);
+
+            //Set last reward time to the current time
             Serializer.Instance.activeData.SetLastRewardTime(Functions.CurrentMillisInTimeZone());
+
+            //Set last reward amount to the current amount + 1
             Serializer.Instance.activeData.SetLastReward(Serializer.Instance.activeData.lastReward + 1);
-            SetGearText();
+
+            //Updates UI elements
+            UpdateGearText();
             UpdateDailyReward();
+
+            //Saves the data
             Serializer.Instance.SaveData();
         }
     }
 
+    //Method to update the daily reward UI
     private void UpdateDailyReward()
     {
+        //Triggers if the daily reward is currently collectible
         if (Functions.DaysSinceUnixFromMillis(Functions.CurrentMillisInTimeZone()) -
             Functions.DaysSinceUnixFromMillis(Serializer.Instance.activeData.lastRewardTime) > 0)
         {
+            //Sets the reward text to +(reward amount)
             dailyRewardText.text = "+" + Serializer.Instance.activeData.lastReward.ToString();
+
+            //Activates the gear image
             dailyGearImage.SetActive(true);
         }
         else
         {
+            //Tells the user the reward is available tomorrow
             dailyRewardText.text = "Available Tomorrow";
+
+            //Changes the font size
             dailyRewardText.fontSize = 70;
+
+            //Deactivates the gear image
             dailyGearImage.SetActive(false);
         }
     }

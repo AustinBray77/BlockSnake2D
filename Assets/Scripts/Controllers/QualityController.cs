@@ -16,13 +16,14 @@ public class QualityController : BaseBehaviour
         Ultra
     }
 
-    //Refrence to the post processing layer
+    //Refrence to the post processing layer and profile
     [SerializeField] private PostProcessLayer post;
     [SerializeField] private PostProcessProfile profile;
 
     //Method called on scene load
     private IEnumerator Start()
     {
+        //Wait until the save has been loaded
         yield return new WaitUntil(() => Serializer.Instance.activeData != null);
         yield return new WaitUntil(() => Serializer.Instance.activeData.settings != null);
 
@@ -39,14 +40,11 @@ public class QualityController : BaseBehaviour
         //Sets the max fps to 1024
         Application.targetFrameRate = 1024;
 
-        //Switch with a case for each value
+        //Switch with a case for each quality level
         switch (level)
         {
             //Triggers if the quality is fast
             case QualityLevel.Fast:
-                //Disables smaa and bloom
-                //post.subpixelMorphologicalAntialiasing.quality = SubpixelMorphologicalAntialiasing.Quality.Low;
-                //bloom.enabled.value = false;
                 //Disables post processing
                 post.enabled = false;
                 break;
@@ -86,13 +84,18 @@ public class QualityController : BaseBehaviour
         StartCoroutine(WaitToAssignQuality(level));
     }
 
+    //Method used to assign quality after the saved data have been loaded
     private IEnumerator WaitToAssignQuality(QualityLevel level)
     {
-        yield return new WaitUntil(() => { return Serializer.Instance.activeData != null; });
+        //Waits for the saved data
+        yield return new WaitUntil(() => Serializer.Instance.activeData != null);
+
+        //Sets the level to the saved data
         Serializer.Instance.activeData.settings.SetQualityLevel(level);
     }
 
+    //Method to return the default quality for a give platform, if windows set to ultra, if android set to medium
     public static QualityLevel DefaultQualityLevel(Gamemanager.Platform platform) =>
         (platform == Gamemanager.Platform.Windows || platform == Gamemanager.Platform.Debug) ?
-            QualityLevel.Ultra : QualityLevel.Fast;
+            QualityLevel.Ultra : QualityLevel.Medium;
 }

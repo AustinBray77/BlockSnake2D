@@ -5,6 +5,9 @@ using TMPro;
 [System.Serializable]
 public class LevelBar
 {
+    //Stores the references to the Lower and Upper level text boxes
     public TMP_Text lowerLevel, higherLevel;
+
+    //Stores the reference to the slider
     public Slider levelBar;
 }

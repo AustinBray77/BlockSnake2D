@@ -6,21 +6,30 @@ using UnityEngine;
 //Class to control the finish line object
 public class FinishObject : Object
 {
-    //Instance variables
+    //Stores if the object is intiated from a data object
     private bool fromData = false;
+
+    //Stores cards that are going to be used 
     private Card[] selectedCards;
 
+    //Prefabs for the tiles that make up the finish
     [SerializeField] private GameObject tilePrefab;
 
+    //Stores the index from the generator at which the finish was spawned
     [HideInInspector] public int spawnIndex;
 
+    //Stores the collider
     private BoxCollider2D _collider;
 
-    //Overrides the ObjAwake function, called when the object spawns
+    //Method called on object instantiation
     private new void Awake()
     {
         base.Awake();
+
+        //Assigns the collider
         _collider = GetComponent<BoxCollider2D>();
+
+        //Generates the tiles
         Generate(true);
     }
 
@@ -30,14 +39,17 @@ public class FinishObject : Object
         //Creates a new int array and assigns each value to its index
         int[] vals = new int[Reference.cardTypes.Length];
 
+        //Loops through each value
         for (int i = 0; i < vals.Length; i++)
         {
+            //Sets it to its index
             vals[i] = i;
         }
 
         //Randomly swaps each index with a different index
         for (int i = 0; i < Reference.cardTypes.Length; i++)
         {
+            //Get a random index
             int index = Random.Range(0, vals.Length);
             //Evil bit hack to swap variables
             vals[i] = vals[i] ^ vals[index] ^ (vals[index] = vals[i]);
@@ -50,14 +62,19 @@ public class FinishObject : Object
     //Method to generate the finish object
     public void Generate(bool baseGeneration, int amount = 0)
     {
+        //Gets the boundes distance from generator
         float boundsDistance = Generator.GetBoundsDistance();
+
+        //Gets the ceiling value of this distance
         float ceilBoundsDistance = Mathf.Ceil(boundsDistance);
 
+        //Triggers if this is the first generation
         if (baseGeneration)
         {
-            //Generates (2, -(Mathf.Ceil(Generator.GetBoundsDistance()) + 2)) tiles
+            //Loops for -(Mathf.Ceil(Generator.GetBoundsDistance()) + 2) tiles
             for (int i = 0; i >= -(ceilBoundsDistance + 2); i--)
             {
+                //Loops for 2 tiles
                 for (int j = 0; j < 2; j++)
                 {
                     //Instantiates the tile object from the prefab
@@ -67,10 +84,13 @@ public class FinishObject : Object
                 }
             }
         }
+        //Else add to current tiles
         else
         {
+            //Loop for 3*amount tiles
             for (int i = 0; i < 3 * amount; i++)
             {
+                //Loop for 2 tiles
                 for (int j = 0; j < 2; j++)
                 {
                     //Instantiates the tile object from the prefab
@@ -108,8 +128,10 @@ public class FinishObject : Object
             //Randomizes the cards if the finish was not loaded after respawn
             if (!fromData)
             {
+                //Gets shuffeled values
                 int[] vals = ShuffleCards();
 
+                //Saves selected cards from first 3 results from the shuffled values
                 selectedCards = new Card[] { Reference.cardTypes[vals[0]], Reference.cardTypes[vals[1]], Reference.cardTypes[vals[2]] };
             }
 

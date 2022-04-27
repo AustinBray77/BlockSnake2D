@@ -11,12 +11,20 @@ public class Skin_Manager : BaseBehaviour
     [SerializeField] private TextMeshProUGUI title, desc;
     [SerializeField] private Image frontImage, segmentImage, gearImage;
 
-    //Refrence to the associated skin
+    //Reference to the skin associated
     private Skin skin;
-    private string lockedTitle = "LOCKED";
+
+    //Constant string for Locked
+    private const string lockedTitle = "LOCKED";
+
+    //Reference to the sprite for when the skin is locked
     [SerializeField] private Sprite lockedSprite;
+
+    //Property to determine the description when the skin is locked
     private string lockedDesc =>
         "UNLOCK AT LEVEL " + skin.levelRequirement;
+
+    //Stores the index of the skin
     private int index = 0;
 
     //Method called when the UI is to update
@@ -25,13 +33,15 @@ public class Skin_Manager : BaseBehaviour
         //Assigns the title text
         title.text = skin.locked ? lockedTitle : skin.title;
 
-        //Resizes the title if the length is too long
+        //Triggers if the title is 7 characters or longer
         if (title.text.Length >= 7)
         {
+            //Set font size to 90
             title.fontSize = 90;
         }
         else
         {
+            //Else set font size to 128
             title.fontSize = 128;
         }
 
@@ -41,9 +51,10 @@ public class Skin_Manager : BaseBehaviour
                 skin.price.ToString() : skin.equipped ?
                     "EQUIPPED" : "EQUIP";
 
+        //Shows the gear image if the skin is purchasable
         gearImage.gameObject.SetActive(!skin.locked && !skin.purchased);
 
-        //Assigns the two sprites
+        //Assigns the two sprites based on if the skin is locked
         frontImage.sprite = skin.locked ? lockedSprite : skin.frontSprite;
         segmentImage.sprite = skin.locked ? lockedSprite : skin.segmentSprite;
     }

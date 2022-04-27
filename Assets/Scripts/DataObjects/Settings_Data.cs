@@ -32,6 +32,7 @@ public class Settings_Data
 
         //If statements are to prevent index out of bounds error, if the data is too short the data is set to a defualt value
 
+        //Triggers if the quality level is in the data
         if (vals.Length >= 1)
         {
             //Converts quality level
@@ -40,10 +41,11 @@ public class Settings_Data
         }
         else
         {
-            //Set quality level to default value
+            //Else set quality level to default value
             qualityLevel = QualityController.DefaultQualityLevel(Gamemanager.Instance.CurrentPlatform);
         }
 
+        //Triggers if the vsync enabled is in the data
         if (vals.Length >= 2)
         {
             //Converts vsync enabled
@@ -51,10 +53,11 @@ public class Settings_Data
         }
         else
         {
-            //Set vsync enabled to defualt value
+            //Else set vsync enabled to defualt value
             vsyncEnabled = false;
         }
 
+        //Triggers if the sound enabled is in the data 
         if (vals.Length >= 3)
         {
             //Converts sound enabled
@@ -62,10 +65,11 @@ public class Settings_Data
         }
         else
         {
-            //Set sound enabled to default value
+            //Else set sound enabled to default value
             soundEnabled = true;
         }
 
+        //Triggers if movement type is in data
         if (vals.Length >= 4)
         {
             //Converts movement type
@@ -74,10 +78,11 @@ public class Settings_Data
         }
         else
         {
-            //Set movement type to base movement type
+            //Else set movement type to base movement type
             movementType = Player.DefaultMovementType(Gamemanager.Instance.CurrentPlatform);
         }
 
+        //Triggers if the left handed controls is in the data
         if (vals.Length >= 5)
         {
             //Converts left handed controls
@@ -85,10 +90,11 @@ public class Settings_Data
         }
         else
         {
-            //Set left handed controls to base value
+            //Else set left handed controls to base value
             leftHandedControls = false;
         }
 
+        //Triggers if the gamemode is in the data
         if (vals.Length >= 6)
         {
             //Converts movement type
@@ -97,12 +103,13 @@ public class Settings_Data
         }
         else
         {
-            //Set movement type to base movement type
+            //Else set movement type to base movement type
             gamemode = Gamemanager.Mode.Normal;
         }
     }
 
     //Public setters for instance variables
+    #region Setters
     public void SetQualityLevel(QualityController.QualityLevel _qualityLevel) =>
         qualityLevel = _qualityLevel;
 
@@ -121,12 +128,15 @@ public class Settings_Data
 
     public void EnableLeftHanded(bool enable) =>
         leftHandedControls = enable;
+    #endregion
 
     //ToString Method
     public override string ToString()
     {
+        /* Format: qualityLevel(int) vsyncEnabled(bool) soundEnabled(bool), movementType(int) leftHandedControls(bool) */
         return (int)qualityLevel + " " + vsyncEnabled + " " + soundEnabled + " " + (int)movementType + " " + leftHandedControls;
     }
 
+    //Method for implicit conversion
     public static implicit operator Settings_Data(string s) => new Settings_Data(s);
 }

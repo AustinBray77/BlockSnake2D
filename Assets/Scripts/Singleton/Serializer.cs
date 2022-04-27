@@ -86,8 +86,6 @@ public class Serializer : SingletonDD<Serializer>
 
         if (Gamemanager.Instance.CurrentPlatform == Gamemanager.Platform.Android)
         {
-            PlayGamesService.Instance.InitializeService();
-
             yield return StartCoroutine(PlayGamesService.Instance.LoadGame(FileName));
             bytes = PlayGamesService.Instance.LastSave;
         }

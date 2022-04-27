@@ -49,7 +49,7 @@ public class AnimationPlus
         //Loops while frames still need to be counted
         while (timeCount < time)
         {
-            //Gets the time the passed
+            //Gets the last frame time
             float timePassed = Time.deltaTime;
 
             //Changes the level bar value
@@ -58,19 +58,36 @@ public class AnimationPlus
             //Triggers if the player should level up and the level has to change on the level bar
             if (levelBar.levelBar.value >= levelBar.levelBar.maxValue)
             {
-                //Inccrements lower level and assigns the values of the level bar
+                //Inccrements lower level
                 lowerLevel++;
+
+                //Sets the min value of the slider to the lower level as xp
                 levelBar.levelBar.minValue = Level.LevelToXP(lowerLevel);
+
+                //Sets the max value of the slider to the lower level plus 1 as xp
                 levelBar.levelBar.maxValue = Level.LevelToXP(lowerLevel + 1);
+
+                //Sets the value to the lower level value as xp
                 levelBar.levelBar.value = Level.LevelToXP(lowerLevel);
+
+                //Sets the lower level text to the lower level
                 levelBar.lowerLevel.text = lowerLevel.ToString();
+
+                //Sets the higher level text to the lower level plus 1
                 levelBar.higherLevel.text = (lowerLevel + 1).ToString();
 
-                if (lowerLevel < 100) Death_UI.Instance.TriggerLevelPrompt(lowerLevel - 1);
+                //Trigger if the lower level is less than 100
+                if (lowerLevel < 100)
+                {
+                    //Triggers the level prompt at the levels index
+                    Death_UI.Instance.TriggerLevelPrompt(lowerLevel - 1);
+                }
             }
 
             //Increments the frame counter and waits the required amount of time
             timeCount += timePassed;
+
+            //Waits for the end of the frame
             yield return new WaitForEndOfFrame();
         }
 
@@ -119,6 +136,7 @@ public class AnimationPlus
         //Stores the amount of time that has passed
         float timeCount = 0f;
 
+        //Loops while frames still need to be counted
         while (timeCount < time)
         {
             //Gets the time the passed
@@ -129,6 +147,8 @@ public class AnimationPlus
 
             //Increments the frame counter and waits the required amount of time
             timeCount += timePassed;
+
+            //Waits until the end of the frame
             yield return new WaitForEndOfFrame();
         }
 

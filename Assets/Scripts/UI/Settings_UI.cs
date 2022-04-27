@@ -7,36 +7,38 @@ using TMPro;
 //Class to control the settings screen
 public class Settings_UI : UI<Settings_UI>
 {
-    //Stores refrences to the UI
+    //Stores refrences to quality select and movement type select dropdowns
     [SerializeField] private TMP_Dropdown qualitySelect, movementSelect;
+
+    //Stores reference to sound toggle vsync toggle and controls side toggle
     [SerializeField] private Toggle soundEffectsToggle, vsyncToggle, leftHandedControlsToggle;
+
+    //Stores references to the warning and title text boxes
     [SerializeField] private TextMeshProUGUI warning, title;
+
+    //Stores a reference to each page of the settings
     [SerializeField] private GameObject[] pages;
+
+    //Stores a reference to each of the buttons used to switch pages
     [SerializeField] private Button[] pageButtons;
 
+    //Stores the current page index
     private int currentPageIndex;
 
     //Method called on object instatiation
     private IEnumerator Start()
     {
+        //Waits until the settings have been intialized
         yield return new WaitUntil(() => Serializer.Instance != null);
         yield return new WaitUntil(() => Serializer.Instance.activeData != null);
         yield return new WaitUntil(() => Serializer.Instance.activeData.settings != null);
 
-        Log(Serializer.Instance.activeData == null);
-        Log(Serializer.Instance.activeData.settings == null);
-
+        //Gets the current platform
         Gamemanager.Platform platform = Gamemanager.Instance.CurrentPlatform;
 
-        //If on mobile, give warning about graphics setting, else do not
-        if (platform == Gamemanager.Platform.Android || platform == Gamemanager.Platform.IOS || platform == Gamemanager.Platform.Debug)
-        {
-            warning.text = "Warning! Turning the quality above Fast could result in performance issues!";
-        }
-        else
-        {
-            warning.text = "";
-        }
+        //Show a warning about performance if on mobile
+        warning.text = (platform == Gamemanager.Platform.Android || platform == Gamemanager.Platform.IOS || platform == Gamemanager.Platform.Debug) ?
+            "Warning! Turning the quality above Fast could result in performance issues!" : "";
 
         //Fills the dropdowns from the associated enums
         FillDropFromEnum<QualityController.QualityLevel>(qualitySelect);
@@ -44,35 +46,31 @@ public class Settings_UI : UI<Settings_UI>
             (platform == Gamemanager.Platform.Android || platform == Gamemanager.Platform.IOS) ?
                 new int[] { (int)Player.MovementType.Keyboard } : null);
 
-        //Adds the associated actions
+        //Adds the associated actions to the UI elements
         qualitySelect.onValueChanged.AddListener(new UnityEngine.Events.UnityAction<int>(OnQualitySelectChanged));
         movementSelect.onValueChanged.AddListener(new UnityEngine.Events.UnityAction<int>(OnMovementSelectChanged));
         soundEffectsToggle.onValueChanged.AddListener(new UnityEngine.Events.UnityAction<bool>(OnSoundEffectToggleChanged));
         vsyncToggle.onValueChanged.AddListener(new UnityEngine.Events.UnityAction<bool>(OnVsyncChanged));
         leftHandedControlsToggle.onValueChanged.AddListener(new UnityEngine.Events.UnityAction<bool>(OnLeftHandedChanged));
 
-        //Sets values to default values
-        qualitySelect.value = (int)Serializer.Instance.activeData.settings.qualityLevel;
-        movementSelect.value = (int)Serializer.Instance.activeData.settings.movementType;
-        soundEffectsToggle.isOn = Serializer.Instance.activeData.settings.soundEnabled;
-        vsyncToggle.isOn = Serializer.Instance.activeData.settings.vsyncEnabled;
-        leftHandedControlsToggle.isOn = Serializer.Instance.activeData.settings.leftHandedControls;
-        currentPageIndex = 0;
-
-        pageButtons[currentPageIndex].image.color = new Color(0.2196079f, 0.2196079f, 0.2196079f, 1);
-        title.text = pages[currentPageIndex].name;
-
-        for (int i = 1; i < pages.Length; i++)
-        {
-            pages[i].SetActive(false);
-            pageButtons[i].image.color = new Color(0.2196079f, 0.2196079f, 0.2196079f, 0);
-        }
+        //Resets the UI elements
+        Reset();
     }
 
     //Overriden method to show the screen
     public override void Show()
     {
-        //Sets the base values for the UI elements
+        //Resets the UI elements
+        Reset();
+
+        //Activates the UI
+        base.Show();
+    }
+
+    //Method to set the UI elements to reset the UI elements
+    private void Reset()
+    {
+        //Sets values to default values for the UI elements
         qualitySelect.value = (int)Serializer.Instance.activeData.settings.qualityLevel;
         movementSelect.value = (int)Serializer.Instance.activeData.settings.movementType;
         soundEffectsToggle.isOn = Serializer.Instance.activeData.settings.soundEnabled;
@@ -80,16 +78,21 @@ public class Settings_UI : UI<Settings_UI>
         leftHandedControlsToggle.isOn = Serializer.Instance.activeData.settings.leftHandedControls;
         currentPageIndex = 0;
 
+        //Sets colour for the current page button
         pageButtons[currentPageIndex].image.color = new Color(0.2196079f, 0.2196079f, 0.2196079f, 1);
+
+        //Sets the title to the title of the page
         title.text = pages[currentPageIndex].name;
 
+        //Loops through every page except the first
         for (int i = 1; i < pages.Length; i++)
         {
+            //Deactivate the page
             pages[i].SetActive(false);
+
+            //Assign its colour
             pageButtons[i].image.color = new Color(0.2196079f, 0.2196079f, 0.2196079f, 0);
         }
-        //Activates the UI
-        base.Show();
     }
 
     //Method called when the user changes the value in quality select
@@ -130,33 +133,49 @@ public class Settings_UI : UI<Settings_UI>
             return;
         }
 
-        //Sets the quality level form the associated place in the dropdown menu
+        //Else sets the quality level form the associated place in the dropdown menu
         Serializer.Instance.activeData.settings.SetMovementType((Player.MovementType)index);
     }
 
     //Method called when the user clicks to go back
     public void Click_Back()
     {
-        //Goes to the main screen with fade
+        //Activates the following method with a fade
         StartCoroutine(ClickWithFade(
             () =>
             {
+                //Shows the start UI
                 Start_UI.Instance.Show();
+
+                //Hides this UI
                 Hide();
-            }, fadeTime));
+            },
+            //Fades in fadeTime time
+            fadeTime));
     }
 
+    //Method called to change to a different page
     public void SwapToPage(int index)
     {
+        //Return if the current pages index is requested
         if (currentPageIndex == index) return;
 
+        //Resets color of current page button
         pageButtons[currentPageIndex].image.color = new Color(0.2196079f, 0.2196079f, 0.2196079f, 0);
+
+        //Deactivates the current page
         pages[currentPageIndex].SetActive(false);
+
+        //Sets the color new page button to be opaque
         pageButtons[index].image.color = new Color(0.2196079f, 0.2196079f, 0.2196079f, 1);
+
+        //Activates the new page
         pages[index].SetActive(true);
 
+        //Sets the title to the title of the page
         title.text = pages[index].name;
 
+        //Saves the current page
         currentPageIndex = index;
     }
 }
