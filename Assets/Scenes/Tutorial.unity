@@ -1533,7 +1533,6 @@ MonoBehaviour:
   fadePanel: {fileID: 1414110153}
   lastUpgraded:
     title: 
-    desc: 
     level: 0
     image: {fileID: 0}
     value: 0
@@ -3543,7 +3542,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Avoid green objects, collect red objects to gain score
+  m_text: Avoid red objects, collect green objects to gain score
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: aca53fb01447b834b998a4b8ee90e8b5, type: 2}
   m_sharedMaterial: {fileID: 1811210304500175913, guid: aca53fb01447b834b998a4b8ee90e8b5, type: 2}
@@ -5157,7 +5156,6 @@ MonoBehaviour:
   _tutorial: {fileID: 567644595}
   _cardTypes:
   - title: Remove Segments
-    desc: Removes segments off of your snake making it shorter and easier to control.
     level: 0
     image: {fileID: 21300000, guid: 65d33fb6788edc64696ee586a902ea9e, type: 3}
     value: -1
@@ -5180,8 +5178,6 @@ MonoBehaviour:
     - increaseAmount: -50
       levelAmount: 20
   - title: Increase Spawn Delay
-    desc: Increases the amount of time it takes for the next objects to spawn, causing
-      them to be more spaced out.
     level: 0
     image: {fileID: 21300000, guid: 0e8af467c8e1ac042a963289f6a0ad20, type: 3}
     value: 1.1
@@ -5202,8 +5198,6 @@ MonoBehaviour:
     - increaseAmount: 0.05
       levelAmount: 20
   - title: Increase Speed
-    desc: Increases the speed the snake moves vertically at, making it easier to
-      dodge.
     level: 0
     image: {fileID: 21300000, guid: b84f2bfd0b929a041aa1a968f07d785d, type: 3}
     value: 1.05
@@ -5224,8 +5218,6 @@ MonoBehaviour:
     - increaseAmount: 0.05
       levelAmount: 20
   - title: Shield
-    desc: Adds an amount of one time use shields which prevent you from dying to
-      floating objects.
     level: 0
     image: {fileID: 21300000, guid: 9bb809d41e8ff234da594fdbaf16019e, type: 3}
     value: 1
@@ -5244,7 +5236,6 @@ MonoBehaviour:
     - increaseAmount: 1
       levelAmount: 40
   - title: Increase Turn Speed
-    desc: Increases the speed you rotate at allowing you to turn faster.
     level: 0
     image: {fileID: 21300000, guid: 2a822fdf726e0f747aebaccdcb7d7955, type: 3}
     value: 1.1
@@ -5265,7 +5256,6 @@ MonoBehaviour:
     - increaseAmount: 0.05
       levelAmount: 20
   - title: Slow Time
-    desc: Gives/Increases the player's ability to slow time.
     level: 0
     image: {fileID: 21300000, guid: ac1dd6749bba86244b229f1f55f317c2, type: 3}
     value: 0.15
